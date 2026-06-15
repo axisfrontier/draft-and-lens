@@ -103,7 +103,10 @@ describe('prompts integrity', () => {
     };
     const prompt = buildAnalystSystemPrompt('script', 'Auto-detect', diagnostic);
     expect(prompt).toContain('ESTABLISHED DIAGNOSTIC');
-    expect(prompt).toContain('Do not re-identify');
+    // Verbatim from the prototype prompt (lowercase, mid-sentence): "established
+    // fact — do not re-identify, do not override". The prompt is the source of
+    // truth (ported verbatim from DraftAndLens.html); the test conforms to it.
+    expect(prompt).toContain('do not re-identify');
     expect(prompt).toContain(diagnostic.tradition);
   });
 });
