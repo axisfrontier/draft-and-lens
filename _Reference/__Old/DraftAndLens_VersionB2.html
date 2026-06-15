@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft&Lens — Editorial Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --paper:      #f5f1e8;
+  --cream:      #ede8d8;
+  --warm-mid:   #ddd8c8;
+  --rule:       #b8b0a0;
+  --rule-l:     #d8d2c4;
+  --ink:        #1a1710;
+  --ink-mid:    #3a3628;
+  --ink-soft:   #5a5448;
+  --ink-faint:  #8a8478;
+  --amber:      #a86c10;
+  --amber-d:    #7a4e08;
+  --amber-l:    #c88c30;
+  --red:        #8b2020;
+  --green:      #2a5030;
+  --blue:       #1a3a5c;
+  --tension:    #b03010;
+  --pace:       #1a6030;
+  --emotion:    #2a4880;
+  --black-band: #14120e;
+  --nav-h:      52px;
+  --sidebar-w:  200px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+}
+
+/* ─── NAV ─────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem;
+  background: var(--black-band);
+  border-bottom: 2px solid var(--amber);
+}
+.nav-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .95rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--paper); font-weight: 500;
+}
+.nav-logo span { color: var(--amber-l); }
+.nav-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .62rem; letter-spacing: .18em; text-transform: uppercase;
+  color: #5a5448; display: flex; align-items: center; gap: 1.5rem;
+}
+
+/* ─── LAYOUT ──────────────────────────── */
+.layout {
+  display: flex;
+  padding-top: var(--nav-h);
+  min-height: 100vh;
+}
+
+/* ─── RIGHT SIDEBAR NAV ───────────────── */
+.sidebar {
+  position: fixed;
+  top: var(--nav-h);
+  right: 0;
+  width: var(--sidebar-w);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+  background: var(--cream);
+  border-left: 1px solid var(--rule-l);
+  padding: 1.5rem 0;
+  z-index: 50;
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--rule); }
+.sidebar-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .52rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink-faint); padding: 0 1.25rem .75rem;
+  border-bottom: 1px solid var(--rule-l); margin-bottom: .5rem;
+}
+.sidebar-link {
+  display: block; padding: .4rem 1.25rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-faint); text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all .15s; line-height: 1.4;
+}
+.sidebar-link:hover { color: var(--ink-mid); border-left-color: var(--rule); }
+.sidebar-link.active { color: var(--amber-d); border-left-color: var(--amber); background: rgba(168,108,16,.06); }
+.sidebar-group {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .5rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--rule); padding: .9rem 1.25rem .3rem;
+}
+
+/* ─── MAIN CONTENT ────────────────────── */
+.main {
+  flex: 1;
+  margin-right: var(--sidebar-w);
+  max-width: calc(100% - var(--sidebar-w));
+}
+
+.page-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 3rem 8rem;
+}
+
+/* ─── TITLE BLOCK ─────────────────────── */
+.title-block {
+  padding: 3.5rem 0 0;
+  display: grid; grid-template-columns: 1fr 200px;
+  gap: 3rem; padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+.title-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: .75rem;
+}
+.title-kicker::before { content: ''; width: 24px; height: 1px; background: var(--amber); }
+.story-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700; line-height: 1.05;
+  letter-spacing: -.02em; color: var(--ink); margin-bottom: .6rem;
+}
+.story-byline {
+  font-family: 'Libre Baskerville', serif;
+  font-size: .95rem; font-style: italic;
+  color: var(--ink-soft); margin-bottom: 1.25rem; line-height: 1.5;
+}
+.title-summary-text {
+  font-size: .88rem; line-height: 1.8; color: var(--ink-soft);
+  max-width: 500px; border-left: 2px solid var(--rule); padding-left: 1rem;
+}
+.stat-block {
+  border: 1px solid var(--rule-l); padding: 1rem; background: var(--cream);
+}
+.stat-block-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .55rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: .6rem;
+}
+.stat-item {
+  display: flex; justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .68rem; letter-spacing: .06em;
+  padding: .3rem 0; border-bottom: 1px solid var(--rule-l);
+  color: var(--ink-soft);
+}
+.stat-item:last-child { border-bottom: none; }
+.stat-item strong { color: var(--ink); font-weight: 500; }
+
+/* ─── VERDICT ─────────────────────────── */
+.verdict-row {
+  display: flex; align-items: stretch;
+  background: var(--black-band);
+  margin: 0 -3rem 0; /* full bleed */
+}
+.verdict-accent { width: 4px; background: var(--amber); flex-shrink: 0; }
+.verdict-inner {
+  flex: 1; padding: 2rem 3rem;
+  display: flex; align-items: center; gap: 3rem;
+}
+.verdict-ruling {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.7rem; font-weight: 700;
+  color: var(--amber-l); white-space: nowrap; line-height: 1;
+}
+.verdict-sep { width: 1px; background: #3a3628; align-self: stretch; flex-shrink: 0; }
+.verdict-detail {
+  font-size: .88rem; line-height: 1.75;
+  color: #9a9080; font-style: italic; max-width: 500px;
+}
+
+/* ─── DASHBOARD HEADER ────────────────── */
+.dashboard-header {
+  padding: 2.5rem 0 1rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 2rem;
+}
+.dashboard-header-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: .4rem;
+}
+.dashboard-header-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem; font-weight: 700;
+  color: var(--ink); letter-spacing: -.01em;
+}
+
+/* ─── DATA SECTION ────────────────────── */
+.data-section {
+  display: grid; grid-template-columns: 240px 1fr;
+  gap: 3rem; margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule-l);
+}
+.data-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--amber-d); margin-bottom: 1.25rem;
+  padding-bottom: .5rem; border-bottom: 1px solid var(--rule);
+}
+.bar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 2rem; }
+.bar-label-row { display: flex; justify-content: space-between; margin-bottom: .3rem; }
+.bar-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.bar-score {
+  font-family: 'Libre Baskerville', serif;
+  font-size: .9rem; font-weight: 700; color: var(--ink);
+}
+.bar-track { height: 2px; background: var(--rule-l); }
+.bar-fill { height: 100%; background: var(--amber); }
+
+/* ─── ARC SECTION ─────────────────────── */
+.arc-section {
+  margin-bottom: 2.5rem; padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--rule-l);
+}
+.arc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.arc-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--amber-d);
+}
+.arc-legend {
+  display: flex; gap: 1.5rem;
+}
+.arc-legend-item {
+  display: flex; align-items: center; gap: .45rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-soft); cursor: pointer; transition: color .15s;
+  user-select: none;
+}
+.arc-legend-item:hover { color: var(--ink); }
+.arc-legend-item.muted { opacity: .4; }
+.arc-legend-dot { width: 12px; height: 2px; border-radius: 1px; }
+.arc-wrap {
+  background: var(--cream); border: 1px solid var(--rule-l);
+  position: relative; overflow: visible;
+}
+.arc-note {
+  margin-top: .75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .62rem; letter-spacing: .08em;
+  color: var(--ink-soft); font-style: italic;
+}
+/* Beat tooltip */
+.arc-tooltip {
+  position: absolute;
+  background: var(--black-band); border-left: 2px solid var(--amber);
+  padding: .65rem .9rem; pointer-events: none; z-index: 20;
+  max-width: 220px; transform: translateX(-50%);
+  bottom: calc(100% + 10px); display: none;
+}
+.arc-tooltip.visible { display: block; }
+.arc-tooltip-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--amber-l); margin-bottom: .25rem;
+}
+.arc-tooltip-note { font-size: .78rem; line-height: 1.5; color: #c8c0a8; font-style: italic; }
+
+/* ─── ANALYSIS HEADER ─────────────────── */
+.analysis-header {
+  padding: 2.5rem 0 1.5rem;
+}
+.analysis-header-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: .4rem;
+}
+.analysis-header-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--ink); letter-spacing: -.01em;
+}
+
+/* ─── COLLAPSIBLE SECTIONS ────────────── */
+.section-wrap {
+  border-bottom: 1px solid var(--rule-l);
+}
+.section-wrap.tinted { background: var(--cream); margin: 0 -3rem; padding: 0 3rem; }
+
+.section-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 0;
+  background: none; border: none; cursor: pointer; text-align: left;
+}
+.section-toggle-left { display: flex; align-items: center; gap: 1rem; }
+.section-num-badge {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.5rem; font-weight: 700; color: var(--rule);
+  line-height: 1; width: 2.5rem; flex-shrink: 0; text-align: left;
+}
+.section-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .65rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--amber-d);
+}
+.section-chevron {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .7rem; color: var(--rule); transition: transform .2s;
+  flex-shrink: 0;
+}
+.section-wrap.open .section-chevron { transform: rotate(180deg); }
+
+.section-body {
+  display: none; padding-bottom: 1.75rem;
+}
+.section-wrap.open .section-body { display: block; }
+
+.section-body p {
+  font-size: .92rem; line-height: 1.88; color: var(--ink-mid);
+  margin-bottom: .85rem; max-width: 660px;
+}
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { color: var(--ink); font-weight: 500; }
+.section-body em { color: var(--ink-soft); }
+.section-quote {
+  margin: 1rem 0;
+  padding: .85rem 1.1rem;
+  background: var(--warm-mid);
+  border-left: 2px solid var(--amber);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .78rem; line-height: 1.7; color: var(--ink-soft);
+  max-width: 600px;
+}
+
+/* ─── THREE THINGS ────────────────────── */
+.three-band {
+  background: var(--black-band);
+  margin: 2.5rem -3rem;
+  padding: 2.5rem 3rem;
+}
+.three-band-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--paper); margin-bottom: .35rem;
+}
+.three-band-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--amber-l); margin-bottom: 1.75rem;
+  padding-bottom: .75rem; border-bottom: 1px solid #2a2820;
+}
+.three-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.thing-n {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 2.75rem; font-weight: 700; color: #2e2c28; line-height: 1; margin-bottom: .5rem;
+}
+.thing-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--amber-l); margin-bottom: .6rem;
+}
+.thing-text { font-size: .88rem; line-height: 1.75; color: #9a9080; }
+
+/* ─── DOWNLOAD ────────────────────────── */
+.download-row {
+  display: flex; align-items: center; justify-content: flex-end; gap: .75rem;
+  padding: 1.5rem 0; border-bottom: 1px solid var(--rule-l); margin-bottom: 2.5rem;
+}
+.dl-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
+  padding: .55rem 1.1rem; background: transparent;
+  border: 1px solid var(--rule); color: var(--ink-soft);
+  cursor: pointer; transition: all .15s;
+}
+.dl-btn:hover { border-color: var(--amber-d); color: var(--amber-d); }
+.dl-btn.primary { background: var(--black-band); color: var(--paper); border-color: var(--black-band); }
+.dl-btn.primary:hover { background: var(--ink); }
+
+/* ─── LENS SECTION ────────────────────── */
+.lens-section-header {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1.75rem;
+}
+.lens-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: .4rem;
+}
+.lens-section-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--ink); letter-spacing: -.01em;
+}
+
+.lens-group-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink-faint); margin: 1.5rem 0 .75rem;
+  padding-bottom: .4rem; border-bottom: 1px solid var(--rule-l);
+}
+.lens-strip {
+  display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: .5rem;
+}
+.lens-pill {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .45rem .85rem .45rem .45rem;
+  border: 1px solid var(--rule-l); background: var(--cream);
+  cursor: pointer; transition: all .15s;
+}
+.lens-pill:hover { border-color: var(--amber); background: var(--paper); }
+.lens-pill.active { border-color: var(--amber-d); background: var(--paper); }
+.lens-thumb {
+  width: 38px; height: 38px; object-fit: cover;
+  filter: grayscale(100%) contrast(1.1);
+  flex-shrink: 0;
+}
+.lens-pill.active .lens-thumb { filter: grayscale(30%) contrast(1.05) sepia(15%); }
+.lens-pill-info {}
+.lens-pill-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-soft); line-height: 1.2; display: block;
+}
+.lens-pill.active .lens-pill-name { color: var(--amber-d); }
+.lens-pill-works {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .52rem; color: var(--ink-faint); display: block;
+  line-height: 1.3; margin-top: .1rem;
+  white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 120px;
+}
+
+/* ─── LENS PANEL ──────────────────────── */
+.lens-panel {
+  background: var(--cream); border: 1px solid var(--rule);
+  overflow: hidden; margin-bottom: 2.5rem;
+}
+.lens-panel-header {
+  display: flex; align-items: stretch;
+  border-bottom: 1px solid var(--rule-l); background: var(--paper);
+}
+.lens-panel-photo {
+  width: 90px; height: 90px; object-fit: cover;
+  filter: grayscale(100%) contrast(1.1);
+  flex-shrink: 0; display: block;
+}
+.lens-panel-info {
+  flex: 1; padding: 1.25rem 1.5rem;
+  display: flex; flex-direction: column; justify-content: center;
+  border-left: 1px solid var(--rule-l);
+}
+.lens-panel-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: .25rem;
+}
+.lens-panel-descriptor {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--amber-d);
+}
+.lens-panel-body {
+  padding: 1.75rem 2rem;
+  font-size: .92rem; line-height: 1.88; color: var(--ink-mid); max-width: 680px;
+}
+.lens-panel-body p { margin-bottom: .85rem; }
+.lens-panel-body p:last-child { margin-bottom: 0; }
+.lens-panel-body strong { color: var(--ink); }
+
+/* ─── STUDIO MATCHING ─────────────────── */
+.studio-section {
+  background: var(--black-band);
+  margin: 0 -3rem;
+  padding: 3rem 3rem 2.5rem;
+}
+.studio-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--amber-l); margin-bottom: .4rem;
+}
+.studio-section-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--paper);
+  margin-bottom: .5rem; letter-spacing: -.01em;
+}
+.studio-section-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .1em;
+  color: #5a5448; margin-bottom: 2rem; font-style: italic;
+}
+.studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.studio-card {
+  background: #1c1a16; border: 1px solid #2e2c28;
+  padding: 1.25rem 1.5rem;
+}
+.studio-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: .6rem; }
+.studio-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.05rem; font-weight: 700; color: var(--paper);
+}
+.studio-match {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
+  padding: .2rem .5rem; background: rgba(200,140,48,.15);
+  color: var(--amber-l); border: 1px solid rgba(200,140,48,.3);
+  white-space: nowrap;
+}
+.studio-type {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .55rem; letter-spacing: .15em; text-transform: uppercase;
+  color: #5a5448; margin-bottom: .6rem;
+}
+.studio-rationale { font-size: .82rem; line-height: 1.7; color: #8a8070; }
+.studio-contact {
+  margin-top: .75rem; padding-top: .75rem;
+  border-top: 1px solid #2e2c28;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .58rem; letter-spacing: .08em; color: #4a4840;
+}
+.studio-contact a { color: var(--amber-d); text-decoration: none; }
+.studio-contact a:hover { color: var(--amber-l); }
+.studio-disclaimer {
+  margin-top: 1.5rem; padding-top: 1.25rem;
+  border-top: 1px solid #2e2c28;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .55rem; letter-spacing: .08em; color: #4a4840; font-style: italic;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">DRAFT<span>&</span>LENS</span>
+  <span class="nav-meta">
+    <span>Script Analysis</span>
+    <span>·</span>
+    <span>Feature Drama</span>
+  </span>
+</nav>
+
+<div class="layout">
+
+  <!-- ─── RIGHT SIDEBAR ─────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">Jump to</div>
+    <div class="sidebar-group">Overview</div>
+    <a class="sidebar-link" href="#sec-title">Title & Summary</a>
+    <a class="sidebar-link" href="#sec-verdict">Verdict</a>
+    <div class="sidebar-group">Dashboard</div>
+    <a class="sidebar-link" href="#sec-dashboard">Dimension Map</a>
+    <a class="sidebar-link" href="#sec-arc">Story Arc</a>
+    <div class="sidebar-group">Analysis</div>
+    <a class="sidebar-link" href="#sec-01">First Impression</a>
+    <a class="sidebar-link" href="#sec-02">Structure</a>
+    <a class="sidebar-link" href="#sec-03">Character</a>
+    <a class="sidebar-link" href="#sec-04">Dialogue</a>
+    <a class="sidebar-link" href="#sec-05">Theme</a>
+    <a class="sidebar-link" href="#sec-06">Visual Writing</a>
+    <a class="sidebar-link" href="#sec-07">Tone</a>
+    <a class="sidebar-link" href="#sec-08">Protagonist</a>
+    <a class="sidebar-link" href="#sec-09">Antagonist</a>
+    <a class="sidebar-link" href="#sec-10">Pace</a>
+    <a class="sidebar-link" href="#sec-11">Commercial</a>
+    <a class="sidebar-link" href="#sec-12">What's Working</a>
+    <div class="sidebar-group">Action</div>
+    <a class="sidebar-link" href="#sec-three">Three Things</a>
+    <a class="sidebar-link" href="#sec-lenses">Editorial Lenses</a>
+    <a class="sidebar-link" href="#sec-studios">Studio Match</a>
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────── -->
+  <main class="main">
+  <div class="page-wrap">
+
+    <!-- TITLE BLOCK -->
+    <div class="title-block" id="sec-title">
+      <div>
+        <div class="title-kicker">Script Analysis &nbsp;·&nbsp; Feature Drama</div>
+        <h1 class="story-title">The Weight of<br>Still Water</h1>
+        <div class="story-byline">A drama in three acts — grief, memory, and a family's long silence</div>
+        <div class="title-summary-text">Three generations of a Japanese-American family. Strong emotional architecture undermined by a second act that loses momentum and a protagonist whose passivity risks disengaging the reader.</div>
+      </div>
+      <div>
+        <div class="stat-block">
+          <div class="stat-block-label">Document</div>
+          <div class="stat-item"><span>Pages</span><strong>108</strong></div>
+          <div class="stat-item"><span>Words</span><strong>18,420</strong></div>
+          <div class="stat-item"><span>Genre</span><strong>Drama</strong></div>
+          <div class="stat-item"><span>Mode</span><strong>Script</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERDICT -->
+    <div class="verdict-row" id="sec-verdict">
+      <div class="verdict-accent"></div>
+      <div class="verdict-inner">
+        <div class="verdict-ruling">Consider With Revisions</div>
+        <div class="verdict-sep"></div>
+        <div class="verdict-detail">The emotional architecture is genuinely accomplished. What the script needs is a protagonist who acts rather than observes, and a second act that earns its length rather than coasting on atmosphere.</div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD HEADER -->
+    <div class="dashboard-header" id="sec-dashboard">
+      <div class="dashboard-header-label">Editorial Dashboard</div>
+      <div class="dashboard-header-title">Structural Overview</div>
+    </div>
+
+    <!-- RADAR + BARS -->
+    <div class="data-section">
+      <div>
+        <div class="data-label">Dimension Map</div>
+        <svg width="220" height="220" viewBox="0 0 220 220">
+          <g fill="none" stroke="var(--rule)" stroke-width="1" opacity=".7">
+            <polygon points="110,18 187,63 187,153 110,198 33,153 33,63"/>
+            <polygon points="110,42 163,72 163,148 110,178 57,148 57,72"/>
+            <polygon points="110,66 139,81 139,139 110,154 81,139 81,81"/>
+            <line x1="110" y1="18" x2="110" y2="198"/>
+            <line x1="187" y1="63" x2="33" y2="153"/>
+            <line x1="187" y1="153" x2="33" y2="63"/>
+          </g>
+          <text x="110" y="10" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="var(--ink-soft)" letter-spacing="1">STRUCTURE</text>
+          <text x="196" y="62" font-family="IBM Plex Mono" font-size="8" fill="var(--ink-soft)" letter-spacing="1">CHAR</text>
+          <text x="193" y="158" font-family="IBM Plex Mono" font-size="8" fill="var(--ink-soft)" letter-spacing="1">DIAL</text>
+          <text x="110" y="213" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="var(--ink-soft)" letter-spacing="1">TONE</text>
+          <text x="16" y="158" text-anchor="end" font-family="IBM Plex Mono" font-size="8" fill="var(--ink-soft)" letter-spacing="1">PACE</text>
+          <text x="20" y="62" text-anchor="end" font-family="IBM Plex Mono" font-size="8" fill="var(--ink-soft)" letter-spacing="1">THEME</text>
+          <polygon points="110,34 168,74 160,142 110,170 62,134 66,70" fill="rgba(168,108,16,.15)" stroke="var(--amber)" stroke-width="1.5"/>
+          <circle cx="110" cy="108" r="2.5" fill="var(--amber)"/>
+        </svg>
+      </div>
+      <div>
+        <div class="data-label">Editorial Scores</div>
+        <div class="bar-grid">
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Structure</span><span class="bar-score">7</span></div><div class="bar-track"><div class="bar-fill" style="width:70%"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Character</span><span class="bar-score">5</span></div><div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--tension)"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Dialogue</span><span class="bar-score">7</span></div><div class="bar-track"><div class="bar-fill" style="width:70%"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Tone</span><span class="bar-score">8</span></div><div class="bar-track"><div class="bar-fill" style="width:80%;background:var(--green)"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Pace</span><span class="bar-score">4</span></div><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--tension)"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Theme</span><span class="bar-score">8</span></div><div class="bar-track"><div class="bar-fill" style="width:80%;background:var(--green)"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Visual Writing</span><span class="bar-score">7</span></div><div class="bar-track"><div class="bar-fill" style="width:70%"></div></div></div>
+          <div class="bar-item"><div class="bar-label-row"><span class="bar-label">Commercial</span><span class="bar-score">5</span></div><div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--tension)"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARC -->
+    <div class="arc-section" id="sec-arc">
+      <div class="arc-header">
+        <div class="arc-label">Story Arc · Interpreted</div>
+        <div class="arc-legend">
+          <div class="arc-legend-item" onclick="toggleLine(this,'tension')" data-line="tension">
+            <div class="arc-legend-dot" style="background:var(--tension)"></div>Tension
+          </div>
+          <div class="arc-legend-item" onclick="toggleLine(this,'pace')" data-line="pace">
+            <div class="arc-legend-dot" style="background:var(--pace)"></div>Pace
+          </div>
+          <div class="arc-legend-item" onclick="toggleLine(this,'emotion')" data-line="emotion">
+            <div class="arc-legend-dot" style="background:var(--emotion)"></div>Emotion
+          </div>
+        </div>
+      </div>
+      <div class="arc-wrap" style="height:180px; position:relative">
+        <div class="arc-tooltip" id="arcTooltip">
+          <div class="arc-tooltip-label" id="tooltipLabel"></div>
+          <div class="arc-tooltip-note" id="tooltipNote"></div>
+        </div>
+        <svg id="arcSvg" width="100%" height="180" viewBox="0 0 860 180" preserveAspectRatio="none" style="display:block">
+          <!-- Grid -->
+          <line x1="0" y1="45" x2="860" y2="45" stroke="var(--rule-l)" stroke-width=".8"/>
+          <line x1="0" y1="90" x2="860" y2="90" stroke="var(--rule-l)" stroke-width=".8"/>
+          <line x1="0" y1="135" x2="860" y2="135" stroke="var(--rule-l)" stroke-width=".8"/>
+          <!-- Act dividers -->
+          <line x1="258" y1="0" x2="258" y2="180" stroke="var(--rule)" stroke-width="1" stroke-dasharray="5 4"/>
+          <line x1="602" y1="0" x2="602" y2="180" stroke="var(--rule)" stroke-width="1" stroke-dasharray="5 4"/>
+          <text x="129" y="13" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="var(--rule)" letter-spacing="2">ACT I</text>
+          <text x="430" y="13" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="var(--rule)" letter-spacing="2">ACT II</text>
+          <text x="731" y="13" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="var(--rule)" letter-spacing="2">ACT III</text>
+          <!-- Lines -->
+          <polyline id="lineTension"
+            points="0,150 80,135 160,110 258,75 340,98 430,125 510,112 602,62 700,52 780,88 860,42"
+            fill="none" stroke="var(--tension)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline id="linePace"
+            points="0,140 80,124 160,100 258,82 340,112 430,138 510,130 602,82 700,60 780,72 860,48"
+            fill="none" stroke="var(--pace)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline id="lineEmotion"
+            points="0,158 80,140 160,118 258,70 340,90 430,118 510,100 602,58 700,50 780,78 860,36"
+            fill="none" stroke="var(--emotion)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Beat markers + icons -->
+          <!-- Beat icon = small open book SVG above each dot -->
+          <g class="beat-group" data-label="Inciting Incident" data-note="The letter arrives. The family's silence cracks for the first time." data-cx="80" data-cy="135">
+            <!-- book icon -->
+            <g transform="translate(72,104)" opacity=".7">
+              <path d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z" stroke="var(--ink-soft)" stroke-width=".9" fill="none" stroke-linejoin="round"/>
+            </g>
+            <circle cx="80" cy="135" r="5" fill="var(--paper)" stroke="var(--amber)" stroke-width="1.5" style="cursor:pointer"/>
+          </g>
+          <g class="beat-group" data-label="Act One Break" data-note="She decides to go. The choice is made but the cost is not yet visible." data-cx="258" data-cy="75">
+            <g transform="translate(250,44)" opacity=".7">
+              <path d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z" stroke="var(--amber-d)" stroke-width=".9" fill="none" stroke-linejoin="round"/>
+            </g>
+            <circle cx="258" cy="75" r="5" fill="var(--paper)" stroke="var(--amber)" stroke-width="1.5" style="cursor:pointer"/>
+          </g>
+          <g class="beat-group" data-label="Midpoint" data-note="The photograph. The story she's been told about her mother is wrong — and she knows it." data-cx="430" data-cy="125">
+            <g transform="translate(422,94)" opacity=".7">
+              <path d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z" stroke="var(--ink-soft)" stroke-width=".9" fill="none" stroke-linejoin="round"/>
+            </g>
+            <circle cx="430" cy="125" r="5" fill="var(--paper)" stroke="var(--amber)" stroke-width="1.5" style="cursor:pointer"/>
+          </g>
+          <g class="beat-group" data-label="Act Two Break" data-note="She burns the letters. Point of no return — the past is now irrecoverable." data-cx="602" data-cy="62">
+            <g transform="translate(594,31)" opacity=".7">
+              <path d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z" stroke="var(--amber-d)" stroke-width=".9" fill="none" stroke-linejoin="round"/>
+            </g>
+            <circle cx="602" cy="62" r="5" fill="var(--paper)" stroke="var(--amber)" stroke-width="1.5" style="cursor:pointer"/>
+          </g>
+          <g class="beat-group" data-label="Dark Night" data-note="The confrontation that wasn't written — the scene that needs to exist." data-cx="780" data-cy="88">
+            <g transform="translate(772,57)" opacity=".7">
+              <path d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z" stroke="var(--ink-soft)" stroke-width=".9" fill="none" stroke-linejoin="round"/>
+            </g>
+            <circle cx="780" cy="88" r="5" fill="var(--paper)" stroke="var(--amber)" stroke-width="1.5" style="cursor:pointer"/>
+          </g>
+          <g class="beat-group" data-label="Resolution" data-note="Earned but rushed. The final image works. The path to it doesn't." data-cx="855" data-cy="42">
+            <g transform="translate(847,11)" opacity=".7">
+              <path d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z" stroke="var(--amber-d)" stroke-width=".9" fill="none" stroke-linejoin="round"/>
+            </g>
+            <circle cx="855" cy="42" r="5" fill="var(--paper)" stroke="var(--amber-d)" stroke-width="2" style="cursor:pointer"/>
+          </g>
+        </svg>
+      </div>
+      <div class="arc-note">Arc reflects page order. If your story is told non-chronologically — events presented out of sequence — this structural reading may not map to your intended narrative shape.</div>
+    </div>
+
+    <!-- ANALYSIS HEADER -->
+    <div class="analysis-header">
+      <div class="analysis-header-label">Editorial Analysis</div>
+      <div class="analysis-header-title">Section by Section Breakdown</div>
+    </div>
+
+    <!-- SECTIONS — first 5 open, rest closed -->
+
+    <div class="section-wrap open" id="sec-01">
+      <button class="section-toggle" onclick="toggleSection('sec-01')">
+        <span class="section-toggle-left">
+          <span class="section-num-badge">01</span>
+          <span class="section-name">First Impression</span>
+        </span>
+        <span class="section-chevron">▲</span>
+      </button>
+      <div class="section-body">
+        <p>Page one commands the read. The image of the daughter pressing her palm against the frosted glass — her mother's outline on the other side — is an opening that earns its place. It establishes atmosphere, stakes, and the central relationship in a single visual. That is a screenwriter who knows the form.</p>
+        <p>The tonal promise set on page one — measured, quiet, visually precise — is largely kept. The question is whether it holds through the mid-section, or whether the script retreats to something safer when the silence becomes difficult to sustain.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap tinted open" id="sec-02">
+      <button class="section-toggle" onclick="toggleSection('sec-02')">
+        <span class="section-toggle-left">
+          <span class="section-num-badge">02</span>
+          <span class="section-name">Structure</span>
+        </span>
+        <span class="section-chevron">▲</span>
+      </button>
+      <div class="section-body">
+        <p>The three-act architecture is sound. Act One establishes world and wound with economy; the inciting incident at page 18 is correctly placed and correctly dramatised. The Act One break at page 28 is a genuine turn — a commitment to action that cannot be reversed.</p>
+        <p><strong>The problem is Act Two.</strong> Pages 45–72 are beautiful and static. Three scenes in succession — the market, the temple, the unanswered phone call — are doing the same emotional work. One contains the script's best dialogue. The other two are the same scene rewritten with different furniture.</p>
+        <div class="section-quote">"She sits. She waits. She does not speak." — this stage direction appears, in variant form, eleven times between pages 45 and 90. The protagonist is observing her own story.</div>
+        <p>The midpoint at page 54 is the script's strongest scene. The Act Two break needs more preparation: burning the letters is visually right but emotionally underprepared. One additional scene before it would change everything.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap open" id="sec-03">
+      <button class="section-toggle" onclick="toggleSection('sec-03')">
+        <span class="section-toggle-left">
+          <span class="section-num-badge">03</span>
+          <span class="section-name">Character</span>
+        </span>
+        <span class="section-chevron">▲</span>
+      </button>
+      <div class="section-body">
+        <p>The secondary characters are more alive than the protagonist. The grandmother's three scenes contain the script's most precise, inhabited writing. She arrives fully formed. The daughter — the protagonist — feels observed rather than inhabited.</p>
+        <p>The supporting cast each want something specific and that want pressures every scene they're in. This is correct. The antagonist — the father — is the script's most interesting structural problem: he is not present but is present in every scene. That is a strong choice. It is not yet fully exploited.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap tinted open" id="sec-04">
+      <button class="section-toggle" onclick="toggleSection('sec-04')">
+        <span class="section-toggle-left">
+          <span class="section-num-badge">04</span>
+          <span class="section-name">Dialogue</span>
+        </span>
+        <span class="section-chevron">▲</span>
+      </button>
+      <div class="section-body">
+        <p>At its best, the dialogue in this script is doing what dialogue should: it says something other than what it means. The exchange on page 34 between the daughter and the grandmother about the garden is the script's finest scene — two people talking about plants and talking about everything else simultaneously.</p>
+        <p>The problem is consistency. When the script is uncertain, the characters explain. Page 67 has three consecutive lines in which a character tells another character how they are feeling. This is the most common failure mode in dramatic dialogue and the easiest to fix: cut the explanation, keep the action.</p>
+        <div class="section-quote">Each character has a distinct verbal register in the script's best scenes. In its weaker passages, they all sound like the same careful writer. The distinction collapses under pressure.</div>
+      </div>
+    </div>
+
+    <div class="section-wrap open" id="sec-05">
+      <button class="section-toggle" onclick="toggleSection('sec-05')">
+        <span class="section-toggle-left">
+          <span class="section-num-badge">05</span>
+          <span class="section-name">Theme</span>
+        </span>
+        <span class="section-chevron">▲</span>
+      </button>
+      <div class="section-body">
+        <p>The theme is clear and genuine: silence as inheritance. What a family refuses to say passes from generation to generation as surely as what it says. This is embodied in the visual structure of the script — the recurring image of water, of still surfaces and distorted reflections — and it is mostly dramatised rather than stated. Mostly.</p>
+        <p>Page 82 has a monologue in which the protagonist states the theme directly. It is the script's weakest scene. The audience has already understood what she is now explaining. Cut it entirely, or reduce it to its last two lines.</p>
+      </div>
+    </div>
+
+    <!-- Sections 6–12: closed by default -->
+    <div class="section-wrap tinted" id="sec-06">
+      <button class="section-toggle" onclick="toggleSection('sec-06')">
+        <span class="section-toggle-left"><span class="section-num-badge">06</span><span class="section-name">Visual Writing</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p>The script is largely written for the screen, not transcribed onto it. The frosted glass opening, the photograph midpoint, the burning letters — all are cinematic rather than literary. The writer understands that the camera sees, not reads.</p>
+        <p>The weakness is in the action lines during Act Two. Under emotional pressure, the writing retreats to interiority: "She feels the weight of what she does not know." This is not a camera direction. It is a prose note. The equivalent visual action — something she does, something she picks up, something she looks at for too long — needs to replace it.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap" id="sec-07">
+      <button class="section-toggle" onclick="toggleSection('sec-07')">
+        <span class="section-toggle-left"><span class="section-num-badge">07</span><span class="section-name">Tone</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p>The tonal contract is established on page one and largely honoured. This is a quiet, precise drama. It does not raise its voice. The restraint is a strength — it earns its emotional moments because it does not reach for them cheaply.</p>
+        <p>The one significant tonal break is the scene at the airport, page 78. It plays as a different film — faster, more explicit, more anxious. It may be a remnant of an earlier draft with different tonal ambitions. It currently reads as an intrusion.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap tinted" id="sec-08">
+      <button class="section-toggle" onclick="toggleSection('sec-08')">
+        <span class="section-toggle-left"><span class="section-num-badge">08</span><span class="section-name">Protagonist</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p><strong>Want: to understand her mother's silence. Need: to forgive her own.</strong> The gap between these is correctly withheld from the protagonist until Act Three. The problem is agency — between pages 45 and 85, she makes no active choice. Things happen to her. She observes.</p>
+        <p>The fix is not to add plot. It is to find the scene — probably replacing the temple sequence — where she asks the question she has been afraid to ask, and receives an answer she did not want.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap" id="sec-09">
+      <button class="section-toggle" onclick="toggleSection('sec-09')">
+        <span class="section-toggle-left"><span class="section-num-badge">09</span><span class="section-name">Antagonist</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p>The absent father is structurally compelling — a shadow antagonist who shapes every room he isn't in. The script understands this. What it hasn't yet done is give him sufficient interiority through the memories and documents that reference him. He is currently a wound without a person attached to it.</p>
+        <p>One scene — even a brief one, even in flashback — in which he is demonstrably right about something would transform the dynamic entirely. The best antagonists believe they are right. This one needs to believe it where we can see it.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap tinted" id="sec-10">
+      <button class="section-toggle" onclick="toggleSection('sec-10')">
+        <span class="section-toggle-left"><span class="section-num-badge">10</span><span class="section-name">Pace</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p>Act One paces well — the world is established with economy and the inciting incident lands at the right moment. Act Three has genuine momentum. The problem, as the arc visualisation shows, is Act Two's extended plateau from pages 45–72.</p>
+        <p>The pacing failure is structural, not tonal. The scenes are well-written. The problem is they are all operating at the same emotional pitch. Pace in drama is not speed — it is variation. A quiet scene after a charged scene reads faster than two quiet scenes in succession.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap" id="sec-11">
+      <button class="section-toggle" onclick="toggleSection('sec-11')">
+        <span class="section-toggle-left"><span class="section-num-badge">11</span><span class="section-name">Commercial Viability</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p>This is a festival film with a streaming afterlife. It is not a studio acquisition. The budget is low-to-mid range — no significant visual effects, limited locations, character-driven. Its commercial ceiling is A24, MUBI, or a Sundance premiere with streaming sale. That is a viable and honourable market position.</p>
+        <p>The casting hook needs to be stronger. A script like this sells partly on the strength of the protagonist's role as an actor's piece. Currently, the passivity problem makes it a less compelling pitch. Fix the protagonist and the commercial case strengthens significantly.</p>
+      </div>
+    </div>
+
+    <div class="section-wrap tinted" id="sec-12">
+      <button class="section-toggle" onclick="toggleSection('sec-12')">
+        <span class="section-toggle-left"><span class="section-num-badge">12</span><span class="section-name">What's Working</span></span>
+        <span class="section-chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <p>The visual architecture of the script is genuinely accomplished. The water imagery is consistent, unforced, and structural rather than decorative. The grandmother is one of the most fully realised characters in any script of this type this year.</p>
+        <p>The dialogue, at its best, is exceptional — the garden scene on page 34 is the kind of writing that gets a script championed. The emotional precision of the opening ten pages earns complete trust. The writer knows what they're doing. The problems are solvable.</p>
+      </div>
+    </div>
+
+    <!-- THREE THINGS -->
+    <div class="three-band" id="sec-three">
+      <div class="three-band-title">Three Things</div>
+      <div class="three-band-sub">Fix These First · Prioritised · Actionable</div>
+      <div class="three-grid">
+        <div>
+          <div class="thing-n">01</div>
+          <div class="thing-tag">Most Urgent</div>
+          <div class="thing-text">Give the protagonist an active choice in Act Two. Pages 45–72. Replace one passive observation scene with a scene where she acts and pays a cost for that action.</div>
+        </div>
+        <div>
+          <div class="thing-n">02</div>
+          <div class="thing-tag">Structural</div>
+          <div class="thing-text">Prepare the Act Two break (letter burning, p.88) with one additional scene. The emotional weight needs one more beat before the point of no return lands correctly.</div>
+        </div>
+        <div>
+          <div class="thing-n">03</div>
+          <div class="thing-tag">Polish</div>
+          <div class="thing-text">Cut the market scene (p.52) entirely. Its emotional work is done better by the temple scene. Cut the theme-statement monologue (p.82). The script is stronger without both.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOWNLOAD -->
+    <div class="download-row">
+      <button class="dl-btn" onclick="copyReport()">Copy to Clipboard</button>
+      <button class="dl-btn primary" onclick="downloadReport()">Download Report</button>
+    </div>
+
+    <!-- LENS SECTION -->
+    <div class="lens-section-header" id="sec-lenses">
+      <div class="lens-section-label">Editorial Lenses</div>
+      <div class="lens-section-title">Choose a Voice</div>
+    </div>
+
+    <!-- DIRECTORS -->
+    <div class="lens-group-label">Directors</div>
+    <div class="lens-strip" id="lensDirectors">
+
+      <div class="lens-pill" onclick="selectLens(this,'spielberg')" data-id="spielberg">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Spielberg_2014.jpg/200px-Spielberg_2014.jpg" alt="Spielberg" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Spielberg</span>
+          <span class="lens-pill-works">Schindler's List · Jaws</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'coppola')" data-id="coppola">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Coppola_Okja.jpg/200px-Coppola_Okja.jpg" alt="Coppola" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Coppola</span>
+          <span class="lens-pill-works">The Godfather · Apocalypse Now</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'coens')" data-id="coens">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Joel_and_Ethan_Coen%2C_2010.jpg/200px-Joel_and_Ethan_Coen%2C_2010.jpg" alt="Coen Brothers" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Coen Brothers</span>
+          <span class="lens-pill-works">No Country · Fargo</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'villeneuve')" data-id="villeneuve">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Denis_Villeneuve_Dune_2021.jpg/200px-Denis_Villeneuve_Dune_2021.jpg" alt="Villeneuve" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Villeneuve</span>
+          <span class="lens-pill-works">Arrival · Dune</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'scott')" data-id="scott">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Ridley_Scott_2019.jpg/200px-Ridley_Scott_2019.jpg" alt="Ridley Scott" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Ridley Scott</span>
+          <span class="lens-pill-works">Alien · Blade Runner</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'welles')" data-id="welles">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Orson_Welles_1937.jpg/200px-Orson_Welles_1937.jpg" alt="Orson Welles" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Orson Welles</span>
+          <span class="lens-pill-works">Citizen Kane · Touch of Evil</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'jeunet')" data-id="jeunet">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Jean-Pierre_Jeunet_2009.jpg/200px-Jean-Pierre_Jeunet_2009.jpg" alt="Jeunet" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Jeunet</span>
+          <span class="lens-pill-works">Amélie · Delicatessen</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'wenders')" data-id="wenders">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Wim_Wenders_2012.jpg/200px-Wim_Wenders_2012.jpg" alt="Wim Wenders" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Wim Wenders</span>
+          <span class="lens-pill-works">Paris Texas · Wings of Desire</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'tarantino')" data-id="tarantino">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Quentin_Tarantino_2018.jpg/200px-Quentin_Tarantino_2018.jpg" alt="Tarantino" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Tarantino</span>
+          <span class="lens-pill-works">Pulp Fiction · Jackie Brown</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'wachowski')" data-id="wachowski">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Wachowskis_2012.jpg/200px-Wachowskis_2012.jpg" alt="Wachowskis" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Wachowskis</span>
+          <span class="lens-pill-works">The Matrix · Cloud Atlas</span>
+        </span>
+      </div>
+
+    </div>
+
+    <!-- FICTION WRITERS -->
+    <div class="lens-group-label">Fiction Writers</div>
+    <div class="lens-strip">
+
+      <div class="lens-pill active" onclick="selectLens(this,'hemingway')" data-id="hemingway">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/ErnestHemingway.jpg/200px-ErnestHemingway.jpg" alt="Hemingway" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Hemingway</span>
+          <span class="lens-pill-works">The Sun Also Rises · Hills</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'carver')" data-id="carver">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Raymond_Carver_1988.jpg/200px-Raymond_Carver_1988.jpg" alt="Carver" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Carver</span>
+          <span class="lens-pill-works">Cathedral · What We Talk About</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'chekhov')" data-id="chekhov">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Chekhov_1898_by_Osip_Braz_%28cropped%29.jpg/200px-Chekhov_1898_by_Osip_Braz_%28cropped%29.jpg" alt="Chekhov" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Chekhov</span>
+          <span class="lens-pill-works">The Lady with the Dog · Ward 6</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'oconnor')" data-id="oconnor">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/FlanneryOConnor.jpg/200px-FlanneryOConnor.jpg" alt="O'Connor" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">O'Connor</span>
+          <span class="lens-pill-works">A Good Man · Wise Blood</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'bukowski')" data-id="bukowski">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Bukowski_portrait.jpg/200px-Bukowski_portrait.jpg" alt="Bukowski" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Bukowski</span>
+          <span class="lens-pill-works">Post Office · Ham on Rye</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'nabokov')" data-id="nabokov">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Vladimir_Nabokov_1973.jpg/200px-Vladimir_Nabokov_1973.jpg" alt="Nabokov" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Nabokov</span>
+          <span class="lens-pill-works">Lolita · Pale Fire</span>
+        </span>
+      </div>
+
+    </div>
+
+    <!-- SCREENWRITERS -->
+    <div class="lens-group-label">Screenwriters</div>
+    <div class="lens-strip">
+
+      <div class="lens-pill" onclick="selectLens(this,'sorkin')" data-id="sorkin">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Aaron_Sorkin_2012.jpg/200px-Aaron_Sorkin_2012.jpg" alt="Sorkin" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Sorkin</span>
+          <span class="lens-pill-works">Social Network · A Few Good Men</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'puzo')" data-id="puzo">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Mario_Puzo.jpg/200px-Mario_Puzo.jpg" alt="Mario Puzo" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Mario Puzo</span>
+          <span class="lens-pill-works">The Godfather · Superman</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'roth')" data-id="roth">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Eric_Roth_2012.jpg/200px-Eric_Roth_2012.jpg" alt="Eric Roth" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Eric Roth</span>
+          <span class="lens-pill-works">Forrest Gump · The Insider</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'hatten')" data-id="hatten">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Shay_Hatten_2023.jpg/200px-Shay_Hatten_2023.jpg" alt="Shay Hatten" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Shay Hatten</span>
+          <span class="lens-pill-works">John Wick 3 & 4 · Army of the Dead</span>
+        </span>
+      </div>
+
+    </div>
+
+    <!-- PRODUCERS -->
+    <div class="lens-group-label">Producers</div>
+    <div class="lens-strip">
+
+      <div class="lens-pill" onclick="selectLens(this,'bruckheimer')" data-id="bruckheimer">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Jerry_Bruckheimer_2012.jpg/200px-Jerry_Bruckheimer_2012.jpg" alt="Bruckheimer" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Bruckheimer</span>
+          <span class="lens-pill-works">Top Gun · Pirates of Caribbean</span>
+        </span>
+      </div>
+
+      <div class="lens-pill" onclick="selectLens(this,'feige')" data-id="feige">
+        <img class="lens-thumb" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Kevin_Feige_2019.jpg/200px-Kevin_Feige_2019.jpg" alt="Kevin Feige" onerror="this.style.background='#ddd8c8';this.removeAttribute('src')">
+        <span class="lens-pill-info">
+          <span class="lens-pill-name">Kevin Feige</span>
+          <span class="lens-pill-works">Iron Man · Endgame</span>
+        </span>
+      </div>
+
+    </div>
+
+    <!-- LENS RESULT PANEL -->
+    <div class="lens-panel" id="lensPanel">
+      <div class="lens-panel-header">
+        <img class="lens-panel-photo" id="lensPanelPhoto" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/ErnestHemingway.jpg/200px-ErnestHemingway.jpg" alt="Hemingway">
+        <div class="lens-panel-info">
+          <div class="lens-panel-name" id="lensPanelName">Hemingway</div>
+          <div class="lens-panel-descriptor" id="lensPanelDescriptor">Iceberg · Restraint · What is unsaid</div>
+        </div>
+      </div>
+      <div class="lens-panel-body" id="lensPanelBody">
+        <p>The first image — palm against glass, mother's outline — that is good. That earns the read. Everything in that image is below the surface and that is where this story should live. The question is whether it stays there.</p>
+        <p>The temple scene on page 52 explains too much. She thinks about her mother, and the script tells you she is thinking about her mother. You do not need to tell the reader what they can already feel. Cut the interior monologue. Keep the candles. Keep her hands. The scene is already written — it is hiding under the version that is there.</p>
+        <p><strong>Eleven times between pages 45 and 90, you write some version of "she sits and waits."</strong> A story is not what a person feels. It is what a person does when what they feel makes action impossible — and then the action they take anyway. Find that action. It is somewhere in this script. You have written around it.</p>
+      </div>
+    </div>
+
+    <!-- STUDIO MATCHING -->
+    <div class="studio-section" id="sec-studios">
+      <div class="studio-section-label">Market Placement</div>
+      <div class="studio-section-title">Studios & Publishers Most Likely to Develop This Work</div>
+      <div class="studio-section-note">Based on public acquisition history, stated mandates, and tonal alignment with this submission. Not a guarantee — a reasoned starting point.</div>
+
+      <div class="studio-grid">
+
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div>
+              <div class="studio-name">A24</div>
+              <div class="studio-type">Indie Studio · Theatrical + Streaming</div>
+            </div>
+            <div class="studio-match">Strong Match</div>
+          </div>
+          <div class="studio-rationale">A24's mandate aligns almost exactly with this script's profile: character-driven drama, non-commercial subject matter, visual precision, festival-first release strategy. Their acquisition of <em>Past Lives</em>, <em>Aftersun</em>, and <em>Minari</em> demonstrates consistent appetite for intimate multigenerational family dramas with restraint as a tonal signature.</div>
+          <div class="studio-contact">Submissions via agent/manager only · <a href="https://a24films.com" target="_blank">a24films.com</a> · Los Angeles, New York</div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div>
+              <div class="studio-name">Apple TV+ / AppleOriginals</div>
+              <div class="studio-type">Streaming Original · Premium Drama</div>
+            </div>
+            <div class="studio-match">Good Match</div>
+          </div>
+          <div class="studio-rationale">Apple has demonstrated appetite for prestige slow-burn drama with emotional precision — <em>Pachinko</em> is the most direct comparable, sharing a multigenerational Asian-American family structure and quiet tonal register. They commission at higher budgets than A24, which would allow the visual ambition to breathe.</div>
+          <div class="studio-contact">Via WME, CAA, UTA representation · <a href="https://www.apple.com/tv-pr/" target="_blank">apple.com/tv-pr</a></div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div>
+              <div class="studio-name">MUBI</div>
+              <div class="studio-type">Arthouse Streaming · Acquisitions + Production</div>
+            </div>
+            <div class="studio-match">Strong Match</div>
+          </div>
+          <div class="studio-rationale">MUBI has expanded into production and is acquiring precisely this kind of film — formally careful, thematically rich, commercially modest. Their audience expects the kind of restraint this script offers at its best. A Sundance or Berlin premiere followed by MUBI acquisition is a realistic and respected path for this work.</div>
+          <div class="studio-contact"><a href="https://mubi.com/productions" target="_blank">mubi.com/productions</a> · London, New York, Istanbul</div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-card-header">
+            <div>
+              <div class="studio-name">Focus Features</div>
+              <div class="studio-type">Specialty Division · Universal Pictures</div>
+            </div>
+            <div class="studio-match">Possible Match</div>
+          </div>
+          <div class="studio-rationale">Focus handles prestige arthouse with wider theatrical ambition than A24 typically pursues. <em>Brokeback Mountain</em>, <em>Lost in Translation</em>, <em>Downton Abbey</em> — a range that includes quiet, character-driven drama. The script would need its commercial viability note addressed first, but Focus is a realistic aspiration once the protagonist's agency problem is solved.</div>
+          <div class="studio-contact">Via representation only · <a href="https://www.focusfeatures.com" target="_blank">focusfeatures.com</a> · Los Angeles</div>
+        </div>
+
+      </div>
+
+      <div class="studio-disclaimer">Studio contact information reflects publicly available submissions guidance as of 2025. Industry practices change — verify current submission policies directly. Most studios and streamers require work to be submitted via a recognised literary agent, manager, or entertainment lawyer.</div>
+    </div>
+
+  </div><!-- /page-wrap -->
+  </main>
+</div><!-- /layout -->
+
+<script>
+// ─── ARC LINE TOGGLE ─────────────────
+function toggleLine(el, name) {
+  const line = document.getElementById('line' + name.charAt(0).toUpperCase() + name.slice(1))
+  if (!line) return
+  const hidden = line.style.display === 'none'
+  line.style.display = hidden ? '' : 'none'
+  el.classList.toggle('muted', !hidden)
+}
+
+// ─── ARC BEAT TOOLTIPS ───────────────
+const tooltip = document.getElementById('arcTooltip')
+document.querySelectorAll('.beat-group').forEach(g => {
+  const circle = g.querySelector('circle')
+  if (!circle) return
+  circle.addEventListener('mouseenter', () => {
+    const cx = parseFloat(g.dataset.cx)
+    const pct = cx / 860
+    document.getElementById('tooltipLabel').textContent = g.dataset.label
+    document.getElementById('tooltipNote').textContent = g.dataset.note
+    tooltip.style.left = (pct * 100) + '%'
+    tooltip.classList.add('visible')
+  })
+  circle.addEventListener('mouseleave', () => tooltip.classList.remove('visible'))
+})
+
+// ─── COLLAPSIBLE SECTIONS ────────────
+function toggleSection(id) {
+  const wrap = document.getElementById(id)
+  if (!wrap) return
+  const isOpen = wrap.classList.contains('open')
+  wrap.classList.toggle('open', !isOpen)
+  const chevron = wrap.querySelector('.section-chevron')
+  if (chevron) chevron.textContent = isOpen ? '▼' : '▲'
+  // update sidebar
+  updateSidebarActive()
+}
+
+// ─── SIDEBAR SCROLL TRACKING ─────────
+function updateSidebarActive() {
+  const links = document.querySelectorAll('.sidebar-link')
+  const sections = []
+  links.forEach(link => {
+    const href = link.getAttribute('href')
+    if (href && href.startsWith('#')) {
+      const el = document.querySelector(href)
+      if (el) sections.push({ link, el })
+    }
+  })
+  const scrollY = window.scrollY + 80
+  let active = sections[0]
+  sections.forEach(s => {
+    if (s.el.offsetTop <= scrollY) active = s
+  })
+  links.forEach(l => l.classList.remove('active'))
+  if (active) active.link.classList.add('active')
+}
+window.addEventListener('scroll', updateSidebarActive)
+updateSidebarActive()
+
+// ─── LENS DATA ────────────────────────
+const LENS_DATA = {
+  hemingway: {
+    name: 'Hemingway',
+    descriptor: 'Iceberg · Restraint · What is unsaid',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/ErnestHemingway.jpg/200px-ErnestHemingway.jpg',
+    body: `<p>The first image — palm against glass, mother's outline — that is good. That earns the read. Everything in that image is below the surface and that is where this story should live. The question is whether it stays there.</p><p>The temple scene on page 52 explains too much. She thinks about her mother, and the script tells you she is thinking about her mother. You do not need to tell the reader what they can already feel. Cut the interior monologue. Keep the candles. Keep her hands. The scene is already written — it is hiding under the version that is there.</p><p><strong>Eleven times between pages 45 and 90, you write some version of "she sits and waits."</strong> A story is not what a person feels. It is what a person does when what they feel makes action impossible — and then the action they take anyway. Find that action. It is somewhere in this script. You have written around it.</p>`
+  },
+  carver: {
+    name: 'Carver',
+    descriptor: 'Restraint · The ordinary under pressure · Trust the reader',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Raymond_Carver_1988.jpg/200px-Raymond_Carver_1988.jpg',
+    body: `<p>There are things in this script that are said that should not be said. The scene on page 67 — three lines in a row where a character describes their own feelings out loud — that is a failure of nerve. The characters in the best of this script don't do that. They talk about other things and mean this thing. Hold to that. It's what the script does when it's working.</p><p>The garden scene on page 34. That's the whole story, compressed into five exchanges about soil and water. If you know what that scene is doing you know how to fix everything else. Make every scene as oblique as that one.</p><p>The ending arrives at the right emotional note but the scene before it is too explained. End earlier. The last image you have — her hands in the water — that is where it should end. What comes after it is the writer not trusting the reader. Trust them.</p>`
+  },
+  chekhov: {
+    name: 'Chekhov',
+    descriptor: 'Loaded silence · The unspoken · Objects carry meaning',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Chekhov_1898_by_Osip_Braz_%28cropped%29.jpg/200px-Chekhov_1898_by_Osip_Braz_%28cropped%29.jpg',
+    body: `<p>The water motif is established on page one and it is correct — it belongs to this story. But it is underused. Water appears as image without becoming object. There is a difference. Give the water to a character's hands. Let them carry a specific vessel. Let that vessel break or be passed or be refused. The image becomes story when it is held by someone who wants something.</p><p>The absent father is your gun on the wall. You have shown it repeatedly — in photographs, in the grandmother's silences, in the daughter's avoidance. By Act Three it must fire. The burning of letters is close but it is the daughter's action, not a confrontation with the father's reality. Find the scene where the father becomes real and wrong and understandable simultaneously. That is the scene this script is building toward.</p><p>Your secondary characters are doing the story's most honest work. The grandmother knows things she is not saying. That is the most interesting character in your script. Consider whose story this actually is.</p>`
+  },
+  oconnor: {
+    name: "O'Connor",
+    descriptor: 'Violent grace · Rupture as revelation · The moment of collision',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/FlanneryOConnor.jpg/200px-FlanneryOConnor.jpg',
+    body: `<p>This script is too gentle with its characters. I don't mean it should be louder — I mean it should be more ruthless. The protagonist is protected by the script's reluctance to put her in genuine danger. Not physical danger. The danger of being irrevocably wrong about something she has organised her life around.</p><p>Pages 45 to 72 are the script in hiding. Beautiful, careful, avoiding. The story needs an intrusion — something that cannot be processed quietly. The grandmother's revelation, when it comes, should not be received with stillness. It should crack something open that cannot be sealed again.</p><p><strong>To the spiritually hard of hearing you must shout, and for the almost blind you must draw large and startling figures.</strong> This script whispers where it should strike. The emotional truth is correct. The delivery is too decorous for the weight of what it is carrying.</p>`
+  },
+  bukowski: {
+    name: 'Bukowski',
+    descriptor: "Don't try · The unguarded line · Earned rawness",
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Bukowski_portrait.jpg/200px-Bukowski_portrait.jpg',
+    body: `<p>There are lines in this script that were written to impress someone. You can feel it — the sentence that turns on itself because the writer wanted to show they could make it turn. Cut those. Every line that is trying to be good is probably bad.</p><p>The scene at the airport is the most honest scene in the script because it's the sloppiest. It hasn't been polished into something careful. It has the texture of something that actually happened to someone. More of that. Less of the temple.</p><p>The grandmother talks like someone who has been through things and doesn't need to explain them. The daughter talks like someone writing about someone who has been through things. You know which one is working. Write the whole script from the grandmother's register.</p>`
+  },
+  nabokov: {
+    name: 'Nabokov',
+    descriptor: 'The divine detail · Write for the re-reader · Language as object',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Vladimir_Nabokov_1973.jpg/200px-Vladimir_Nabokov_1973.jpg',
+    body: `<p>The visual details in this script are, at their best, doing the work that only the specific can do. The frosted glass, the particular quality of light in the grandmother's kitchen, the daughter's hands that don't know where to go — these are the details that will survive. They are observed rather than invented, which is the only kind worth keeping.</p><p>What fails is the general. Whenever the script reaches for an abstraction — grief, silence, inheritance — it becomes interchangeable with a hundred other scripts about families and memory. The specific detail of <em>this</em> family, <em>this</em> silence, <em>this</em> particular woman's particular hands — that is where the script lives. Stay there.</p><p>Page 82's monologue is the script at its most general and therefore its worst. The theme stated aloud is the theme murdered. A reader worth writing for will have understood it from the frosted glass on page one. The re-reader will see it everywhere. Do not explain what you have already shown.</p>`
+  },
+  spielberg: {
+    name: 'Spielberg',
+    descriptor: 'Emotional preparation · The civilian in extremis · Earned feeling',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Spielberg_2014.jpg/200px-Spielberg_2014.jpg',
+    body: `<p>What I always ask is: do I know who these people are before the story asks me to feel something about them? In this script, the answer is almost. The grandmother I know. The daughter I observe. There is a difference between a character I understand and a character I watch. By page 20, I should be inside the daughter's specific, ordinary life before the disruption — what she eats for breakfast, what her apartment smells like, the small ritual that the letter interrupts. That ordinary detail is not scene-setting. It is the preparation that makes everything else land.</p><p>The midpoint scene with the photograph is the script's best moment because it has been prepared. We understand what that photograph means because of what came before it. The second act needs that same quality of preparation throughout — not more information, but more time spent in the ordinary before it breaks.</p><p>The emotional payoff in Act Three is earned in principle but rushed in execution. Give the final scene more room. The camera — and the audience — should be allowed to sit in what has just happened.</p>`
+  },
+  coppola: {
+    name: 'Coppola',
+    descriptor: 'Private life under historical pressure · Family as moral universe · Theme on page one',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Coppola_Okja.jpg/200px-Coppola_Okja.jpg',
+    body: `<p>I believe the theme of a film must be present in its first scene, even if the audience doesn't know it yet. Your opening image — palm against glass, outline of the mother — contains everything. Separation. Visibility without contact. The desire to reach through what cannot be reached through. That is the theme. You have it. It is correct.</p><p>What I look for next is the collision between private life and historical force. The Japanese-American context of this family carries historical weight — the internment camps, the cultural erasure, the silence that was imposed before it became inherited. This is barely present in the script. That history is the external pressure that deformed the family's private life. Without it, the drama is intimate but not large. With it, the intimate becomes epic.</p><p>The father's absence needs a historical dimension, not just a personal one. What did history do to him that he then did to his family? That question, answered even obliquely, transforms this from a good family drama into something with genuine moral scope.</p>`
+  },
+  coens: {
+    name: 'Coen Brothers',
+    descriptor: 'Tonal exactitude · The unheroic protagonist · Genre as moral weather',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Joel_and_Ethan_Coen%2C_2010.jpg/200px-Joel_and_Ethan_Coen%2C_2010.jpg',
+    body: `<p>The problem with this script's protagonist is that she is trying to understand. Understanding is not dramatic. What is dramatic is being unable to stop doing the thing that is destroying you while understanding exactly what you are doing and why. Give her a compulsion, not a quest. The difference is small on paper and enormous on screen.</p><p>The script has a tonal contract that it keeps — mostly. The airport scene on page 78 breaks it, and it breaks it in the direction of explanation. Characters are saying what they mean and meaning what they say. In this script's best register, they never do that. The scene needs to be rewritten so that everything said in it means something else. The tension should come from what is not said, not from the volume of what is.</p><p>The ending is too resolved. We would end on the image before the understanding — the hands in the water, before the final exchange. What a character almost understands is more interesting than what they definitely understand. The almost is where the film lives.</p>`
+  },
+  villeneuve: {
+    name: 'Villeneuve',
+    descriptor: 'Silence as primary instrument · Minimum necessary information · Tarkovsky and time',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Denis_Villeneuve_Dune_2021.jpg/200px-Denis_Villeneuve_Dune_2021.jpg',
+    body: `<p>What is the minimum amount of information this scene needs to communicate its emotional truth? I ask this of every scene. On pages 45 to 72, the answer is: less than half of what is there. The script is explaining what the images have already said. The market scene, the temple scene, the unanswered phone call — choose one. The other two are the same scene.</p><p>The photograph at the midpoint is the script working at its best. No dialogue explains what the photograph means. The character's stillness and the duration of the shot — implied in the writing — does the work. That is the register this script should inhabit throughout. The image carries the information. The silence carries the emotion.</p><p>I am interested in time as a dramatic instrument. This script has three generations but treats time as backstory rather than structure. Consider whether the past should be present — not as flashback, but as simultaneous reality, the way memory actually works. The grandmother's timeline and the daughter's timeline have a different relationship to time. Let the script's form reflect that.</p>`
+  },
+  scott: {
+    name: 'Ridley Scott',
+    descriptor: "World before story · Production design as narrative · The world that precedes the character",
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Ridley_Scott_2019.jpg/200px-Ridley_Scott_2019.jpg',
+    body: `<p>Before I think about story I think about world. What does this world look like, smell like, feel like? Is it a world I would recognise if I arrived in it without the script? In your script the grandmother's kitchen is fully realised — it is a specific, inhabitable place. The daughter's apartment is generic. Her workplace is abstract. The locations that are supposed to anchor her present life have no texture. A person is partly their environment. Give her world the same specificity you've given the grandmother's.</p><p>The visual writing in the action lines is inconsistent. Some descriptions create a world — "light through the paper screen, the tea cooling, her hands too still for someone who isn't thinking." Others describe a state: "she feels the weight of her uncertainty." The second kind cannot be filmed. Replace every psychological description with a physical observation. The camera sees. Write for the camera.</p><p>The script would benefit from a more aggressive use of production design as narrative. What objects are in this family's world that carry its history? The photographs are used well. What else? A specific cup. A specific chair. Objects that appear in both timelines. Design the world so that the past and present are in the same room.</p>`
+  },
+  welles: {
+    name: 'Orson Welles',
+    descriptor: 'Deep focus · The unreliable narrator · Sound as 40% of meaning',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Orson_Welles_1937.jpg/200px-Orson_Welles_1937.jpg',
+    body: `<p>The narrative of this script is told from the daughter's point of view, and the daughter is wrong about her mother. That is your story's greatest structural asset and it is being wasted. The audience should understand, before the daughter does, that the story she has been telling herself is false. You have the information to do this — the grandmother knows, the objects know, the photographs know. Let the audience know earlier. The dramatic irony — watching someone pursue an understanding they already have the pieces for — is more powerful than the revelation itself.</p><p>I am a great believer in what the frame contains simultaneously. Your script is written in a linear, close-third register. But drama is not only what the protagonist sees — it is what is visible at the edge of the protagonist's vision that they are not looking at. In the grandmother's scenes, what is in the background? What is not being discussed? The periphery of a scene can carry as much weight as its centre.</p><p>The sound design implied by your script is underwritten. The silences in this story are not all the same silence. The silence of the grandmother choosing not to speak and the silence of the daughter not knowing what to ask are different silences. Write the distinction into the stage directions.</p>`
+  },
+  jeunet: {
+    name: 'Jeunet',
+    descriptor: 'Every frame rewards re-viewing · Melancholy beneath whimsy · Meticulous detail',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Jean-Pierre_Jeunet_2009.jpg/200px-Jean-Pierre_Jeunet_2009.jpg',
+    body: `<p>I storyboard everything before I write a word of the final draft. By the time I am writing the scene, I know exactly what each frame contains, and I can ensure that every frame contains at least one detail that rewards a second viewing — something in the background, something in a character's hands, something that will mean more on the re-watch than it did on first pass. Your script has this quality in its best scenes: the photograph, the frosted glass, the cooling tea. It does not have it consistently.</p><p>The melancholy in this script is correct but it sits on the surface. In my best work, the sadness lives underneath something that appears, on the surface, to be something else — a game, a ritual, an obsession with a small and particular thing. The grandmother's relationship with her garden is close to this. Her precise attention to the plants while her granddaughter asks questions she cannot answer — that is your film's true register. Expand it. Make it stranger. Make it more specifically hers.</p><p>The script is too uniformly paced for its emotional range. Even grief has variation — moments of almost-lightness that make the weight heavier by contrast. Find two scenes that could be, against all odds, almost funny. Not comic relief. Something more precise: the small absurdity that grief produces, because grief is not always dignified.</p>`
+  },
+  wenders: {
+    name: 'Wim Wenders',
+    descriptor: 'Journey as story · The camera as observer · American vernacular and European melancholy',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Wim_Wenders_2012.jpg/200px-Wim_Wenders_2012.jpg',
+    body: `<p>In my films, characters are always in transit. Not because they are running from something — because the act of moving through landscape is itself a form of thinking, of arriving at understanding that cannot be reached by sitting still. Your protagonist sits and waits for 40 pages in the middle of your script. Put her in motion. Not plot motion — physical motion through a place. What does she see? What does the landscape she moves through tell us about her that dialogue cannot?</p><p>The road — or its equivalent, the journey through unfamiliar terrain — externalises interior states. The daughter's return to the family home is a journey. Let it be a longer journey. Let her arrive somewhere she didn't expect to arrive. The detour is where the story happens in my films. The direct route arrives at what we already knew.</p><p>The script is very close. The grandmother's scenes have the quality I look for: unhurried, specific, observational, with the sense that the camera could keep watching after the scene ends and continue to find things worth watching. Give the rest of the script that quality. Let the camera observe without always being directed where to look.</p>`
+  },
+  tarantino: {
+    name: 'Tarantino',
+    descriptor: 'Dialogue as music · Character deserves their own film · Structure under improvised surface',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Quentin_Tarantino_2018.jpg/200px-Quentin_Tarantino_2018.jpg',
+    body: `<p>Every character in a script deserves to be the protagonist of their own movie. Right now, the grandmother is the protagonist of a much better movie than the one this script is giving her. She has a complete arc, a distinct voice, a history that pressures every scene she's in. The daughter, the script's actual protagonist, does not yet have those things. Go back to the grandmother. Ask what her movie is. Then find where the daughter's movie intersects with it.</p><p>The dialogue in this script doesn't have a rhythm yet — not in the musical sense. Great dialogue has a tempo: some lines are quarter notes, some are whole notes, and the beat structure of a scene creates momentum or suspension. Your dialogue is written at the same tempo throughout. The grandmother's garden scene breaks this — there are pauses built into the exchange that change the time signature. Find that in every scene.</p><p>I never outline. But my structures are always there under the surface — they just get discovered rather than planned. The problem with this script is that the structure is visible in the wrong way. You can see the three acts. You shouldn't be able to see them — you should only feel them. The transitions between acts are too announced. Let them arrive as surprises.</p>`
+  },
+  wachowski: {
+    name: 'Wachowskis',
+    descriptor: 'Spectacle as psychological externalisation · World-building as politics · Transformation as form',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Wachowskis_2012.jpg/200px-Wachowskis_2012.jpg',
+    body: `<p>Every visual spectacle in our work is an externalisation of an internal transformation — the bullet-time sequences in The Matrix are not action choreography, they are the experience of consciousness suddenly able to perceive what it previously could not. Your script operates in intimate realism, not spectacle, but the principle holds: the most powerful visual moments should be the ones where the protagonist's internal state becomes the film's external reality.</p><p>The frosted glass opening does this. The burning letters does this. What the script needs is more moments where the physical world bends to the psychological — not magically, but expressionistically. The water imagery is underused for this purpose. Water that behaves as memory behaves — returning, distorting, still on the surface and deep underneath — could become the film's visual language rather than its recurring motif.</p><p>The world this family inhabits carries political weight that the script has not yet engaged. Japanese-American identity, the cultural silence imposed by assimilation, the way a family can internalise the violence done to it by history and turn it into private pathology — this is the architecture of the world. The drama of the family is inseparable from the drama of what history did to this family. Build that into the world's visible texture and the personal story becomes structurally larger without changing a single scene.</p>`
+  },
+  sorkin: {
+    name: 'Sorkin',
+    descriptor: 'Intention and obstacle · Dialogue as argument · Theme as question',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Aaron_Sorkin_2012.jpg/200px-Aaron_Sorkin_2012.jpg',
+    body: `<p>Every scene needs to answer two questions: what does the character want, and what is preventing them from getting it? Walk through this script scene by scene and ask those questions. In Act Two, pages 45 to 72, the answer to the first question is consistently unclear, and the answer to the second is therefore meaningless. A character who is drifting has no obstacle. An obstacle requires a clear direction of travel.</p><p>The dialogue in this script is at its best when it is doing two things simultaneously — advancing the argument of the scene while revealing the character's real position underneath the stated position. The garden scene does this. The airport scene does not — characters are saying exactly what they mean, which in drama is almost never the most interesting choice available.</p><p>Your theme is a question, not an answer, which is correct. "Can silence be inherited?" is a better organising question than "silence is inherited." But the script answers the question too early — by page 70, we know what the answer is, and the remaining 38 pages are confirming it rather than complicating it. Keep the question open longer. Introduce a scene that makes us think the answer might be different from what we expect. The complication of the theme in Act Two is what Act Two is for.</p>`
+  },
+  puzo: {
+    name: 'Mario Puzo',
+    descriptor: 'Family under external pressure · Love that destroys what it protects · Character backstory as foundation',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Mario_Puzo.jpg/200px-Mario_Puzo.jpg',
+    body: `<p>Before I wrote a word of The Godfather screenplay I wrote backstory for every character — not to use it, but to know it. I needed to understand what Vito Corleone was before the film begins, what he had lost and what he had built from that loss, before I could write a single line of his dialogue. Every choice he makes in the film is comprehensible because I understood the complete man, even the parts the audience never sees.</p><p>I don't feel the complete man — or woman — behind your protagonist. I feel the story she is in and the function she serves in the plot. That is not the same as a person. Write her complete history before you revise a page. Where was she born. What does she eat when no one is watching. What is the specific texture of her loneliness. Then go back to the script. You will find that half the problems have resolved themselves, because you will know which choices she would actually make.</p><p>The absent father is your Vito Corleone — the figure whose history and choices have created the world every other character is living in. He needs the same treatment. Write his complete history. Understand why he made the choice he made — not as villain but as a man who loved his family and found that his love was a form of control that destroyed what it was trying to protect. That is the Corleone tragedy. It is also yours.</p>`
+  },
+  roth: {
+    name: 'Eric Roth',
+    descriptor: 'The thing that cannot be said · Missed connections · Last image first',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Eric_Roth_2012.jpg/200px-Eric_Roth_2012.jpg',
+    body: `<p>I always know my last image before I write my first scene. The last image is the emotional destination — everything in the script is the journey toward it, and every scene that doesn't point toward that destination is a scene that shouldn't be there. What is your last image? Is it the hands in the water? If so, walk backward from that image through every scene and ask: is this scene carrying me toward that image, or is it carrying me somewhere else?</p><p>The best drama I've written is about the thing the character cannot say to the person they most need to say it to. In Forrest Gump, it is what Forrest cannot say to Jenny about loving her. In The Insider, it is what Wigand cannot say to his family about what he has done. In your script, what is the thing the daughter cannot say to the grandmother? Find that, and you have found the scene that Act Two is missing.</p><p>Your script is about missed connection — people who almost understand each other, who come close and then retreat. That is its subject and its form. But missed connection only works dramatically when we understand exactly what was almost said. Sharpen the almost-moments. Make the near-misses more specific. The closer we come to connection in a scene before it fails, the more devastatingly it fails.</p>`
+  },
+  hatten: {
+    name: 'Shay Hatten',
+    descriptor: 'Action as character expression · Genre with inner life · The kinetic and the psychological',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Shay_Hatten_2023.jpg/200px-Shay_Hatten_2023.jpg',
+    body: `<p>I write action films, but the principle that makes them work applies here: every action a character takes should be an expression of who they are, not just a plot requirement. In John Wick, how John fights tells you everything about his grief and his precision and his desire for a controlled world in circumstances of total chaos. How does your protagonist act? Not what does she feel — how does she act, in the physical, specific, observable sense?</p><p>The passivity problem in Act Two is, at its root, a problem of action grammar. She observes. She waits. She receives. But characters who only receive are not protagonists in the dramatic sense — they are witnesses. Give her something she does that is expressive of her psychology. It doesn't have to be large. It can be as small as the specific way she refuses something, or insists on something, or does a thing she knows she shouldn't. Action is psychology made visible.</p><p>Your script is a quiet film, and that is right for what it is. But quiet films still need kinetic moments — moments where something is in motion, where a decision is made, where the character is propelled rather than drifting. The burning of the letters is your best action beat. Give me two more of equivalent decisiveness. Placed correctly, they will change the entire experience of Act Two.</p>`
+  },
+  bruckheimer: {
+    name: 'Bruckheimer',
+    descriptor: 'The promise of the first ten minutes · The visceral iconic image · Commercial instinct',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Jerry_Bruckheimer_2012.jpg/200px-Jerry_Bruckheimer_2012.jpg',
+    body: `<p>In the first ten minutes of a film, the audience makes a contract with it. They agree to give it their time and their emotion in exchange for the experience the film has promised to deliver. Every film I produce I can tell from the first ten pages whether the contract is clear and whether it can be kept. Your first ten pages make a clear promise: a quiet, precise, emotionally demanding drama about a family's silence. That contract is kept. That is the most important thing.</p><p>The commercial question is simpler than it sounds: who is this film for and why will they pay to see it? The answer here is: audiences for prestige arthouse drama — Minari, Past Lives, Aftersun. That is a real audience with real appetite and real box office. But it is a demanding audience. It will not forgive the passivity in Act Two the way a commercial audience might overlook a structural problem in favour of spectacle. Fix the protagonist's agency and your commercial case is significantly stronger.</p><p>The iconic image test: does this script have an image that will appear on a poster and communicate everything about the film in a single frame? The frosted glass image does this. The burning letters does this. Make sure they are both as strong as they can be — shot, framing, duration. Those two images are your marketing campaign.</p>`
+  },
+  feige: {
+    name: 'Kevin Feige',
+    descriptor: 'Character wound as superpower · Long-game planting · Stakes before scale',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Kevin_Feige_2019.jpg/200px-Kevin_Feige_2019.jpg',
+    body: `<p>The principle that organises everything we build at Marvel is simple: the character's psychological wound must be expressed by their ability and challenged by the plot. Tony Stark's wound is his ego and his fear of his own fallibility — Iron Man is the armour he builds against that fear, and every film tests whether the armour is protecting him or preventing him from becoming who he needs to be. What is your protagonist's wound, what ability has she built from it, and how does the plot of this script test whether that ability is strength or defence mechanism?</p><p>The silence the daughter has inherited — her inability to ask the questions that need to be asked — is both her wound and her ability. She is very good at enduring. She is very bad at acting. The script's job is to put her in a situation where endurance is not enough and action is required. Pages 45 to 72 are putting her in situations where endurance is sufficient. That is the Act Two problem at its root.</p><p>I think long. Plants in Act One pay off in Act Three — not just plot plants, but character plants. What is established about the daughter on page 8 that we will need to remember on page 98? If the answer is unclear, the final act will feel unearned. Plant one specific thing — a specific choice she makes, a specific refusal — that the Act Three climax requires her to reverse.</p>`
+  }
+}
+
+// ─── LENS SELECTION ──────────────────
+function selectLens(pill, id) {
+  document.querySelectorAll('.lens-pill').forEach(p => p.classList.remove('active'))
+  pill.classList.add('active')
+  const data = LENS_DATA[id]
+  if (!data) return
+  document.getElementById('lensPanelPhoto').src = data.photo
+  document.getElementById('lensPanelPhoto').alt = data.name
+  document.getElementById('lensPanelName').textContent = data.name
+  document.getElementById('lensPanelDescriptor').textContent = data.descriptor
+  document.getElementById('lensPanelBody').innerHTML = data.body
+  document.getElementById('lensPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
+// ─── DOWNLOAD / COPY ─────────────────
+function downloadReport() {
+  const text = document.body.innerText
+  const blob = new Blob([text], { type: 'text/plain' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = 'DraftLens_Report.txt'
+  a.click()
+}
+function copyReport() {
+  navigator.clipboard.writeText(document.body.innerText)
+    .then(() => alert('Report copied to clipboard.'))
+    .catch(() => alert('Copy failed — please select and copy manually.'))
+}
+</script>
+</body>
+</html>

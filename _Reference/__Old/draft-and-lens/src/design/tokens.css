@@ -1,0 +1,61 @@
+/**
+ * Draft & Lens — design tokens
+ * Ported verbatim from DraftAndLens.html :root — the single source of visual truth.
+ * No hardcoded colours elsewhere in the app; reference these variables only.
+ * Last reviewed: 2026-06-07
+ */
+
+:root {
+  /* ── Paper palette ───────────────── */
+  --paper: #f5f1e8;
+  --cream: #ede8d8;
+  --warm-mid: #ddd8c8;
+  --rule: #b8b0a0;
+  --rule-l: #d8d2c4;
+
+  /* ── Ink palette ─────────────────── */
+  --ink: #1a1710;
+  --ink-mid: #3a3628;
+  --ink-soft: #5a5448;
+  --ink-faint: #8a8478;
+
+  /* ── Accent palette ──────────────── */
+  --amber: #a86c10;
+  --amber-d: #7a4e08;
+  --amber-l: #c88c30;
+  --red: #8b2020;
+  --green: #2a5030;
+  --teal: #2a7a7a;
+  --blue: #1a3a5c;
+
+  /* ── Radar / arc semantic colours ── */
+  --tension: #b03010;
+  --pace: #1a6030;
+  --emotion: #2a4880;
+
+  /* ── Layout ──────────────────────── */
+  --black-band: #14120e;
+  --nav-h: 52px;
+  --sidebar-w: 200px;
+
+  /* ── Upload screen surfaces ──────── */
+  --surface-input: #1a1814;
+  --surface-deep: #0f0e0b;
+  --border-dark: #2e2a22;
+  --border-deeper: #2a2820;
+
+  /* ── Semantic states ─────────────── */
+  --error: #c05050;
+  --success: #6a9a72;
+
+  /* ── Light text on dark ──────────── */
+  --paper-dark: #c8c0a8;
+
+  /* ── Form label amber ────────────── */
+  --label-amber: #a96c10;
+
+  /* ── Typography (loaded in layout) ─ */
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}

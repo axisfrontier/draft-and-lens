@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+build/
+dist/
+
+# Environment files & secrets — NEVER commit real keys
+.env
+.env.local
+.env*.local
+**/API KEY.txt
+**/*api*key*
+**/*API*KEY*
+*.key
+
+# Editor / OS junk
+.DS_Store
+.aider*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test / extraction caches
+scripts/.extracted/

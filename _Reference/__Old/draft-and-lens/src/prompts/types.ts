@@ -1,0 +1,56 @@
+import 'server-only';
+
+import 'server-only';
+
+/** User-declared submission type — server never infers (§15). */
+export type AnalysisMode = 'script' | 'story' | 'play' | 'treatment';
+
+export interface DiagnosticResult {
+  tradition: string;
+  register: string;
+  ambition: string;
+  craftQuestions: string[];
+  strengths: string[];
+  primaryConcern: string;
+  title: string;
+  summary: string;
+  formNotes: string;
+  structuralMap?: StructuralMap;
+  narratorVerdicts?: NarratorVerdicts;
+}
+
+export interface StructuralMap {
+  narrativeStructure?: string;
+  timelineNotes?: string;
+  structuralBeats?: string[];
+  registerMap?: Array<{ position: string; quote: string; register: string; note: string }>;
+  strongest?: string[];
+  weakest?: string[];
+  registerFractures?: string[];
+  narratorBehaviour?: {
+    elevating?: string[];
+    restating?: string[];
+    worldEstablishment?: string[];
+  };
+  juxtapositions?: string[];
+  characterMap?: string[];
+}
+
+export interface NarratorVerdict {
+  quote: string;
+  classification: 'ELEVATION' | 'WORLD_ESTABLISHMENT' | 'RESTATEMENT';
+  reason: string;
+}
+
+export interface NarratorVerdicts {
+  verdicts: NarratorVerdict[];
+}
+
+export interface CoverageSignal {
+  truncated: boolean;
+  wordsRead: number;
+  wordsTotal: number;
+  fractionRead: number;
+  coverage: string;
+  readText: string;
+}
