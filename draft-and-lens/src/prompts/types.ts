@@ -1,7 +1,5 @@
 import 'server-only';
 
-import 'server-only';
-
 /** User-declared submission type — server never infers (§15). */
 export type AnalysisMode = 'script' | 'story' | 'play' | 'treatment';
 
@@ -53,4 +51,25 @@ export interface CoverageSignal {
   fractionRead: number;
   coverage: string;
   readText: string;
+}
+
+/** Brain 3 — Scorer output (craft + tradition-alignment scores, arc beats). */
+export interface ScoreResult {
+  title?: string | null;
+  scores?: Record<string, number>;
+  alignment?: Record<string, number>;
+  beats?: Array<{ pct: number; intensity: number; label: string; note: string }>;
+  summary?: string;
+}
+
+/** Brain 4 — Market output (known-work recognition + studio matches). */
+export interface MarketResult {
+  knownWork?: string;
+  studios?: Array<{
+    name: string;
+    type: string;
+    match: string;
+    rationale: string;
+    contact: string;
+  }>;
 }

@@ -28,5 +28,6 @@ export function buildPartialReadDirective(wordsRead: number, wordsTotal?: number
     pct +
     '. This is the OPENING ONLY.\n' +
     'RULES:\n';
-  return header + PARTIAL_READ_RULES.map((r) => `- ${r}`).join('\n') + '\n\n';
+  // Entries already begin with "- "; join as-is (do not re-prefix the dash).
+  return header + PARTIAL_READ_RULES.join('\n') + '\n\n';
 }
