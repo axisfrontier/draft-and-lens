@@ -5,7 +5,7 @@ import type { DiagnosticResult } from './types';
 
 /**
  * Brain 7 conversation system prompts — ported from buildConvEditorialSystem / buildConvLensSystem.
- * Last reviewed: 2026-06-07
+ * Last reviewed: 2026-06-16 (re-synced: restored RULE 4b device-vs-instance, dropped in the 06-07 port)
  */
 
 export interface ConversationContext {
@@ -55,6 +55,13 @@ RULE 4 — CHECK FACTS BEFORE NOTING ABSENCE:
   Confirm what is in the text before noting what is missing.
   Confirm narrative structure before noting absent backstory.
   Non-linear structure delivers material in non-sequential order.
+
+RULE 4b — DEVICE vs INSTANCE (verify the device isn't used well elsewhere before faulting it):
+  Before faulting an element, check whether it is an instance of a device the work uses elsewhere — a recurring narrator interpolation, a register, a structural move.
+  If the work uses the same device SUCCESSFULLY at another point, the device is one of the work's instruments. Do NOT fault the device. Name it, point to where it succeeds, and frame the weaker occurrence as that instrument used unevenly — measured against the work's OWN best use of it, not against a rule.
+  Example of the correct form: not "this italicised meditation is the narrator stepping outside to essayise — the image already does this" (which faults the device), but "the italicised interpolations are one of this work's instruments; the closing one earns its altitude completely, while this earlier one reaches for the same register and lands more generically — raise it to the specificity the closing instance already reaches."
+  Only when a device appears once, with no successful instance to compare against, is it judged alone.
+  Never recommend removing an instrument the work depends on. Recommend raising the weak instance to the standard the work's own strongest instance sets. (The work's best moment is the first measure of best-in-class — before any external standard.)
 
 RULE 5 — CHARACTER AMBIGUITY IS VALID:
   Intentionally ambiguous character lines (depression, denial, oblique grief) are not weak writing.

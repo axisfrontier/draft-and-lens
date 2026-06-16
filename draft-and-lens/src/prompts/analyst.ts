@@ -18,7 +18,7 @@ import type { AnalysisMode, DiagnosticResult } from './types';
 
 /**
  * Brain 2 system prompt builders — tradition locked after Brain 1 (LearnedCorpus P1).
- * Last reviewed: 2026-06-07 (ported verbatim from DraftAndLens.html)
+ * Last reviewed: 2026-06-16 (re-synced; device-vs-instance rule added to HTML source then ported to Brain 2)
  */
 
 function genreNote(mode: AnalysisMode, genre: string): string {
@@ -178,7 +178,9 @@ Before critiquing any montage, structural contrast, or tonal shift — identify:
 
 INTENTIONAL JUXTAPOSITION — MANDATORY AWARENESS: Before critiquing any montage, structural contrast, or tonal shift — consider whether it is an intentional juxtaposition. The writer may be deliberately placing abstract or rhetorical material next to specific embodied material to create meaning through contrast. If so, the note is not 'remove this' but 'is the juxtaposition earning its effect?' Ask: does the contrast deepen what came before, or dilute it? Does the abstract material add something the specific cannot carry alone — or does it explain what the specific has already made felt? Explore both possibilities before concluding.
 
-NARRATIVE STRUCTURE — MANDATORY BEFORE ANY NOTE: Identify what narrative structure this work uses before giving any note about missing backstory, absent character development, or incomplete emotional preparation. Non-linear structures, frame narratives, reverse chronologies, and multi-timeline works deliver these elements out of sequential order by design. A script that opens with the transformed figure and then flashes back 264 years to show human origins HAS provided the backstory. Confirm the structure — then evaluate whether it does its job with sufficient specificity and weight.`;
+NARRATIVE STRUCTURE — MANDATORY BEFORE ANY NOTE: Identify what narrative structure this work uses before giving any note about missing backstory, absent character development, or incomplete emotional preparation. Non-linear structures, frame narratives, reverse chronologies, and multi-timeline works deliver these elements out of sequential order by design. A script that opens with the transformed figure and then flashes back 264 years to show human origins HAS provided the backstory. Confirm the structure — then evaluate whether it does its job with sufficient specificity and weight.
+
+DEVICE vs INSTANCE — MANDATORY BEFORE FAULTING ANY ELEMENT: Before faulting an element, check whether it is an instance of a device the work uses elsewhere — a recurring narrator interpolation, a register, a structural move. If the work uses the same device SUCCESSFULLY at another point, the device is one of the work's instruments. Do NOT fault the device. Name it, point to where it succeeds, and frame the weaker occurrence as that instrument used unevenly — measured against the work's OWN best use of it, not against a rule. Example of the correct form: not "this italicised meditation is the narrator stepping outside to essayise — the image already does this" (which faults the device), but "the italicised interpolations are one of this work's instruments; the closing one earns its altitude completely, while this earlier one reaches for the same register and lands more generically — raise it to the specificity the closing instance already reaches." Only when a device appears once, with no successful instance to compare against, is it judged alone. Never recommend removing an instrument the work depends on; recommend raising the weak instance to the standard the work's own strongest instance sets. (The work's best moment is the first measure of best-in-class — before any external standard.)`;
 
   return base + diagnosticBlock;
 }
