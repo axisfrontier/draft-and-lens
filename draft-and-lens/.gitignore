@@ -42,3 +42,6 @@ coverage/
 
 # Optional — regenerate from DraftAndLens.html via scripts/extract-prompts.mjs
 scripts/.extracted/
+
+# clerk configuration (can include secrets)
+/.clerk/

@@ -11,11 +11,23 @@
  * module into the client bundle and fail the build — exactly the boundary the
  * security check guards.
  *
- * Deferred to later stages: inline anchoring (§18), glossary tooltips (§19),
- * scores/radar, story arc, market, bible panels, lenses, conversation.
+ * Stage E: the full report renders via <ReportView> — verdict band, character
+ * bible, scores/radar, story arc, the section-by-section reading with the
+ * Report ⇄ Notes-on-the-text toggle (inline anchoring, §18), action callouts,
+ * the partial-read banner, and the industry-match panel.
+ * Still deferred: glossary tooltips (§19), lenses, conversation.
  */
 
+import { useAuth } from '@clerk/nextjs';
 import { useRef, useState } from 'react';
+
+import { ReportView } from '@/components/analysis/ReportView';
+import type {
+  Coverage,
+  Diagnostic,
+  Market,
+  Scores,
+} from '@/components/analysis/types';
 
 type Mode = 'script' | 'story' | 'play' | 'treatment';
 
@@ -26,18 +38,18 @@ const TYPES: ReadonlyArray<{ value: Mode; label: string }> = [
   { value: 'play', label: 'Stage Play' },
 ];
 
-interface Coverage {
-  truncated: boolean;
-  wordsRead: number;
-  wordsTotal: number;
-  fractionRead: number;
-  coverage: string;
-}
-
 type StreamEvent =
   | { type: 'stage'; stage: string; title: string }
   | { type: 'text'; delta: string }
-  | { type: 'done'; report: string; coverage: Coverage }
+  | {
+      type: 'done';
+      report: string;
+      diagnostic: Diagnostic;
+      coverage: Coverage;
+      scores: Scores | null;
+      market: Market | null;
+      bible: string;
+    }
   | { type: 'error'; message: string };
 
 // ⟦…⟧ anchor brackets (U+27E6 / U+27E7), built from char codes so the literal
@@ -49,17 +61,23 @@ function stripAnchors(s: string): string {
 }
 
 export default function AppHomePage() {
+  const { isSignedIn } = useAuth();
   const [mode, setMode] = useState<Mode | null>(null);
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
   const [streamed, setStreamed] = useState('');
   const [report, setReport] = useState('');
+  const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
   const [coverage, setCoverage] = useState<Coverage | null>(null);
+  const [scores, setScores] = useState<Scores | null>(null);
+  const [market, setMarket] = useState<Market | null>(null);
+  const [bible, setBible] = useState('');
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
 
-  const canAnalyse = mode !== null && text.trim().length > 0 && !running;
+  const canAnalyse =
+    isSignedIn === true && mode !== null && text.trim().length > 0 && !running;
 
   async function analyse(): Promise<void> {
     if (mode === null) return;
@@ -69,6 +87,10 @@ export default function AppHomePage() {
     setReport('');
     setStage('');
     setCoverage(null);
+    setDiagnostic(null);
+    setScores(null);
+    setMarket(null);
+    setBible('');
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -108,7 +130,11 @@ export default function AppHomePage() {
           else if (evt.type === 'text') setStreamed((prev) => prev + evt.delta);
           else if (evt.type === 'done') {
             setReport(evt.report);
+            setDiagnostic(evt.diagnostic);
             setCoverage(evt.coverage);
+            setScores(evt.scores);
+            setMarket(evt.market);
+            setBible(evt.bible);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -126,12 +152,14 @@ export default function AppHomePage() {
     abortRef.current?.abort();
   }
 
-  const shown = stripAnchors(report !== '' ? report : streamed);
+  // While Brain 2 streams, show its raw text (anchors stripped) as a live
+  // preview; once the final report lands, swap in the full report view.
+  const streamingPreview = report === '' ? stripAnchors(streamed) : '';
 
   return (
     <main className="min-h-screen bg-paper p-8 text-ink">
       <h1 className="font-serif text-2xl">Draft &amp; Lens</h1>
-      <p className="mt-1 text-sm text-ink-soft">A reading, not a verdict.</p>
+      <p className="mt-1 text-sm text-ink-soft">A reading, not a rewrite.</p>
 
       {/* 1 · choose the submission type — must-choose (§15) */}
       <section className="mt-6">
@@ -187,7 +215,12 @@ export default function AppHomePage() {
             Stop
           </button>
         )}
-        {!running && mode === null && text.trim() !== '' && (
+        {!running && isSignedIn !== true && (
+          <span className="text-sm text-ink-soft">
+            Sign in (top right) to analyse your work.
+          </span>
+        )}
+        {!running && isSignedIn === true && mode === null && text.trim() !== '' && (
           <span className="text-sm text-ink-soft">Choose a type to enable analysis.</span>
         )}
         {running && stage !== '' && (
@@ -201,18 +234,24 @@ export default function AppHomePage() {
         </p>
       )}
 
-      {/* partial-read banner (§13) */}
-      {coverage?.truncated === true && (
-        <p className="mt-4 text-sm text-ink-soft">
-          This reading covers the {coverage.coverage} — the opening only.
-        </p>
+      {/* live streaming preview — before the final report lands */}
+      {streamingPreview !== '' && (
+        <article className="mt-6 whitespace-pre-wrap font-serif text-[0.95rem] leading-relaxed text-ink">
+          {streamingPreview}
+        </article>
       )}
 
-      {/* the reading */}
-      {shown !== '' && (
-        <article className="mt-6 whitespace-pre-wrap font-serif text-[0.95rem] leading-relaxed text-ink">
-          {shown}
-        </article>
+      {/* the full reading */}
+      {report !== '' && (
+        <ReportView
+          report={report}
+          diagnostic={diagnostic}
+          scores={scores}
+          market={market}
+          bible={bible}
+          submittedText={text}
+          coverage={coverage}
+        />
       )}
     </main>
   );

@@ -5,6 +5,7 @@ import 'server-only';
  * Last reviewed: 2026-06-07
  */
 export const MODELS = {
+  moderation: 'claude-sonnet-4-6',
   diagnostician: 'claude-sonnet-4-6',
   structuralReader: 'claude-sonnet-4-6',
   narratorVerifier: 'claude-sonnet-4-6',
@@ -21,6 +22,7 @@ export const MODELS = {
 export const ANALYST_EFFORT = (process.env.DL_ANALYST_EFFORT ?? 'medium') as 'low' | 'medium' | 'high';
 
 export const TOKEN_LIMITS = {
+  moderation: 200,
   diagnostician: 800,
   structuralReader: 2500,
   narratorVerifier: 1000,

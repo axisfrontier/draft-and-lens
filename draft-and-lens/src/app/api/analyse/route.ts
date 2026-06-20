@@ -1,5 +1,7 @@
+import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import type { AnalysisMode } from '../../../prompts/types';
 
@@ -56,6 +58,12 @@ export async function POST(req: NextRequest): Promise<Response> {
     return badRequest('Invalid JSON body.');
   }
 
+  // Require a signed-in user — readings are stored per writer (CHANGE 3).
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Please sign in to analyse your work.' }, { status: 401 });
+  }
+
   const { text, mode, genre, intent, bible, skipBible } = body;
 
   // mode required + validated — the server never infers the submission type (§15).
@@ -65,6 +73,31 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const clean = sanitise(typeof text === 'string' ? text : '');
   if (!clean) return badRequest('No text submitted.');
+
+  // ── Moderation gate (CHANGE 2) — runs BEFORE any storage or pipeline call.
+  // Blocked content is never persisted or processed; only a minimal, non-content
+  // event is logged. Tuned for literature: serious dark fiction passes.
+  const verdict = await moderateSubmission(clean);
+  if (verdict.status === 'block') {
+    // Minimal log — timestamp + category only, NEVER the submitted text.
+    console.warn(`[moderation] blocked submission · ${new Date().toISOString()} · ${verdict.category}`);
+    return NextResponse.json(
+      {
+        error:
+          'This submission can’t be analysed — it appears to fall outside our Acceptable Use Policy. ' +
+          'Draft & Lens reads serious fiction of all kinds, including dark and difficult work; if you ' +
+          'believe this was blocked in error, please get in touch.',
+        blocked: true,
+      },
+      { status: 422 }
+    );
+  }
+  if (verdict.status === 'error') {
+    return NextResponse.json(
+      { error: 'We couldn’t check your submission just now. Please try again in a moment.' },
+      { status: 503 }
+    );
+  }
 
   const encoder = new TextEncoder();
 

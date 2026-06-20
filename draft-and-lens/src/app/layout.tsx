@@ -1,3 +1,11 @@
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, IBM_Plex_Sans, Libre_Baskerville } from 'next/font/google';
 
@@ -38,11 +46,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en-GB"
-      className={`${libreBaskerville.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
-    >
-      <body>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en-GB"
+        className={`${libreBaskerville.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
+      >
+        <body>
+          <header className="flex items-center justify-end gap-3 border-b border-rule-l bg-paper px-8 py-3 text-sm">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button type="button" className="rounded border border-ink-soft px-3 py-1.5 text-ink">
+                  Sign in
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button type="button" className="rounded bg-ink px-3 py-1.5 text-paper">
+                  Create account
+                </button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </header>
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
