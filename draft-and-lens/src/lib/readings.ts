@@ -1,0 +1,238 @@
+import 'server-only';
+
+import { randomUUID } from 'node:crypto';
+
+import { getServiceClient, isSupabaseConfigured } from './supabase-server';
+
+/**
+ * Reading storage + revision awareness (CHANGE 3, server-side).
+ *
+ * On every completed reading we store the submitted text + the full reading
+ * payload per (user, work). On a resubmission we compare against the most recent
+ * stored version of a MATCHING work — a deterministic local text diff, never a
+ * model call — and branch:
+ *   unchanged → return the stored reading verbatim (no pipeline, no drift)
+ *   revised   → a fresh full reading that names the revision
+ *   new       → an ordinary first reading of a new work
+ * All Supabase calls degrade gracefully: any failure falls back to a normal
+ * fresh reading, so storage problems never break analysis.
+ */
+
+const TABLE = 'readings';
+
+/** Keep at most this many versions per (user, work); prune the oldest beyond it. */
+export const MAX_VERSIONS = 5;
+
+/** ≥ this similarity ⇒ unchanged (covers whitespace / punctuation / a typo). */
+const UNCHANGED_SIMILARITY = 0.97;
+/** ≥ this similarity (same format) ⇒ a revision of the same work, not a new one. */
+const SAME_WORK_SIMILARITY = 0.4;
+/** How many recent rows to consider when matching a resubmission to a work. */
+const MATCH_CANDIDATES = 12;
+
+/** The full `done` payload the client renders — stored verbatim as reading_json. */
+export interface ReadingPayload {
+  report: string;
+  diagnostic: unknown;
+  coverage: unknown;
+  scores: unknown;
+  market: unknown;
+  bible: string;
+}
+
+interface ReadingRow {
+  work_id: string;
+  source_text: string;
+  reading_json: ReadingPayload;
+}
+
+// ── Text comparison (deterministic, no model call) ───────────────────────────
+
+/** Word-bigram shingles — order-aware enough to tell a revision from a new work. */
+function shingles(text: string): Set<string> {
+  const words = text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  const set = new Set<string>();
+  for (let i = 0; i < words.length - 1; i++) {
+    const a = words[i];
+    const b = words[i + 1];
+    if (a !== undefined && b !== undefined) set.add(`${a} ${b}`);
+  }
+  if (words.length === 1 && words[0] !== undefined) set.add(words[0]);
+  return set;
+}
+
+/** Sørensen–Dice coefficient over two shingle sets (0..1). */
+function dice(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 && b.size === 0) return 1;
+  if (a.size === 0 || b.size === 0) return 0;
+  const [small, large] = a.size < b.size ? [a, b] : [b, a];
+  let intersection = 0;
+  for (const s of small) if (large.has(s)) intersection++;
+  return (2 * intersection) / (a.size + b.size);
+}
+
+export interface Comparison {
+  similarity: number;
+  changePct: number;
+  /** A human phrase for where the change concentrates, or '' if spread out. */
+  location: string;
+}
+
+export function compareTexts(oldText: string, newText: string): Comparison {
+  const oldShingles = shingles(oldText);
+  const similarity = dice(oldShingles, shingles(newText));
+  const changePct = Math.round((1 - similarity) * 100);
+
+  // Locate the change: which third of the NEW text overlaps the old least.
+  let location = '';
+  const words = newText
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length >= 30) {
+    const third = Math.floor(words.length / 3);
+    const segments = [
+      words.slice(0, third),
+      words.slice(third, third * 2),
+      words.slice(third * 2),
+    ];
+    const labels = ['the opening third', 'the middle third', 'the final third'];
+    const changes = segments.map((seg) => {
+      const set = new Set<string>();
+      for (let i = 0; i < seg.length - 1; i++) {
+        const a = seg[i];
+        const b = seg[i + 1];
+        if (a !== undefined && b !== undefined) set.add(`${a} ${b}`);
+      }
+      return 1 - dice(set, oldShingles);
+    });
+    let maxIndex = 0;
+    for (let i = 1; i < changes.length; i++) {
+      if ((changes[i] ?? 0) > (changes[maxIndex] ?? 0)) maxIndex = i;
+    }
+    const sorted = [...changes].sort((x, y) => y - x);
+    // Only call it "concentrated" when one third is clearly the most reworked.
+    if ((sorted[0] ?? 0) - (sorted[1] ?? 0) > 0.15) location = labels[maxIndex] ?? '';
+  }
+
+  return { similarity, changePct, location };
+}
+
+/** A short magnitude+location sentence for the analyst's revision framing. */
+export function summarizeChange(c: Comparison): string {
+  const where = c.location ? `, concentrated in ${c.location}` : ' spread through the piece';
+  return `Roughly ${c.changePct}% of the text has changed${where}.`;
+}
+
+// ── Supabase access (all graceful on failure) ────────────────────────────────
+
+/** Most recent stored reading of a work (same format) that matches `text`, or null. */
+async function findBestMatch(
+  userId: string,
+  mode: string,
+  text: string
+): Promise<{ workId: string; sourceText: string; reading: ReadingPayload } | null> {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = getServiceClient();
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('work_id, source_text, reading_json, created_at')
+    .eq('user_id', userId)
+    .eq('work_format', mode)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(MATCH_CANDIDATES);
+  if (error || !data) return null;
+
+  const rows = data as unknown as ReadingRow[];
+  const seenWorks = new Set<string>();
+  let best: { row: ReadingRow; similarity: number } | null = null;
+  for (const row of rows) {
+    if (seenWorks.has(row.work_id)) continue; // rows are newest-first → keep latest
+    seenWorks.add(row.work_id);
+    const similarity = compareTexts(row.source_text, text).similarity;
+    if (!best || similarity > best.similarity) best = { row, similarity };
+  }
+  if (!best || best.similarity < SAME_WORK_SIMILARITY) return null;
+  return {
+    workId: best.row.work_id,
+    sourceText: best.row.source_text,
+    reading: best.row.reading_json,
+  };
+}
+
+export type RevisionDecision =
+  | { kind: 'unchanged'; reading: ReadingPayload }
+  | { kind: 'revised'; workId: string; note: string }
+  | { kind: 'new' };
+
+/** Decide how to handle a submission relative to the writer's stored work. */
+export async function resolveRevision(
+  userId: string,
+  mode: string,
+  text: string
+): Promise<RevisionDecision> {
+  try {
+    const match = await findBestMatch(userId, mode, text);
+    if (!match) return { kind: 'new' };
+    const comparison = compareTexts(match.sourceText, text);
+    if (comparison.similarity >= UNCHANGED_SIMILARITY) {
+      return { kind: 'unchanged', reading: match.reading };
+    }
+    return { kind: 'revised', workId: match.workId, note: summarizeChange(comparison) };
+  } catch {
+    return { kind: 'new' }; // any storage problem → ordinary fresh reading
+  }
+}
+
+/** Store a completed reading, then prune to MAX_VERSIONS. Non-fatal throughout. */
+export async function storeReading(args: {
+  userId: string;
+  workId: string;
+  mode: string;
+  title: string;
+  sourceText: string;
+  reading: ReadingPayload;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) return;
+  try {
+    const supabase = getServiceClient();
+    await supabase.from(TABLE).insert({
+      user_id: args.userId,
+      work_id: args.workId,
+      work_title: args.title || null,
+      work_format: args.mode,
+      source_text: args.sourceText,
+      reading_json: args.reading,
+    });
+    await pruneVersions(supabase, args.userId, args.workId);
+  } catch {
+    /* storage is best-effort — never block the reading the user already has */
+  }
+}
+
+async function pruneVersions(
+  supabase: ReturnType<typeof getServiceClient>,
+  userId: string,
+  workId: string
+): Promise<void> {
+  const { data } = await supabase
+    .from(TABLE)
+    .select('id, created_at')
+    .eq('user_id', userId)
+    .eq('work_id', workId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+  if (!data || data.length <= MAX_VERSIONS) return;
+  const surplus = (data as unknown as Array<{ id: string }>).slice(MAX_VERSIONS).map((r) => r.id);
+  if (surplus.length > 0) await supabase.from(TABLE).delete().in('id', surplus);
+}
+
+export function newWorkId(): string {
+  return randomUUID();
+}

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
+import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import type { AnalysisMode } from '../../../prompts/types';
 
 /**
@@ -108,6 +109,18 @@ export async function POST(req: NextRequest): Promise<Response> {
       };
 
       try {
+        // ── Revision awareness (CHANGE 3) — decide before running anything.
+        // Unchanged resubmission → return the stored reading verbatim (no model
+        // call, no drift). A genuine revision → a fresh reading that names it.
+        // Any storage problem degrades to an ordinary fresh reading.
+        const decision = await resolveRevision(userId, mode, clean);
+        if (decision.kind === 'unchanged') {
+          send({ type: 'done', ...decision.reading, revision: { status: 'unchanged' } });
+          return;
+        }
+        const revisionNote = decision.kind === 'revised' ? decision.note : undefined;
+        const status = decision.kind === 'revised' ? 'revised' : 'new';
+
         const result = await runAnalysisPipeline(
           {
             mode: mode as AnalysisMode,
@@ -119,6 +132,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             // Word-limit enforcement happens BEFORE any API call inside the
             // pipeline (computeCoverage runs before Brain 1). Law upheld.
             wordLimit: FREE_WORD_LIMIT,
+            revisionNote,
           },
           {
             onStage: (stage, title) => send({ type: 'stage', stage, title }),
@@ -131,14 +145,26 @@ export async function POST(req: NextRequest): Promise<Response> {
         // own submitted text back to the client (§13 banner needs the rest).
         const { truncated, wordsRead, wordsTotal, fractionRead, coverage } =
           result.coverage;
-        send({
-          type: 'done',
+        const payload = {
           report: result.report,
           diagnostic: result.diagnostic,
           coverage: { truncated, wordsRead, wordsTotal, fractionRead, coverage },
           scores: result.scores,
           market: result.market,
           bible: result.bible,
+        };
+        send({ type: 'done', ...payload, revision: { status } });
+
+        // Persist the reading (best-effort) — stores the submitted text for
+        // future diffing and the exact payload the client just received.
+        const workId = decision.kind === 'revised' ? decision.workId : newWorkId();
+        await storeReading({
+          userId,
+          workId,
+          mode,
+          title: result.diagnostic.title,
+          sourceText: clean,
+          reading: payload,
         });
       } catch (err) {
         // A client disconnect / Stop surfaces as an AbortError — stay quiet,

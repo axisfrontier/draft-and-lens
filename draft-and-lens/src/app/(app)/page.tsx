@@ -49,8 +49,11 @@ type StreamEvent =
       scores: Scores | null;
       market: Market | null;
       bible: string;
+      revision?: { status: RevisionStatus };
     }
   | { type: 'error'; message: string };
+
+type RevisionStatus = 'new' | 'revised' | 'unchanged';
 
 // ⟦…⟧ anchor brackets (U+27E6 / U+27E7), built from char codes so the literal
 // glyphs aren't embedded in source. Stripped for display; full anchoring is §18.
@@ -73,6 +76,7 @@ export default function AppHomePage() {
   const [scores, setScores] = useState<Scores | null>(null);
   const [market, setMarket] = useState<Market | null>(null);
   const [bible, setBible] = useState('');
+  const [revisionStatus, setRevisionStatus] = useState<RevisionStatus | null>(null);
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
 
@@ -91,6 +95,7 @@ export default function AppHomePage() {
     setScores(null);
     setMarket(null);
     setBible('');
+    setRevisionStatus(null);
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -135,6 +140,7 @@ export default function AppHomePage() {
             setScores(evt.scores);
             setMarket(evt.market);
             setBible(evt.bible);
+            setRevisionStatus(evt.revision?.status ?? 'new');
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -239,6 +245,18 @@ export default function AppHomePage() {
         <article className="mt-6 whitespace-pre-wrap font-serif text-[0.95rem] leading-relaxed text-ink">
           {streamingPreview}
         </article>
+      )}
+
+      {/* revision-awareness banner (§ CHANGE 3) */}
+      {report !== '' && revisionStatus === 'unchanged' && (
+        <p className="mt-6 rounded border-l-4 border-teal bg-cream px-4 py-2 text-sm text-ink-mid">
+          No changes detected since your last reading — showing your previous reading.
+        </p>
+      )}
+      {report !== '' && revisionStatus === 'revised' && (
+        <p className="mt-6 rounded border-l-4 border-amber bg-cream px-4 py-2 text-sm text-ink-mid">
+          Updated reading — this responds to your revision of an earlier draft.
+        </p>
       )}
 
       {/* the full reading */}

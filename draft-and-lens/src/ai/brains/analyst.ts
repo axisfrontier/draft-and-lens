@@ -9,6 +9,7 @@ import {
   prependNarratorVerdicts,
 } from '../../prompts/analyst';
 import { buildPartialReadDirective } from '../../prompts/fragments/partial-read';
+import { buildRevisionDirective } from '../../prompts/fragments/revision';
 import type {
   AnalysisMode,
   CoverageSignal,
@@ -35,6 +36,8 @@ export interface AnalystInput {
   pageEst: number;
   diagnostic: DiagnosticResult;
   coverage: CoverageSignal;
+  /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
+  revisionNote?: string;
 }
 
 export async function runAnalyst(
@@ -42,8 +45,18 @@ export async function runAnalyst(
   onText?: (delta: string) => void,
   signal?: AbortSignal
 ): Promise<string> {
-  const { mode, text, genre, intent, bible, wordCount, pageEst, diagnostic, coverage } =
-    input;
+  const {
+    mode,
+    text,
+    genre,
+    intent,
+    bible,
+    wordCount,
+    pageEst,
+    diagnostic,
+    coverage,
+    revisionNote,
+  } = input;
 
   // System: cache the constant mode+genre base; append the per-work diagnostic
   // block as a second (uncached) block so the large prefix is reused (§14b).
@@ -72,6 +85,11 @@ export async function runAnalyst(
       buildPartialReadDirective(coverage.wordsRead, coverage.wordsTotal) + userPrompt;
   }
   userPrompt = prependNarratorVerdicts(userPrompt, diagnostic);
+  // Revision context goes to the very front so the analyst frames the whole
+  // reading as a response to the revision (CHANGE 3).
+  if (revisionNote) {
+    userPrompt = buildRevisionDirective(revisionNote) + userPrompt;
+  }
 
   const params = {
     model: MODELS.analyst,

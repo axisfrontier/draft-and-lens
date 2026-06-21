@@ -48,6 +48,8 @@ export interface PipelineInput {
   skipBible?: boolean;
   /** Tier word limit; defaults to the free-tier cap. */
   wordLimit?: number;
+  /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
+  revisionNote?: string;
 }
 
 export interface PipelineCallbacks {
@@ -138,6 +140,7 @@ export async function runAnalysisPipeline(
         pageEst,
         diagnostic,
         coverage,
+        revisionNote: input.revisionNote,
       },
       cb.onAnalystText,
       cb.signal
