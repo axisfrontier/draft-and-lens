@@ -248,6 +248,73 @@ export interface WorkSummary {
   versions: number;
 }
 
+/** Complete, portable export of everything stored for a user (GDPR §20). */
+export interface UserDataExport {
+  exportedAt: string;
+  account: string;
+  works: Array<{
+    workId: string;
+    title: string;
+    format: string;
+    versions: Array<{
+      createdAt: string;
+      deletedAt: string | null;
+      sourceText: string;
+      reading: ReadingPayload;
+    }>;
+  }>;
+}
+
+export async function exportUserData(userId: string): Promise<UserDataExport> {
+  const base: UserDataExport = {
+    exportedAt: new Date().toISOString(),
+    account: userId,
+    works: [],
+  };
+  if (!isSupabaseConfigured()) return base;
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('work_id, work_title, work_format, source_text, reading_json, created_at, deleted_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+    if (error || !data) return base;
+
+    const rows = data as unknown as Array<{
+      work_id: string;
+      work_title: string | null;
+      work_format: string;
+      source_text: string;
+      reading_json: ReadingPayload;
+      created_at: string;
+      deleted_at: string | null;
+    }>;
+    const byWork = new Map<string, UserDataExport['works'][number]>();
+    for (const r of rows) {
+      let work = byWork.get(r.work_id);
+      if (!work) {
+        work = {
+          workId: r.work_id,
+          title: r.work_title || 'Untitled',
+          format: r.work_format,
+          versions: [],
+        };
+        byWork.set(r.work_id, work);
+      }
+      work.versions.push({
+        createdAt: r.created_at,
+        deletedAt: r.deleted_at,
+        sourceText: r.source_text,
+        reading: r.reading_json,
+      });
+    }
+    return { ...base, works: [...byWork.values()] };
+  } catch {
+    return base;
+  }
+}
+
 /** List the signed-in user's saved works (newest first; soft-deleted excluded). */
 export async function listWorks(userId: string): Promise<WorkSummary[]> {
   if (!isSupabaseConfigured()) return [];

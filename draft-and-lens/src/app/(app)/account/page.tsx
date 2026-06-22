@@ -53,6 +53,17 @@ export default function AccountPage() {
       <h1 className="mt-4 font-serif text-2xl">Your work</h1>
       <p className="mt-1 text-sm text-ink-soft">Everything you’ve had read, saved to your account.</p>
 
+      {isSignedIn === true && (
+        <div className="mt-4">
+          <a
+            href="/api/export"
+            className="rounded border border-ink-soft px-3 py-1.5 text-sm text-ink hover:bg-cream"
+          >
+            Export my data
+          </a>
+        </div>
+      )}
+
       {isSignedIn !== true && (
         <p className="mt-8 text-sm text-ink-soft">Sign in (top right) to see your saved work.</p>
       )}
