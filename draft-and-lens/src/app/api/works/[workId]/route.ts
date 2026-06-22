@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { renameWork, restoreWork, softDeleteWork } from '../../../../lib/readings';
+import { logSecurityEvent } from '../../../../lib/security-log';
 
 /**
  * Per-work actions for the signed-in writer (CHANGE 4).
@@ -18,7 +19,10 @@ export async function DELETE(
   { params }: { params: { workId: string } }
 ): Promise<Response> {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+  if (!userId) {
+    logSecurityEvent('auth_denied', { route: '/api/works/[workId]' });
+    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+  }
   const ok = await softDeleteWork(userId, params.workId);
   if (!ok) return NextResponse.json({ error: 'Could not delete that work.' }, { status: 500 });
   return NextResponse.json({ ok: true });
@@ -29,7 +33,10 @@ export async function PATCH(
   { params }: { params: { workId: string } }
 ): Promise<Response> {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+  if (!userId) {
+    logSecurityEvent('auth_denied', { route: '/api/works/[workId]' });
+    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+  }
 
   const body = (await req.json().catch(() => ({}))) as { action?: string; title?: string };
   if (body.action === 'restore') {

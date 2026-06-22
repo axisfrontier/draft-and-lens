@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
+import { logSecurityEvent } from '../../../lib/security-log';
 import type { AnalysisMode } from '../../../prompts/types';
 
 /**
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   // Require a signed-in user — readings are stored per writer (CHANGE 3).
   const { userId } = await auth();
   if (!userId) {
+    logSecurityEvent('auth_denied', { route: 'POST /api/analyse' });
     return NextResponse.json({ error: 'Please sign in to analyse your work.' }, { status: 401 });
   }
 
@@ -80,8 +82,8 @@ export async function POST(req: NextRequest): Promise<Response> {
   // event is logged. Tuned for literature: serious dark fiction passes.
   const verdict = await moderateSubmission(clean);
   if (verdict.status === 'block') {
-    // Minimal log — timestamp + category only, NEVER the submitted text.
-    console.warn(`[moderation] blocked submission · ${new Date().toISOString()} · ${verdict.category}`);
+    // Minimal log — category only, NEVER the submitted text (breach hook).
+    logSecurityEvent('moderation_blocked', { category: verdict.category });
     return NextResponse.json(
       {
         error:

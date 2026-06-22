@@ -2,6 +2,7 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 import { deleteAllUserData } from '../../../lib/readings';
+import { logSecurityEvent } from '../../../lib/security-log';
 
 /**
  * DELETE /api/account — full account wipe (CHANGE 4, GDPR erasure).
@@ -14,7 +15,10 @@ export const dynamic = 'force-dynamic';
 
 export async function DELETE(): Promise<Response> {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+  if (!userId) {
+    logSecurityEvent('auth_denied', { route: 'DELETE /api/account' });
+    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+  }
 
   const wiped = await deleteAllUserData(userId);
   if (!wiped) {
@@ -37,5 +41,6 @@ export async function DELETE(): Promise<Response> {
     );
   }
 
+  logSecurityEvent('account_deleted', { user: userId });
   return NextResponse.json({ ok: true });
 }
