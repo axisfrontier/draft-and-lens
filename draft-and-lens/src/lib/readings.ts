@@ -248,6 +248,60 @@ export interface WorkSummary {
   versions: number;
 }
 
+/** Soft-deleted works stay recoverable for this many days, then are hard-purged. */
+export const SOFT_DELETE_GRACE_DAYS = 30;
+
+/** Soft-delete a work (recoverable). Returns false on any failure. */
+export async function softDeleteWork(userId: string, workId: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const supabase = getServiceClient();
+    const { error } = await supabase
+      .from(TABLE)
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('work_id', workId)
+      .is('deleted_at', null);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/** Undo a soft-delete while still within the grace window. */
+export async function restoreWork(userId: string, workId: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const supabase = getServiceClient();
+    const { error } = await supabase
+      .from(TABLE)
+      .update({ deleted_at: null })
+      .eq('user_id', userId)
+      .eq('work_id', workId)
+      .not('deleted_at', 'is', null);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/** Permanently remove this user's works soft-deleted longer than the grace window. */
+export async function purgeExpiredDeletions(userId: string): Promise<void> {
+  if (!isSupabaseConfigured()) return;
+  try {
+    const supabase = getServiceClient();
+    const cutoff = new Date(Date.now() - SOFT_DELETE_GRACE_DAYS * 86_400_000).toISOString();
+    await supabase
+      .from(TABLE)
+      .delete()
+      .eq('user_id', userId)
+      .not('deleted_at', 'is', null)
+      .lt('deleted_at', cutoff);
+  } catch {
+    /* best-effort retention pruning */
+  }
+}
+
 /** Complete, portable export of everything stored for a user (GDPR §20). */
 export interface UserDataExport {
   exportedAt: string;
