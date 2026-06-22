@@ -54,6 +54,9 @@ export default function RootLayout({
         <body>
           <header className="flex items-center justify-end gap-3 border-b border-rule-l bg-paper px-8 py-3 text-sm">
             <SignedOut>
+              <span className="hidden max-w-md text-xs text-ink-faint md:inline">
+                We never train AI on your writing. It’s yours — export or delete it whenever you like.
+              </span>
               <SignInButton mode="modal">
                 <button type="button" className="rounded border border-ink-soft px-3 py-1.5 text-ink">
                   Sign in

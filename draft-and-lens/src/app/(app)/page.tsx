@@ -200,6 +200,10 @@ export default function AppHomePage() {
           placeholder="Paste your script, treatment, story, or play…"
           className="mt-2 w-full rounded border border-ink-soft bg-paper p-3 text-sm text-ink"
         />
+        <p className="mt-2 text-xs text-ink-faint">
+          Your work is yours. We never train AI on it — it’s sent only to generate your reading,
+          and never shared with anyone else. You can delete it anytime.
+        </p>
       </section>
 
       {/* 3 · analyse / stop */}

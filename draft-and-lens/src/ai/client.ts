@@ -4,7 +4,17 @@ import Anthropic from '@anthropic-ai/sdk';
 
 /**
  * Server-only Anthropic client. API key from environment — never imported by client code.
- * Last reviewed: 2026-06-07
+ *
+ * NO-TRAINING GUARANTEE (Step 3). User text reaches only (a) the Anthropic Messages
+ * API — which does NOT use API inputs or outputs to train models — and (b) the
+ * writer's own Supabase rows. No call here sets any training/opt-in flag (the API
+ * exposes none), and nothing forwards submissions to any other service. The product
+ * promise "we never train AI on your work" is therefore true by construction.
+ *
+ * TODO (data-protection verification, before launch): verify this no-training /
+ * brief-retention wording against Anthropic's CURRENT Commercial Terms + data-usage
+ * page. The public privacy claim must match their live policy, not this summary.
+ * Last reviewed: 2026-06-22
  */
 function getApiKey(): string {
   const key = process.env.ANTHROPIC_API_KEY;
