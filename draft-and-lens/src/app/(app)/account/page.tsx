@@ -30,6 +30,7 @@ export default function AccountPage() {
   const [works, setWorks] = useState<Work[] | null>(null);
   const [error, setError] = useState('');
   const [justDeleted, setJustDeleted] = useState<{ workId: string; title: string } | null>(null);
+  const [editing, setEditing] = useState<{ workId: string; value: string } | null>(null);
   const [confirmingWipe, setConfirmingWipe] = useState(false);
   const [wiping, setWiping] = useState(false);
 
@@ -68,6 +69,25 @@ export default function AccountPage() {
     }
     setJustDeleted(null);
     loadWorks();
+  }
+
+  async function saveRename(): Promise<void> {
+    if (!editing) return;
+    const { workId, value } = editing;
+    const res = await fetch(`/api/works/${workId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: value }),
+    });
+    if (!res.ok) {
+      setError('Could not rename that work.');
+      return;
+    }
+    const newTitle = value.trim() || 'Untitled';
+    setWorks((prev) =>
+      prev ? prev.map((w) => (w.workId === workId ? { ...w, title: newTitle } : w)) : prev
+    );
+    setEditing(null);
   }
 
   async function deleteAccount(): Promise<void> {
@@ -159,9 +179,23 @@ export default function AccountPage() {
                 gap: '1rem',
               }}
             >
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1rem', color: 'var(--ink)' }}>
-                {w.title}
-              </span>
+              {editing?.workId === w.workId ? (
+                <input
+                  value={editing.value}
+                  onChange={(e) => setEditing({ workId: w.workId, value: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void saveRename();
+                    if (e.key === 'Escape') setEditing(null);
+                  }}
+                  autoFocus
+                  className="rounded border border-ink-soft bg-paper px-2 py-1 font-serif text-base text-ink"
+                  style={{ minWidth: '14rem' }}
+                />
+              ) : (
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1rem', color: 'var(--ink)' }}>
+                  {w.title}
+                </span>
+              )}
               <span style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', whiteSpace: 'nowrap' }}>
                 <span
                   style={{
@@ -175,13 +209,41 @@ export default function AccountPage() {
                   {FORMAT_LABELS[w.format] ?? w.format} · {w.versions} version
                   {w.versions === 1 ? '' : 's'} · {new Date(w.updatedAt).toLocaleDateString()}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => deleteWork(w)}
-                  className="rounded border border-ink-soft px-2.5 py-1 text-xs text-ink-soft hover:border-red hover:text-red"
-                >
-                  Delete
-                </button>
+                {editing?.workId === w.workId ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={saveRename}
+                      className="rounded border border-ink-soft px-2.5 py-1 text-xs text-ink hover:bg-cream"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditing(null)}
+                      className="rounded border border-ink-soft px-2.5 py-1 text-xs text-ink-soft hover:bg-cream"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setEditing({ workId: w.workId, value: w.title })}
+                      className="rounded border border-ink-soft px-2.5 py-1 text-xs text-ink-soft hover:border-ink hover:text-ink"
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteWork(w)}
+                      className="rounded border border-ink-soft px-2.5 py-1 text-xs text-ink-soft hover:border-red hover:text-red"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
               </span>
             </li>
           ))}

@@ -280,6 +280,24 @@ export async function softDeleteWork(userId: string, workId: string): Promise<bo
   }
 }
 
+/** Rename a work (library hygiene). Title is trimmed + capped; blank → Untitled. */
+export async function renameWork(userId: string, workId: string, title: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const clean = title.trim().slice(0, 200) || 'Untitled';
+    const supabase = getServiceClient();
+    const { error } = await supabase
+      .from(TABLE)
+      .update({ work_title: clean })
+      .eq('user_id', userId)
+      .eq('work_id', workId)
+      .is('deleted_at', null);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 /** Undo a soft-delete while still within the grace window. */
 export async function restoreWork(userId: string, workId: string): Promise<boolean> {
   if (!isSupabaseConfigured()) return false;
