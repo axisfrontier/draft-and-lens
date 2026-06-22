@@ -236,3 +236,55 @@ async function pruneVersions(
 export function newWorkId(): string {
   return randomUUID();
 }
+
+// ── User-data functions (CHANGE 4) ───────────────────────────────────────────
+
+/** One row per saved work for the library view (latest version's metadata). */
+export interface WorkSummary {
+  workId: string;
+  title: string;
+  format: string;
+  updatedAt: string;
+  versions: number;
+}
+
+/** List the signed-in user's saved works (newest first; soft-deleted excluded). */
+export async function listWorks(userId: string): Promise<WorkSummary[]> {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('work_id, work_title, work_format, created_at')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    if (error || !data) return [];
+
+    const rows = data as unknown as Array<{
+      work_id: string;
+      work_title: string | null;
+      work_format: string;
+      created_at: string;
+    }>;
+    // Rows are newest-first, so the first sighting of a work_id is its latest.
+    const byWork = new Map<string, WorkSummary>();
+    for (const r of rows) {
+      const existing = byWork.get(r.work_id);
+      if (existing) {
+        existing.versions += 1;
+      } else {
+        byWork.set(r.work_id, {
+          workId: r.work_id,
+          title: r.work_title || 'Untitled',
+          format: r.work_format,
+          updatedAt: r.created_at,
+          versions: 1,
+        });
+      }
+    }
+    return [...byWork.values()];
+  } catch {
+    return [];
+  }
+}

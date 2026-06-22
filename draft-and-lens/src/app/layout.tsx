@@ -66,6 +66,9 @@ export default function RootLayout({
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              <a href="/account" className="text-ink-soft hover:text-ink">
+                Your work
+              </a>
               <UserButton />
             </SignedIn>
           </header>
