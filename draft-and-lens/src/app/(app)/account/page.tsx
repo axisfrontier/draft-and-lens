@@ -6,7 +6,7 @@
  * Client-only; talks to the server through /api/works[...] — imports nothing
  * from src/prompts or src/ai.
  */
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useClerk } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 
 interface Work {
@@ -26,9 +26,12 @@ const FORMAT_LABELS: Record<string, string> = {
 
 export default function AccountPage() {
   const { isSignedIn } = useAuth();
+  const { signOut } = useClerk();
   const [works, setWorks] = useState<Work[] | null>(null);
   const [error, setError] = useState('');
   const [justDeleted, setJustDeleted] = useState<{ workId: string; title: string } | null>(null);
+  const [confirmingWipe, setConfirmingWipe] = useState(false);
+  const [wiping, setWiping] = useState(false);
 
   const loadWorks = useCallback(() => {
     fetch('/api/works')
@@ -65,6 +68,25 @@ export default function AccountPage() {
     }
     setJustDeleted(null);
     loadWorks();
+  }
+
+  async function deleteAccount(): Promise<void> {
+    setWiping(true);
+    setError('');
+    try {
+      const res = await fetch('/api/account', { method: 'DELETE' });
+      if (!res.ok) {
+        const d = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(d?.error ?? 'Could not delete your account.');
+        setWiping(false);
+        return;
+      }
+      await signOut();
+      window.location.href = '/';
+    } catch {
+      setError('Could not delete your account.');
+      setWiping(false);
+    }
   }
 
   return (
@@ -164,6 +186,46 @@ export default function AccountPage() {
             </li>
           ))}
         </ul>
+      )}
+
+      {/* Danger zone — permanent account deletion */}
+      {isSignedIn === true && (
+        <section className="mt-16 max-w-2xl border-t border-rule-l pt-8">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-red">Danger zone</h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            Permanently delete your account and everything stored in it — all works and readings.
+            This cannot be undone.
+          </p>
+          {!confirmingWipe ? (
+            <button
+              type="button"
+              onClick={() => setConfirmingWipe(true)}
+              className="mt-3 rounded border border-red px-3 py-1.5 text-sm text-red hover:bg-red hover:text-paper"
+            >
+              Delete my account
+            </button>
+          ) : (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <span className="text-sm text-ink">Are you sure? This is permanent.</span>
+              <button
+                type="button"
+                onClick={deleteAccount}
+                disabled={wiping}
+                className="rounded bg-red px-3 py-1.5 text-sm text-paper disabled:opacity-50"
+              >
+                {wiping ? 'Deleting…' : 'Permanently delete'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingWipe(false)}
+                disabled={wiping}
+                className="rounded border border-ink-soft px-3 py-1.5 text-sm text-ink"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </section>
       )}
     </main>
   );

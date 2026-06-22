@@ -251,6 +251,18 @@ export interface WorkSummary {
 /** Soft-deleted works stay recoverable for this many days, then are hard-purged. */
 export const SOFT_DELETE_GRACE_DAYS = 30;
 
+/** Permanently delete EVERY row for a user (account wipe — real, not a flag). */
+export async function deleteAllUserData(userId: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return true; // nothing stored to remove
+  try {
+    const supabase = getServiceClient();
+    const { error } = await supabase.from(TABLE).delete().eq('user_id', userId);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 /** Soft-delete a work (recoverable). Returns false on any failure. */
 export async function softDeleteWork(userId: string, workId: string): Promise<boolean> {
   if (!isSupabaseConfigured()) return false;
