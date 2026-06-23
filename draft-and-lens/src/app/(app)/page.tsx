@@ -28,6 +28,7 @@ import type {
   Market,
   Scores,
 } from '@/components/analysis/types';
+import { TESTER_WORD_CAP, countWords } from '@/lib/limits';
 
 type Mode = 'script' | 'story' | 'play' | 'treatment';
 
@@ -80,8 +81,10 @@ export default function AppHomePage() {
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
 
+  const wordCount = countWords(text);
+  const overCap = wordCount > TESTER_WORD_CAP;
   const canAnalyse =
-    isSignedIn === true && mode !== null && text.trim().length > 0 && !running;
+    isSignedIn === true && mode !== null && wordCount > 0 && !running && !overCap;
 
   async function analyse(): Promise<void> {
     if (mode === null) return;
@@ -89,7 +92,7 @@ export default function AppHomePage() {
     setError('');
     setStreamed('');
     setReport('');
-    setStage('');
+    setStage('Reading your work'); // show progress immediately, before the first server stage
     setCoverage(null);
     setDiagnostic(null);
     setScores(null);
@@ -200,6 +203,26 @@ export default function AppHomePage() {
           placeholder="Paste your script, treatment, story, or play…"
           className="mt-2 w-full rounded border border-ink-soft bg-paper p-3 text-sm text-ink"
         />
+        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2 text-xs">
+          <span className="text-ink-faint">
+            Tip: paste a complete piece or a single chapter (up to ~
+            {TESTER_WORD_CAP.toLocaleString()} words) for the sharpest reading.
+          </span>
+          <span className={overCap ? 'font-medium text-amber-d' : 'text-ink-faint'}>
+            {wordCount.toLocaleString()} / {TESTER_WORD_CAP.toLocaleString()} words
+          </span>
+        </div>
+        {overCap && (
+          <p
+            className="mt-2 rounded px-3 py-2 text-sm text-ink-mid"
+            style={{ background: 'rgba(168,108,16,.12)', borderLeft: '3px solid var(--amber)' }}
+          >
+            Draft &amp; Lens reads best in focused pieces right now — please paste up to about{' '}
+            {TESTER_WORD_CAP.toLocaleString()} words (a chapter, a short story, or an excerpt works
+            well). Full-length novels and scripts are coming soon. Trim to under{' '}
+            {TESTER_WORD_CAP.toLocaleString()} words and you’re good to go.
+          </p>
+        )}
         <p className="mt-2 text-xs text-ink-faint">
           Your work is yours. We never train AI on it — it’s sent only to generate your reading,
           and never shared with anyone else. You can delete it anytime.

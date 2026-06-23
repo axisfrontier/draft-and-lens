@@ -215,10 +215,13 @@ export function buildAnalystUserPrompt(input: AnalystUserPromptInput): string {
           : `STAGE PLAY | ${wordCount} words | Form: ${genre}`;
 
   const struct = reportStructure(mode);
-  const limit = 14000;
+  // Read window for Brain 2. Sized to cover the whole tester-cap piece
+  // (TESTER_WORD_CAP words ≈ up to ~28k chars) so nothing is silently under-read;
+  // trivially within Opus's context. Raise alongside any future length support.
+  const limit = 28000;
   const truncatedText =
     text.length > limit
-      ? `${text.slice(0, limit)}\n\n[Text truncated at 14,000 characters — analyse what is present]`
+      ? `${text.slice(0, limit)}\n\n[Text truncated at ${limit.toLocaleString()} characters — analyse what is present]`
       : text;
 
   return `${intentBlock}${bibleBlock}${meta}\n\nProduce the full analysis report using the exact section structure below. Every section must be specific, direct, and quote from the submitted text where possible. Do not fabricate page numbers or scenes that are not present.${ANCHOR_DIRECTIVE}\n\n${struct}\n\n---\nSUBMITTED TEXT:\n${truncatedText}`;

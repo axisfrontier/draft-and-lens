@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
+import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
 import type { AnalysisMode } from '../../../prompts/types';
@@ -76,6 +77,16 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const clean = sanitise(typeof text === 'string' ? text : '');
   if (!clean) return badRequest('No text submitted.');
+
+  // Tester-phase cap — defence-in-depth behind the client block (CHANGE: input cap).
+  if (countWords(clean) > TESTER_WORD_CAP) {
+    return NextResponse.json(
+      {
+        error: `Draft & Lens reads best in focused pieces right now — please paste up to about ${TESTER_WORD_CAP.toLocaleString()} words (a chapter, a short story, or an excerpt). Full-length novels and scripts are coming soon.`,
+      },
+      { status: 413 }
+    );
+  }
 
   // ── Moderation gate (CHANGE 2) — runs BEFORE any storage or pipeline call.
   // Blocked content is never persisted or processed; only a minimal, non-content
