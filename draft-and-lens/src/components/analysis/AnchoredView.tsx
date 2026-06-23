@@ -13,6 +13,7 @@ import { resolveAnchors } from '@/lib/anchor';
 export function AnchoredView({ report, text }: { report: string; text: string }) {
   const [active, setActive] = useState<number | null>(null);
   const markRefs = useRef<Record<number, HTMLElement | null>>({});
+  const noteRefs = useRef<Record<number, HTMLElement | null>>({});
 
   if (!text.trim()) {
     return (
@@ -24,7 +25,14 @@ export function AnchoredView({ report, text }: { report: string; text: string })
 
   const { segments, notes, orphans } = resolveAnchors(report, text);
 
-  const activate = (i: number): void => {
+  /** Clicking a span → scroll the note into view. */
+  const activateFromSpan = (i: number): void => {
+    setActive(i);
+    noteRefs.current[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  /** Clicking a note → scroll the anchored span into view. */
+  const activateFromNote = (i: number): void => {
     setActive(i);
     markRefs.current[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -72,7 +80,7 @@ export function AnchoredView({ report, text }: { report: string; text: string })
                 ref={(el) => {
                   if (s.anchorIndex !== null) markRefs.current[s.anchorIndex] = el;
                 }}
-                onClick={() => s.anchorIndex !== null && activate(s.anchorIndex)}
+                onClick={() => s.anchorIndex !== null && activateFromSpan(s.anchorIndex)}
                 style={{
                   background: active === s.anchorIndex ? 'rgba(168,108,16,.34)' : 'rgba(168,108,16,.14)',
                   borderBottom: `1.5px solid ${active === s.anchorIndex ? 'var(--amber)' : 'var(--amber-l)'}`,
@@ -93,7 +101,8 @@ export function AnchoredView({ report, text }: { report: string; text: string })
           {notes.map((r, i) => (
             <div
               key={i}
-              onClick={() => activate(i)}
+              ref={(el) => { noteRefs.current[i] = el; }}
+              onClick={() => activateFromNote(i)}
               style={{
                 background: active === i ? 'var(--warm-mid)' : 'var(--cream)',
                 borderLeft: `3px solid ${active === i ? 'var(--amber)' : 'var(--teal)'}`,
