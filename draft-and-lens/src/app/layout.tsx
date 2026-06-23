@@ -53,6 +53,9 @@ export default function RootLayout({
       >
         <body>
           <header className="flex items-center justify-end gap-3 border-b border-rule-l bg-paper px-8 py-3 text-sm">
+            <a href="/glossary" className="mr-auto text-ink-soft hover:text-ink">
+              Glossary
+            </a>
             <SignedOut>
               <span className="hidden max-w-md text-xs text-ink-faint md:inline">
                 We never train AI on your writing. It’s yours — export or delete it whenever you like.
