@@ -29,10 +29,18 @@ export interface AnchorSegment {
   anchorIndex: number | null;
 }
 
+export interface NoteGroup {
+  note: string;
+  /** How many manuscript spans share this note (Fix 1 dedup). */
+  spanCount: number;
+}
+
 export interface AnchorResolution {
   segments: AnchorSegment[];
-  notes: ResolvedAnchor[];
-  orphans: Anchor[];
+  /** One entry per UNIQUE note, in document order — its spans all share its index. */
+  notes: NoteGroup[];
+  /** Unique general-note texts that couldn't be pinned to a line. */
+  orphans: string[];
 }
 
 /** True if the report contains at least one bracketed quote. */
@@ -120,35 +128,57 @@ export function findAnchor(
 /** Resolve all anchors against the submitted text into render-ready segments. */
 export function resolveAnchors(report: string, text: string): AnchorResolution {
   const anchors = extractAnchors(report);
-  const resolved: ResolvedAnchor[] = [];
-  const orphans: Anchor[] = [];
+  const pinned: ResolvedAnchor[] = [];
+  const unpinned: Anchor[] = [];
 
   for (const a of anchors) {
     const pos = findAnchor(a.quote, text, a.occurrence);
-    if (pos) resolved.push({ ...a, ...pos });
-    else orphans.push(a);
+    if (pos) pinned.push({ ...a, ...pos });
+    else unpinned.push(a);
   }
 
   // Sort by position; drop overlaps (spans can't nest).
-  resolved.sort((x, y) => x.start - y.start);
+  pinned.sort((x, y) => x.start - y.start);
   const clean: ResolvedAnchor[] = [];
   let lastEnd = -1;
-  for (const r of resolved) {
+  for (const r of pinned) {
     if (r.start >= lastEnd) {
       clean.push(r);
       lastEnd = r.end;
     }
   }
 
-  // Stitch the manuscript into plain + anchored segments.
+  // FIX 1 — dedup: spans whose note text is identical collapse to ONE note that
+  // highlights all of them. A note makes its point once and marks every line it
+  // applies to, instead of repeating verbatim down the margin.
+  const noteIndex = new Map<string, number>();
+  const notes: NoteGroup[] = [];
   const segments: AnchorSegment[] = [];
   let cursor = 0;
-  clean.forEach((r, i) => {
+  for (const r of clean) {
+    let gi = noteIndex.get(r.note);
+    if (gi === undefined) {
+      gi = notes.length;
+      noteIndex.set(r.note, gi);
+      notes.push({ note: r.note, spanCount: 0 });
+    }
+    const group = notes[gi];
+    if (group) group.spanCount += 1;
     if (r.start > cursor) segments.push({ text: text.slice(cursor, r.start), anchorIndex: null });
-    segments.push({ text: text.slice(r.start, r.end), anchorIndex: i });
+    segments.push({ text: text.slice(r.start, r.end), anchorIndex: gi });
     cursor = r.end;
-  });
+  }
   if (cursor < text.length) segments.push({ text: text.slice(cursor), anchorIndex: null });
 
-  return { segments, notes: clean, orphans };
+  // Orphans — unique note texts not already pinned (so a note never shows both
+  // pinned and as a general note).
+  const orphanSeen = new Set<string>();
+  const orphans: string[] = [];
+  for (const o of unpinned) {
+    if (noteIndex.has(o.note) || orphanSeen.has(o.note)) continue;
+    orphanSeen.add(o.note);
+    orphans.push(o.note);
+  }
+
+  return { segments, notes, orphans };
 }

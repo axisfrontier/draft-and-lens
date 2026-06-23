@@ -111,9 +111,26 @@ export function AnchoredView({ report, text }: { report: string; text: string })
                   textTransform: 'uppercase',
                   color: 'var(--teal)',
                   marginBottom: '.35rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '.5rem',
                 }}
               >
                 Note {String(i + 1).padStart(2, '0')}
+                {r.spanCount > 1 && (
+                  <span
+                    style={{
+                      background: 'var(--amber-l)',
+                      color: 'var(--amber-d)',
+                      borderRadius: 10,
+                      padding: '0 .45rem',
+                      fontSize: '.5rem',
+                      letterSpacing: '.08em',
+                    }}
+                  >
+                    ×{r.spanCount}
+                  </span>
+                )}
               </div>
               <div style={{ fontSize: '.8rem', lineHeight: 1.55, color: 'var(--ink-mid)' }}>{r.note}</div>
             </div>
@@ -146,7 +163,7 @@ export function AnchoredView({ report, text }: { report: string; text: string })
                     color: 'var(--ink-soft)',
                   }}
                 >
-                  {o.note}
+                  {o}
                 </div>
               ))}
             </div>
