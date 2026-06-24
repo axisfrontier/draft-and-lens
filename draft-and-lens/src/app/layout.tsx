@@ -53,50 +53,50 @@ export default function RootLayout({
       >
         <body>
           <header style={{
-            position: ‘sticky’, top: 0, zIndex: 100,
-            height: ‘var(--nav-h)’,
-            display: ‘flex’, alignItems: ‘center’, justifyContent: ‘space-between’,
-            padding: ‘0 2.5rem’,
-            background: ‘var(--black-band)’,
-            borderBottom: ‘2px solid var(--amber)’,
+            position: 'sticky', top: 0, zIndex: 100,
+            height: 'var(--nav-h)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '0 2.5rem',
+            background: 'var(--black-band)',
+            borderBottom: '2px solid var(--amber)',
           }}>
             {/* Logo */}
             <span style={{
-              fontFamily: ‘var(--font-mono)’, fontSize: ‘.95rem’,
-              letterSpacing: ‘.2em’, textTransform: ‘uppercase’,
-              color: ‘var(--paper)’, fontWeight: 500,
+              fontFamily: 'var(--font-mono)', fontSize: '.95rem',
+              letterSpacing: '.2em', textTransform: 'uppercase',
+              color: 'var(--paper)', fontWeight: 500,
             }}>
-              DRAFT<span style={{ color: ‘var(--amber-l)’ }}>&amp;</span>LENS
+              DRAFT<span style={{ color: 'var(--amber-l)' }}>&amp;</span>LENS
             </span>
 
             {/* Right nav */}
-            <div style={{ display: ‘flex’, alignItems: ‘center’, gap: ‘1.5rem’ }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <a href="/glossary" style={{
-                fontFamily: ‘var(--font-mono)’, fontSize: ‘.5rem’,
-                letterSpacing: ‘.12em’, textTransform: ‘uppercase’,
-                color: ‘var(--ink-faint)’, textDecoration: ‘none’,
+                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                letterSpacing: '.12em', textTransform: 'uppercase',
+                color: 'var(--ink-faint)', textDecoration: 'none',
               }}>
                 Glossary
               </a>
               <SignedOut>
                 <SignInButton mode="modal">
                   <button type="button" style={{
-                    fontFamily: ‘var(--font-mono)’, fontSize: ‘.58rem’,
-                    letterSpacing: ‘.14em’, textTransform: ‘uppercase’,
-                    padding: ‘.35rem .85rem’, background: ‘transparent’,
-                    border: ‘1px solid var(--ink-mid)’, color: ‘var(--ink-faint)’,
-                    cursor: ‘pointer’,
+                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    letterSpacing: '.14em', textTransform: 'uppercase',
+                    padding: '.35rem .85rem', background: 'transparent',
+                    border: '1px solid var(--ink-mid)', color: 'var(--ink-faint)',
+                    cursor: 'pointer',
                   }}>
                     Sign in
                   </button>
                 </SignInButton>
                 <SignUpButton mode="modal">
                   <button type="button" style={{
-                    fontFamily: ‘var(--font-mono)’, fontSize: ‘.58rem’,
-                    letterSpacing: ‘.14em’, textTransform: ‘uppercase’,
-                    padding: ‘.35rem .85rem’, background: ‘var(--amber)’,
-                    border: ‘1px solid var(--amber)’, color: ‘var(--black-band)’,
-                    cursor: ‘pointer’, fontWeight: 500,
+                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    letterSpacing: '.14em', textTransform: 'uppercase',
+                    padding: '.35rem .85rem', background: 'var(--amber)',
+                    border: '1px solid var(--amber)', color: 'var(--black-band)',
+                    cursor: 'pointer', fontWeight: 500,
                   }}>
                     Create account
                   </button>
@@ -104,9 +104,9 @@ export default function RootLayout({
               </SignedOut>
               <SignedIn>
                 <a href="/account" style={{
-                  fontFamily: ‘var(--font-mono)’, fontSize: ‘.5rem’,
-                  letterSpacing: ‘.12em’, textTransform: ‘uppercase’,
-                  color: ‘var(--ink-faint)’, textDecoration: ‘none’,
+                  fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                  letterSpacing: '.12em', textTransform: 'uppercase',
+                  color: 'var(--ink-faint)', textDecoration: 'none',
                 }}>
                   Your work
                 </a>
