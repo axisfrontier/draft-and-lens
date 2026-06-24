@@ -97,15 +97,16 @@ export function ReportView({
   };
 
   return (
-    <div style={{ display: 'flex', paddingTop: 0, minHeight: '100vh', background: 'var(--paper)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr var(--sidebar-w)', minHeight: '100vh', background: 'var(--paper)' }}>
 
       {/* ── RIGHT SIDEBAR ── */}
       <aside style={{
-        position: 'fixed', top: 'var(--nav-h)', right: 0,
-        width: 'var(--sidebar-w)', height: 'calc(100vh - var(--nav-h))',
+        position: 'sticky', top: 'var(--nav-h)',
+        gridColumn: 2, gridRow: 1,
+        height: 'calc(100vh - var(--nav-h))',
         overflowY: 'auto', background: 'var(--cream)',
         borderLeft: '1px solid var(--rule-l)',
-        padding: '1.5rem 0', zIndex: 50,
+        padding: '1.5rem 0', alignSelf: 'start',
       }}>
         <div style={{
           fontFamily: 'var(--font-mono)', fontSize: '.52rem',
@@ -140,8 +141,7 @@ export function ReportView({
 
       {/* ── MAIN CONTENT ── */}
       <div style={{
-        flex: 1, marginRight: 'var(--sidebar-w)',
-        maxWidth: 'calc(100% - var(--sidebar-w))',
+        gridColumn: 1, gridRow: 1,
         background: 'var(--paper)', minHeight: '100vh',
       }}>
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 3rem 8rem' }}>
