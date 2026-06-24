@@ -188,15 +188,6 @@ export function ReportView({
                   Untitled
                 </h1>
               )}
-              {diagnostic?.summary && (
-                <p style={{
-                  fontSize: '.88rem', lineHeight: 1.8,
-                  color: 'var(--ink-soft)', maxWidth: 500,
-                  borderLeft: '2px solid var(--rule)', paddingLeft: '1rem',
-                }}>
-                  {diagnostic.summary}
-                </p>
-              )}
             </div>
             <div>
               <div style={{
