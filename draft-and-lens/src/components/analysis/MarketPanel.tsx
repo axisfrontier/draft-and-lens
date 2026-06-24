@@ -18,7 +18,7 @@ export function MarketPanel({ market }: { market: Market | null }) {
   if (studios.length === 0 && !knownWork) return null;
 
   return (
-    <section style={{ background: 'var(--black-band)', margin: '2.5rem -2rem 0', padding: '3rem 2rem 2.5rem' }}>
+    <section style={{ background: 'var(--black-band)', margin: '2.5rem -3rem 0', padding: '3rem 3rem 2.5rem' }}>
       <div
         style={{
           fontFamily: 'var(--font-mono)',

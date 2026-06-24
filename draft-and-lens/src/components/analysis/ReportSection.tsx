@@ -26,8 +26,8 @@ export function ReportSection({
       style={{
         borderBottom: '1px solid var(--rule-l)',
         background: tinted ? 'var(--cream)' : 'transparent',
-        margin: tinted ? '0 -2rem' : 0,
-        padding: tinted ? '0 2rem' : 0,
+        margin: tinted ? '0 -3rem' : 0,
+        padding: tinted ? '0 3rem' : 0,
       }}
     >
       <button
