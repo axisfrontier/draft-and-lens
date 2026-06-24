@@ -19,7 +19,7 @@
  */
 
 import { useAuth } from '@clerk/nextjs';
-import { useRef, useState } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 
 import { ReportView } from '@/components/analysis/ReportView';
 import type {
@@ -165,26 +165,58 @@ export default function AppHomePage() {
   // preview; once the final report lands, swap in the full report view.
   const streamingPreview = report === '' ? stripAnchors(streamed) : '';
 
+  /* Shared kicker style — mono, uppercase, amber, letter-spaced */
+  const kicker: CSSProperties = {
+    fontFamily: ‘var(--font-mono)’, fontSize: ‘.68rem’,
+    letterSpacing: ‘.14em’, textTransform: ‘uppercase’,
+    color: ‘var(--label-amber)’, fontWeight: 500, marginBottom: ‘.35rem’,
+  };
+
+  const showUpload = report === ‘’ && !running;
+
   return (
-    <main className="min-h-screen bg-paper p-8 text-ink">
-      <h1 className="font-serif text-2xl">Draft &amp; Lens</h1>
-      <p className="mt-1 text-sm text-ink-soft">A reading, not a rewrite.</p>
+    <main style={{
+      minHeight: ‘100vh’,
+      background: showUpload ? ‘var(--black-band)’ : ‘var(--paper)’,
+      color: showUpload ? ‘var(--paper-dark)’ : ‘var(--ink)’,
+    }}>
+      {/* ── Upload panel ── */}
+      <div style={{
+        maxWidth: 680, margin: ‘0 auto’,
+        padding: showUpload ? ‘3rem 2rem’ : ‘2rem’,
+      }}>
+        {/* Title block */}
+        <div style={{ marginBottom: ‘2rem’ }}>
+          <div style={kicker}>New analysis</div>
+          <h1 style={{
+            fontFamily: ‘var(--font-serif)’, fontSize: ‘1.2rem’,
+            fontWeight: 700, color: ‘var(--paper)’,
+            display: showUpload ? ‘block’ : ‘none’,
+          }}>
+            Upload your work
+          </h1>
+        </div>
 
       {/* 1 · choose the submission type — must-choose (§15) */}
-      <section className="mt-6">
-        <p className="text-sm font-medium">1 · Choose the type</p>
-        <div className="mt-2 flex flex-wrap gap-2">
+      <section style={{ marginBottom: ‘1.5rem’ }}>
+        <div style={kicker}>1 · What are you submitting?</div>
+        <div style={{ display: ‘flex’, flexWrap: ‘wrap’, gap: ‘.5rem’, marginTop: ‘.5rem’ }}>
           {TYPES.map((t) => (
             <button
               key={t.value}
               type="button"
               onClick={() => setMode(t.value)}
               disabled={running}
-              className={`rounded border px-3 py-1.5 text-sm ${
-                mode === t.value
-                  ? 'border-ink bg-ink text-paper'
-                  : 'border-ink-soft text-ink'
-              }`}
+              style={{
+                fontFamily: ‘var(--font-mono)’, fontSize: ‘.58rem’,
+                letterSpacing: ‘.16em’, textTransform: ‘uppercase’,
+                padding: ‘.4rem 1rem’, cursor: ‘pointer’,
+                border: ‘1px solid’,
+                borderColor: mode === t.value ? ‘var(--amber)’ : ‘var(--border-dark)’,
+                background: mode === t.value ? ‘var(--amber)’ : ‘transparent’,
+                color: mode === t.value ? ‘var(--black-band)’ : ‘var(--rule)’,
+                fontWeight: mode === t.value ? 500 : 300,
+              }}
             >
               {t.label}
             </button>
@@ -193,49 +225,66 @@ export default function AppHomePage() {
       </section>
 
       {/* 2 · add the work */}
-      <section className="mt-6">
-        <p className="text-sm font-medium">2 · Paste your work</p>
+      <section style={{ marginBottom: ‘1.5rem’ }}>
+        <div style={kicker}>2 · Paste your work</div>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           disabled={running}
           rows={12}
           placeholder="Paste your script, treatment, story, or play…"
-          className="mt-2 w-full rounded border border-ink-soft bg-paper p-3 text-sm text-ink"
+          style={{
+            marginTop: ‘.5rem’, width: ‘100%’,
+            fontFamily: ‘var(--font-sans)’, fontSize: ‘.88rem’, lineHeight: 1.7,
+            background: ‘var(--surface-input)’, color: ‘var(--paper-dark)’,
+            border: ‘1px solid var(--border-dark)’, padding: ‘1rem’,
+            outline: ‘none’, resize: ‘vertical’,
+          }}
         />
-        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2 text-xs">
-          <span className="text-ink-faint">
-            Tip: paste a complete piece or a single chapter (up to ~
-            {TESTER_WORD_CAP.toLocaleString()} words) for the sharpest reading.
+        <div style={{
+          marginTop: ‘.5rem’, display: ‘flex’, justifyContent: ‘space-between’,
+          fontFamily: ‘var(--font-mono)’, fontSize: ‘.62rem’, letterSpacing: ‘.06em’,
+        }}>
+          <span style={{ color: ‘var(--ink-soft)’ }}>
+            Up to ~{TESTER_WORD_CAP.toLocaleString()} words for the sharpest reading.
           </span>
-          <span className={overCap ? 'font-medium text-amber-d' : 'text-ink-faint'}>
-            {wordCount.toLocaleString()} / {TESTER_WORD_CAP.toLocaleString()} words
+          <span style={{ color: overCap ? ‘var(--amber-l)’ : ‘var(--ink-soft)’ }}>
+            {wordCount.toLocaleString()} / {TESTER_WORD_CAP.toLocaleString()}
           </span>
         </div>
         {overCap && (
-          <p
-            className="mt-2 rounded px-3 py-2 text-sm text-ink-mid"
-            style={{ background: 'rgba(168,108,16,.12)', borderLeft: '3px solid var(--amber)' }}
-          >
-            Draft &amp; Lens reads best in focused pieces right now — please paste up to about{' '}
-            {TESTER_WORD_CAP.toLocaleString()} words (a chapter, a short story, or an excerpt works
-            well). Full-length novels and scripts are coming soon. Trim to under{' '}
-            {TESTER_WORD_CAP.toLocaleString()} words and you’re good to go.
+          <p style={{
+            marginTop: ‘.75rem’, fontSize: ‘.82rem’, lineHeight: 1.7,
+            color: ‘var(--amber-l)’, borderLeft: ‘2px solid var(--amber)’,
+            paddingLeft: ‘1rem’,
+          }}>
+            Please paste up to {TESTER_WORD_CAP.toLocaleString()} words — a chapter, a short story,
+            or an excerpt. Full-length support is coming soon.
           </p>
         )}
-        <p className="mt-2 text-xs text-ink-faint">
-          Your work is yours. We never train AI on it — it’s sent only to generate your reading,
-          and never shared with anyone else. You can delete it anytime.
+        <p style={{
+          marginTop: ‘.75rem’, fontFamily: ‘var(--font-mono)’, fontSize: ‘.55rem’,
+          letterSpacing: ‘.08em’, color: ‘var(--ink-soft)’, fontStyle: ‘italic’,
+        }}>
+          Your work is yours. We never train AI on it — sent only to generate your reading,
+          never shared with anyone else. Delete it anytime.
         </p>
       </section>
 
       {/* 3 · analyse / stop */}
-      <section className="mt-4 flex items-center gap-3">
+      <section style={{ display: ‘flex’, alignItems: ‘center’, gap: ‘1rem’ }}>
         <button
           type="button"
           onClick={analyse}
           disabled={!canAnalyse}
-          className="rounded bg-ink px-4 py-2 text-sm text-paper disabled:opacity-40"
+          style={{
+            fontFamily: ‘var(--font-mono)’, fontSize: ‘.65rem’,
+            letterSpacing: ‘.2em’, textTransform: ‘uppercase’,
+            padding: ‘.75rem 2rem’, cursor: canAnalyse ? ‘pointer’ : ‘not-allowed’,
+            background: canAnalyse ? ‘var(--amber)’ : ‘var(--border-dark)’,
+            color: canAnalyse ? ‘var(--black-band)’ : ‘var(--ink-soft)’,
+            border: ‘none’, fontWeight: 500, opacity: canAnalyse ? 1 : 0.5,
+          }}
         >
           3 · Analyse
         </button>
@@ -243,51 +292,86 @@ export default function AppHomePage() {
           <button
             type="button"
             onClick={stop}
-            className="rounded border border-ink-soft px-4 py-2 text-sm text-ink"
+            style={{
+              fontFamily: ‘var(--font-mono)’, fontSize: ‘.58rem’,
+              letterSpacing: ‘.14em’, textTransform: ‘uppercase’,
+              padding: ‘.5rem 1rem’, background: ‘transparent’,
+              border: ‘1px solid var(--ink-mid)’, color: ‘var(--ink-faint)’,
+              cursor: ‘pointer’,
+            }}
           >
             Stop
           </button>
         )}
         {!running && isSignedIn !== true && (
-          <span className="text-sm text-ink-soft">
+          <span style={{ fontFamily: ‘var(--font-mono)’, fontSize: ‘.6rem’, letterSpacing: ‘.1em’, color: ‘var(--ink-soft)’ }}>
             Sign in (top right) to analyse your work.
           </span>
         )}
-        {!running && isSignedIn === true && mode === null && text.trim() !== '' && (
-          <span className="text-sm text-ink-soft">Choose a type to enable analysis.</span>
+        {!running && isSignedIn === true && mode === null && text.trim() !== ‘’ && (
+          <span style={{ fontFamily: ‘var(--font-mono)’, fontSize: ‘.6rem’, letterSpacing: ‘.1em’, color: ‘var(--ink-soft)’ }}>
+            Choose a type above to continue.
+          </span>
         )}
-        {running && stage !== '' && (
-          <span className="text-sm text-ink-soft">{stage}…</span>
+        {running && stage !== ‘’ && (
+          <span style={{ fontFamily: ‘var(--font-mono)’, fontSize: ‘.6rem’, letterSpacing: ‘.1em’, color: ‘var(--amber-l)’ }}>
+            {stage}…
+          </span>
         )}
       </section>
+      </div>
 
-      {error !== '' && (
-        <p className="mt-4 rounded border border-ink-soft px-3 py-2 text-sm text-ink">
-          Couldn’t complete: {error}
-        </p>
+      {error !== ‘’ && (
+        <div style={{ maxWidth: 680, margin: ‘0 auto’, padding: ‘0 2rem’ }}>
+          <p style={{
+            marginTop: ‘1rem’, padding: ‘.75rem 1rem’, fontSize: ‘.85rem’,
+            color: ‘var(--error)’, borderLeft: ‘2px solid var(--error)’,
+            background: ‘rgba(192,80,80,.08)’,
+          }}>
+            Couldn’t complete: {error}
+          </p>
+        </div>
       )}
 
       {/* live streaming preview — before the final report lands */}
-      {streamingPreview !== '' && (
-        <article className="mt-6 whitespace-pre-wrap font-serif text-[0.95rem] leading-relaxed text-ink">
-          {streamingPreview}
-        </article>
+      {streamingPreview !== ‘’ && (
+        <div style={{ maxWidth: 680, margin: ‘0 auto’, padding: ‘0 2rem’ }}>
+          <article style={{
+            marginTop: ‘1.5rem’, whiteSpace: ‘pre-wrap’,
+            fontFamily: ‘var(--font-serif)’, fontSize: ‘.92rem’,
+            lineHeight: 1.88, color: ‘var(--paper-dark)’,
+          }}>
+            {streamingPreview}
+          </article>
+        </div>
       )}
 
       {/* revision-awareness banner (§ CHANGE 3) */}
-      {report !== '' && revisionStatus === 'unchanged' && (
-        <p className="mt-6 rounded border-l-4 border-teal bg-cream px-4 py-2 text-sm text-ink-mid">
-          No changes detected since your last reading — showing your previous reading.
-        </p>
+      {report !== ‘’ && revisionStatus === ‘unchanged’ && (
+        <div style={{ maxWidth: 860, margin: ‘0 auto’, padding: ‘0 2rem’ }}>
+          <p style={{
+            marginTop: ‘1.5rem’, padding: ‘.6rem 1rem’, fontSize: ‘.82rem’,
+            color: ‘var(--teal)’, borderLeft: ‘3px solid var(--teal)’,
+            background: ‘var(--cream)’,
+          }}>
+            No changes detected since your last reading — showing your previous reading.
+          </p>
+        </div>
       )}
-      {report !== '' && revisionStatus === 'revised' && (
-        <p className="mt-6 rounded border-l-4 border-amber bg-cream px-4 py-2 text-sm text-ink-mid">
-          Updated reading — this responds to your revision of an earlier draft.
-        </p>
+      {report !== ‘’ && revisionStatus === ‘revised’ && (
+        <div style={{ maxWidth: 860, margin: ‘0 auto’, padding: ‘0 2rem’ }}>
+          <p style={{
+            marginTop: ‘1.5rem’, padding: ‘.6rem 1rem’, fontSize: ‘.82rem’,
+            color: ‘var(--amber)’, borderLeft: ‘3px solid var(--amber)’,
+            background: ‘var(--cream)’,
+          }}>
+            Updated reading — this responds to your revision of an earlier draft.
+          </p>
+        </div>
       )}
 
       {/* the full reading */}
-      {report !== '' && (
+      {report !== ‘’ && (
         <ReportView
           report={report}
           diagnostic={diagnostic}
