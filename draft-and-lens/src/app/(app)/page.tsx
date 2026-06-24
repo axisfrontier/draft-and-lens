@@ -1,23 +1,5 @@
 'use client';
 
-/**
- * Stage C — minimal upload + streaming-reading screen (the vertical slice for
- * the Stage D browser security check).
- *
- * CLIENT-ONLY. Imports nothing from src/prompts or src/ai — it talks to the
- * server exclusively through POST /api/analyse and renders the streamed result.
- * The submission-type union and the stream-event shapes are declared locally on
- * purpose: importing the server-only AnalysisMode would pull a `server-only`
- * module into the client bundle and fail the build — exactly the boundary the
- * security check guards.
- *
- * Stage E: the full report renders via <ReportView> — verdict band, character
- * bible, scores/radar, story arc, the section-by-section reading with the
- * Report ⇄ Notes-on-the-text toggle (inline anchoring, §18), action callouts,
- * the partial-read banner, and the industry-match panel.
- * Still deferred: glossary tooltips (§19), lenses, conversation.
- */
-
 import { useAuth } from '@clerk/nextjs';
 import { useRef, useState, type CSSProperties } from 'react';
 
@@ -56,8 +38,6 @@ type StreamEvent =
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged';
 
-// ⟦…⟧ anchor brackets (U+27E6 / U+27E7), built from char codes so the literal
-// glyphs aren't embedded in source. Stripped for display; full anchoring is §18.
 const ANCHOR_OPEN = String.fromCharCode(0x27e6);
 const ANCHOR_CLOSE = String.fromCharCode(0x27e7);
 function stripAnchors(s: string): string {
@@ -92,7 +72,7 @@ export default function AppHomePage() {
     setError('');
     setStreamed('');
     setReport('');
-    setStage('Reading your work'); // show progress immediately, before the first server stage
+    setStage('Reading your work');
     setCoverage(null);
     setDiagnostic(null);
     setScores(null);
@@ -161,15 +141,16 @@ export default function AppHomePage() {
     abortRef.current?.abort();
   }
 
-  // While Brain 2 streams, show its raw text (anchors stripped) as a live
-  // preview; once the final report lands, swap in the full report view.
   const streamingPreview = report === '' ? stripAnchors(streamed) : '';
 
-  /* Shared kicker style — mono, uppercase, amber, letter-spaced */
   const kicker: CSSProperties = {
-    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-    letterSpacing: '.14em', textTransform: 'uppercase',
-    color: 'var(--label-amber)', fontWeight: 500, marginBottom: '.35rem',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '.68rem',
+    letterSpacing: '.14em',
+    textTransform: 'uppercase',
+    color: 'var(--label-amber)',
+    fontWeight: 500,
+    marginBottom: '.35rem',
   };
 
   const showUpload = report === '' && !running;
@@ -180,178 +161,212 @@ export default function AppHomePage() {
       background: showUpload ? 'var(--black-band)' : 'var(--paper)',
       color: showUpload ? 'var(--paper-dark)' : 'var(--ink)',
     }}>
-      {/* ── Upload panel ── */}
       <div style={{
-        maxWidth: 680, margin: '0 auto',
+        maxWidth: 680,
+        margin: '0 auto',
         padding: showUpload ? '3rem 2rem' : '2rem',
       }}>
-        {/* Title block */}
         <div style={{ marginBottom: '2rem' }}>
           <div style={kicker}>New analysis</div>
           <h1 style={{
-            fontFamily: 'var(--font-serif)', fontSize: '1.2rem',
-            fontWeight: 700, color: 'var(--paper)',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '1.2rem',
+            fontWeight: 700,
+            color: 'var(--paper)',
             display: showUpload ? 'block' : 'none',
           }}>
             Upload your work
           </h1>
         </div>
 
-      {/* 1 · choose the submission type — must-choose (§15) */}
-      <section style={{ marginBottom: '1.5rem' }}>
-        <div style={kicker}>1 · What are you submitting?</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginTop: '.5rem' }}>
-          {TYPES.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => setMode(t.value)}
-              disabled={running}
-              style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                letterSpacing: '.16em', textTransform: 'uppercase',
-                padding: '.4rem 1rem', cursor: 'pointer',
-                border: '1px solid',
-                borderColor: mode === t.value ? 'var(--amber)' : 'var(--border-dark)',
-                background: mode === t.value ? 'var(--amber)' : 'transparent',
-                color: mode === t.value ? 'var(--black-band)' : 'var(--rule)',
-                fontWeight: mode === t.value ? 500 : 300,
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </section>
+        <section style={{ marginBottom: '1.5rem' }}>
+          <div style={kicker}>1 · What are you submitting?</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginTop: '.5rem' }}>
+            {TYPES.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setMode(t.value)}
+                disabled={running}
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '.58rem',
+                  letterSpacing: '.16em',
+                  textTransform: 'uppercase',
+                  padding: '.4rem 1rem',
+                  cursor: 'pointer',
+                  border: '1px solid',
+                  borderColor: mode === t.value ? 'var(--amber)' : 'var(--border-dark)',
+                  background: mode === t.value ? 'var(--amber)' : 'transparent',
+                  color: mode === t.value ? 'var(--black-band)' : 'var(--rule)',
+                  fontWeight: mode === t.value ? 500 : 300,
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </section>
 
-      {/* 2 · add the work */}
-      <section style={{ marginBottom: '1.5rem' }}>
-        <div style={kicker}>2 · Paste your work</div>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={running}
-          rows={12}
-          placeholder="Paste your script, treatment, story, or play…"
-          style={{
-            marginTop: '.5rem', width: '100%',
-            fontFamily: 'var(--font-sans)', fontSize: '.88rem', lineHeight: 1.7,
-            background: 'var(--surface-input)', color: 'var(--paper-dark)',
-            border: '1px solid var(--border-dark)', padding: '1rem',
-            outline: 'none', resize: 'vertical',
-          }}
-        />
-        <div style={{
-          marginTop: '.5rem', display: 'flex', justifyContent: 'space-between',
-          fontFamily: 'var(--font-mono)', fontSize: '.62rem', letterSpacing: '.06em',
-        }}>
-          <span style={{ color: 'var(--ink-soft)' }}>
-            Up to ~{TESTER_WORD_CAP.toLocaleString()} words for the sharpest reading.
-          </span>
-          <span style={{ color: overCap ? 'var(--amber-l)' : 'var(--ink-soft)' }}>
-            {wordCount.toLocaleString()} / {TESTER_WORD_CAP.toLocaleString()}
-          </span>
-        </div>
-        {overCap && (
-          <p style={{
-            marginTop: '.75rem', fontSize: '.82rem', lineHeight: 1.7,
-            color: 'var(--amber-l)', borderLeft: '2px solid var(--amber)',
-            paddingLeft: '1rem',
+        <section style={{ marginBottom: '1.5rem' }}>
+          <div style={kicker}>2 · Paste your work</div>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={running}
+            rows={12}
+            placeholder="Paste your script, treatment, story, or play..."
+            style={{
+              marginTop: '.5rem',
+              width: '100%',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '.88rem',
+              lineHeight: 1.7,
+              background: 'var(--surface-input)',
+              color: 'var(--paper-dark)',
+              border: '1px solid var(--border-dark)',
+              padding: '1rem',
+              outline: 'none',
+              resize: 'vertical',
+            }}
+          />
+          <div style={{
+            marginTop: '.5rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '.62rem',
+            letterSpacing: '.06em',
           }}>
-            Please paste up to {TESTER_WORD_CAP.toLocaleString()} words — a chapter, a short story,
-            or an excerpt. Full-length support is coming soon.
+            <span style={{ color: 'var(--ink-soft)' }}>
+              Up to ~{TESTER_WORD_CAP.toLocaleString()} words for the sharpest reading.
+            </span>
+            <span style={{ color: overCap ? 'var(--amber-l)' : 'var(--ink-soft)' }}>
+              {wordCount.toLocaleString()} / {TESTER_WORD_CAP.toLocaleString()}
+            </span>
+          </div>
+          {overCap && (
+            <p style={{
+              marginTop: '.75rem',
+              fontSize: '.82rem',
+              lineHeight: 1.7,
+              color: 'var(--amber-l)',
+              borderLeft: '2px solid var(--amber)',
+              paddingLeft: '1rem',
+            }}>
+              Please paste up to {TESTER_WORD_CAP.toLocaleString()} words — a chapter, a short story,
+              or an excerpt. Full-length support is coming soon.
+            </p>
+          )}
+          <p style={{
+            marginTop: '.75rem',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '.55rem',
+            letterSpacing: '.08em',
+            color: 'var(--ink-soft)',
+            fontStyle: 'italic',
+          }}>
+            Your work is yours. We never train AI on it — sent only to generate your reading,
+            never shared with anyone else. Delete it anytime.
           </p>
-        )}
-        <p style={{
-          marginTop: '.75rem', fontFamily: 'var(--font-mono)', fontSize: '.55rem',
-          letterSpacing: '.08em', color: 'var(--ink-soft)', fontStyle: 'italic',
-        }}>
-          Your work is yours. We never train AI on it — sent only to generate your reading,
-          never shared with anyone else. Delete it anytime.
-        </p>
-      </section>
+        </section>
 
-      {/* 3 · analyse / stop */}
-      <section style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button
-          type="button"
-          onClick={analyse}
-          disabled={!canAnalyse}
-          style={{
-            fontFamily: 'var(--font-mono)', fontSize: '.65rem',
-            letterSpacing: '.2em', textTransform: 'uppercase',
-            padding: '.75rem 2rem', cursor: canAnalyse ? 'pointer' : 'not-allowed',
-            background: canAnalyse ? 'var(--amber)' : 'var(--border-dark)',
-            color: canAnalyse ? 'var(--black-band)' : 'var(--ink-soft)',
-            border: 'none', fontWeight: 500, opacity: canAnalyse ? 1 : 0.5,
-          }}
-        >
-          3 · Analyse
-        </button>
-        {running && (
+        <section style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button
             type="button"
-            onClick={stop}
+            onClick={analyse}
+            disabled={!canAnalyse}
             style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-              letterSpacing: '.14em', textTransform: 'uppercase',
-              padding: '.5rem 1rem', background: 'transparent',
-              border: '1px solid var(--ink-mid)', color: 'var(--ink-faint)',
-              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '.65rem',
+              letterSpacing: '.2em',
+              textTransform: 'uppercase',
+              padding: '.75rem 2rem',
+              cursor: canAnalyse ? 'pointer' : 'not-allowed',
+              background: canAnalyse ? 'var(--amber)' : 'var(--border-dark)',
+              color: canAnalyse ? 'var(--black-band)' : 'var(--ink-soft)',
+              border: 'none',
+              fontWeight: 500,
+              opacity: canAnalyse ? 1 : 0.5,
             }}
           >
-            Stop
+            3 · Analyse
           </button>
-        )}
-        {!running && isSignedIn !== true && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--ink-soft)' }}>
-            Sign in (top right) to analyse your work.
-          </span>
-        )}
-        {!running && isSignedIn === true && mode === null && text.trim() !== '' && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--ink-soft)' }}>
-            Choose a type above to continue.
-          </span>
-        )}
-        {running && stage !== '' && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--amber-l)' }}>
-            {stage}…
-          </span>
-        )}
-      </section>
+          {running && (
+            <button
+              type="button"
+              onClick={stop}
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '.58rem',
+                letterSpacing: '.14em',
+                textTransform: 'uppercase',
+                padding: '.5rem 1rem',
+                background: 'transparent',
+                border: '1px solid var(--ink-mid)',
+                color: 'var(--ink-faint)',
+                cursor: 'pointer',
+              }}
+            >
+              Stop
+            </button>
+          )}
+          {!running && isSignedIn !== true && (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--ink-soft)' }}>
+              Sign in (top right) to analyse your work.
+            </span>
+          )}
+          {!running && isSignedIn === true && mode === null && text.trim() !== '' && (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--ink-soft)' }}>
+              Choose a type above to continue.
+            </span>
+          )}
+          {running && stage !== '' && (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--amber-l)' }}>
+              {stage}...
+            </span>
+          )}
+        </section>
       </div>
 
       {error !== '' && (
         <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 2rem' }}>
           <p style={{
-            marginTop: '1rem', padding: '.75rem 1rem', fontSize: '.85rem',
-            color: 'var(--error)', borderLeft: '2px solid var(--error)',
+            marginTop: '1rem',
+            padding: '.75rem 1rem',
+            fontSize: '.85rem',
+            color: 'var(--error)',
+            borderLeft: '2px solid var(--error)',
             background: 'rgba(192,80,80,.08)',
           }}>
-            Couldn't complete: {error}
+            Could not complete: {error}
           </p>
         </div>
       )}
 
-      {/* live streaming preview — before the final report lands */}
       {streamingPreview !== '' && (
         <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 2rem' }}>
           <article style={{
-            marginTop: '1.5rem', whiteSpace: 'pre-wrap',
-            fontFamily: 'var(--font-serif)', fontSize: '.92rem',
-            lineHeight: 1.88, color: 'var(--paper-dark)',
+            marginTop: '1.5rem',
+            whiteSpace: 'pre-wrap',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '.92rem',
+            lineHeight: 1.88,
+            color: 'var(--paper-dark)',
           }}>
             {streamingPreview}
           </article>
         </div>
       )}
 
-      {/* revision-awareness banner (§ CHANGE 3) */}
       {report !== '' && revisionStatus === 'unchanged' && (
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 2rem' }}>
           <p style={{
-            marginTop: '1.5rem', padding: '.6rem 1rem', fontSize: '.82rem',
-            color: 'var(--teal)', borderLeft: '3px solid var(--teal)',
+            marginTop: '1.5rem',
+            padding: '.6rem 1rem',
+            fontSize: '.82rem',
+            color: 'var(--teal)',
+            borderLeft: '3px solid var(--teal)',
             background: 'var(--cream)',
           }}>
             No changes detected since your last reading — showing your previous reading.
@@ -361,8 +376,11 @@ export default function AppHomePage() {
       {report !== '' && revisionStatus === 'revised' && (
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 2rem' }}>
           <p style={{
-            marginTop: '1.5rem', padding: '.6rem 1rem', fontSize: '.82rem',
-            color: 'var(--amber)', borderLeft: '3px solid var(--amber)',
+            marginTop: '1.5rem',
+            padding: '.6rem 1rem',
+            fontSize: '.82rem',
+            color: 'var(--amber)',
+            borderLeft: '3px solid var(--amber)',
             background: 'var(--cream)',
           }}>
             Updated reading — this responds to your revision of an earlier draft.
@@ -370,7 +388,6 @@ export default function AppHomePage() {
         </div>
       )}
 
-      {/* the full reading */}
       {report !== '' && (
         <ReportView
           report={report}

@@ -60,7 +60,6 @@ export default function RootLayout({
             background: 'var(--black-band)',
             borderBottom: '2px solid var(--amber)',
           }}>
-            {/* Logo */}
             <span style={{
               fontFamily: 'var(--font-mono)', fontSize: '.95rem',
               letterSpacing: '.2em', textTransform: 'uppercase',
@@ -69,7 +68,6 @@ export default function RootLayout({
               DRAFT<span style={{ color: 'var(--amber-l)' }}>&amp;</span>LENS
             </span>
 
-            {/* Right nav */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <a href="/glossary" style={{
                 fontFamily: 'var(--font-mono)', fontSize: '.5rem',
