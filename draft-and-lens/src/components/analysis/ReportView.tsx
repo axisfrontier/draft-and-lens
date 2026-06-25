@@ -52,7 +52,7 @@ export function ReportView({
   const traditionLine = diagnostic
     ? [diagnostic.tradition, diagnostic.register].filter(Boolean).join('  ·  ')
     : '';
-  const mode = diagnostic?.mode ?? '';
+  const mode = '';
   const wc = countWords(submittedText);
   const pages = Math.max(1, Math.round(wc / 250));
 
