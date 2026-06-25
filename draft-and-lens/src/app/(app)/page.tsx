@@ -650,8 +650,28 @@ export default function AppHomePage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
                 fontFamily: 'var(--font-serif)', fontSize: '.95rem',
-                color: 'var(--paper)',
+                color: 'var(--paper)', marginBottom: '.4rem',
               }}>{stage || 'Reading your work'}</div>
+              <div style={{ display: 'flex', gap: '.5rem' }}>
+                {(['read', 'structure', 'writing', 'support'] as const).map((s, i) => {
+                  const labels = ['Reading', 'Structure', 'Writing the reading', 'Market & bible'];
+                  const stageMap: Record<string, string> = { read: 'read', structure: 'structure', writing: 'writing', 'Final check': 'support' };
+                  const currentKey = stageMap[stage] ?? (stage === 'Mapping the structure' || stage === 'Verifying the narrator' ? 'structure' : stage === 'Writing the reading' ? 'writing' : stage === 'Reading your work' ? 'read' : '');
+                  const isActive = currentKey === s;
+                  return (
+                    <div key={s} style={{
+                      fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                      letterSpacing: '.1em', textTransform: 'uppercase',
+                      padding: '.15rem .5rem', borderRadius: 20,
+                      border: '1px solid var(--border-dark)',
+                      color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
+                      animation: isActive ? `thinkPulse 1s ease-in-out ${i * 0.15}s infinite` : 'none',
+                    }}>
+                      {labels[i]}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <button
               type="button"

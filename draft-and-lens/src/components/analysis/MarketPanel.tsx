@@ -29,7 +29,7 @@ export function MarketPanel({ market }: { market: Market | null }) {
           marginBottom: '.4rem',
         }}
       >
-        Industry Match
+        Industry match
       </div>
       <div
         style={{
@@ -41,7 +41,7 @@ export function MarketPanel({ market }: { market: Market | null }) {
           marginBottom: '.5rem',
         }}
       >
-        Where This Could Go
+        Where this could go
       </div>
       <div
         style={{

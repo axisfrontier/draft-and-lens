@@ -74,7 +74,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
               color: 'var(--amber-d)',
             }}
           >
-            Story Arc · Interpreted
+            Story arc · interpreted
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1.5rem' }}>

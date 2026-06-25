@@ -116,13 +116,13 @@ export function ReportView({
         }}>Jump to</div>
 
         <div style={sidebarGroup}>Overview</div>
-        <a href="#sec-title" style={sidebarLink}>Title &amp; Summary</a>
+        <a href="#sec-title" style={sidebarLink}>Title &amp; summary</a>
         <a href="#sec-verdict" style={sidebarLink}>Verdict</a>
         <a href="#sec-bible" style={sidebarLink}>Character bible</a>
 
         <div style={sidebarGroup}>Dashboard</div>
-        <a href="#sec-dashboard" style={sidebarLink}>Dimension Map</a>
-        <a href="#sec-arc" style={sidebarLink}>Story Arc</a>
+        <a href="#sec-dashboard" style={sidebarLink}>Dimension map</a>
+        <a href="#sec-arc" style={sidebarLink}>Story arc</a>
 
         <div style={sidebarGroup}>Analysis</div>
         {sidebarSections.map((s) => (
@@ -130,12 +130,15 @@ export function ReportView({
         ))}
 
         <div style={sidebarGroup}>Action</div>
-        <a href="#sec-three" style={sidebarLink}>Three Things</a>
-        <a href="#sec-lenses" style={sidebarLink}>Editorial Lenses</a>
-        <a href="#sec-studios" style={sidebarLink}>Studio Match</a>
+        <a href="#sec-three" style={sidebarLink}>Three things</a>
+        <a href="#sec-lenses" style={sidebarLink}>Editorial lenses</a>
+        <a href="#sec-studios" style={sidebarLink}>Studio match</a>
 
         <div style={{ ...sidebarGroup, marginTop: '1.25rem' }}>Reference</div>
+        <a href="/about" style={sidebarLink}>About</a>
         <a href="/glossary" style={sidebarLink}>Glossary</a>
+        <a href="/feedback" style={sidebarLink}>Feedback</a>
+        <a href="mailto:hello@draftandlens.com" style={sidebarLink}>Contact</a>
         <a href="#sec-disclaimer" style={sidebarLink}>Disclaimer</a>
       </aside>
 
@@ -245,17 +248,17 @@ export function ReportView({
               fontFamily: 'var(--font-mono)', fontSize: '.72rem',
               letterSpacing: '.2em', textTransform: 'uppercase',
               color: 'var(--amber-d)', marginBottom: '.4rem',
-            }}>Editorial Analysis</div>
+            }}>Editorial analysis</div>
             <div style={{
               fontFamily: 'var(--font-serif)', fontSize: '1.4rem',
               fontWeight: 700, color: 'var(--ink)', letterSpacing: '-.01em',
-            }}>Section by Section Breakdown</div>
+            }}>Section by section breakdown</div>
           </div>
 
           {/* Download row */}
           <div style={{
             display: 'flex', alignItems: 'center',
-            justifyContent: 'flex-end', gap: '.75rem',
+            justifyContent: 'flex-start', gap: '.75rem',
             padding: '1.5rem 0', borderBottom: '1px solid var(--rule-l)',
             marginBottom: '2.5rem',
           }}>
@@ -355,11 +358,11 @@ export function ReportView({
                 fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                 letterSpacing: '.2em', textTransform: 'uppercase',
                 color: 'var(--amber-d)', marginBottom: '.4rem',
-              }}>Editorial Lenses</div>
+              }}>Editorial lenses</div>
               <div style={{
                 fontFamily: 'var(--font-serif)', fontSize: '1.4rem',
                 fontWeight: 700, color: 'var(--ink)', letterSpacing: '-.01em',
-              }}>How other traditions might read this</div>
+              }}>How other tradition experts might read this</div>
             </div>
 
             {LENS_GROUPS.map((group) => (
@@ -407,6 +410,19 @@ export function ReportView({
           {/* Market */}
           <div id="sec-studios">
             <MarketPanel market={market} />
+          </div>
+
+          {/* Disclaimer */}
+          <div id="sec-disclaimer" style={{
+            marginTop: '3rem', paddingTop: '2rem',
+            borderTop: '1px solid var(--rule-l)',
+            fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+            letterSpacing: '.06em', color: 'var(--ink-faint)',
+            lineHeight: 1.7,
+          }}>
+            <div style={{ fontWeight: 500, marginBottom: '.5rem', textTransform: 'uppercase', letterSpacing: '.12em' }}>Disclaimer</div>
+            <p style={{ marginBottom: '.5rem' }}>Your work is yours. Draft &amp; Lens does not claim any rights over the scripts or stories you submit, and submissions are not used to train models.</p>
+            <p>Editorial lenses are AI-generated analytical perspectives inspired by the documented craft principles of the named figures. They are not affiliated with, endorsed by, or representative of those individuals.</p>
           </div>
 
           {/* Footer */}
