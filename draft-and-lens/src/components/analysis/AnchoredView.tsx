@@ -59,7 +59,7 @@ export function AnchoredView({ report, text }: { report: string; text: string })
         {countLine}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '4rem', alignItems: 'start' }}>
         {/* manuscript with anchored spans */}
         <div
           style={{

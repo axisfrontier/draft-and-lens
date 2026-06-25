@@ -159,10 +159,8 @@ export function ReportView({
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                   letterSpacing: '.22em', textTransform: 'uppercase',
-                  color: '#c8b898', marginBottom: '1rem',
-                  display: 'flex', alignItems: 'center', gap: '.75rem',
+                  color: 'var(--ink-soft)', marginBottom: '1rem',
                 }}>
-                  <span style={{ width: 24, height: 1, background: 'var(--amber)', display: 'inline-block' }} />
                   {traditionLine}
                 </div>
               )}
@@ -361,7 +359,7 @@ export function ReportView({
               <div style={{
                 fontFamily: 'var(--font-serif)', fontSize: '1.4rem',
                 fontWeight: 700, color: 'var(--ink)', letterSpacing: '-.01em',
-              }}>Choose a Voice</div>
+              }}>How other traditions might read this</div>
             </div>
 
             {LENS_GROUPS.map((group) => (

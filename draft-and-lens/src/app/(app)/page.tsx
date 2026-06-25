@@ -702,11 +702,11 @@ export default function AppHomePage() {
 
       {/* ── REPORT ── */}
       {report !== '' && revisionStatus === 'unchanged' && (
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 3rem' }}>
+        <div style={{ padding: '1rem 2.5rem 0', textAlign: 'center' }}>
           <p style={{
-            marginTop: '1.5rem', padding: '.6rem 1rem',
-            fontSize: '.82rem', color: 'var(--teal)',
-            borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
+            display: 'inline-block', padding: '.5rem 1.25rem',
+            fontSize: '.78rem', color: 'var(--teal)',
+            border: '1px solid var(--teal)', background: 'var(--cream)',
           }}>
             No changes detected since your last reading — showing your previous reading.
           </p>

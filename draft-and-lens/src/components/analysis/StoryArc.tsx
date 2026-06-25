@@ -40,7 +40,6 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
     pace: false,
     emotion: false,
   });
-  const [showNote, setShowNote] = useState(false);
   const [hover, setHover] = useState<{ label: string; note: string; leftPct: number } | null>(
     null
   );
@@ -77,30 +76,6 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
           >
             Story Arc · Interpreted
           </div>
-          <button
-            type="button"
-            onClick={() => setShowNote((s) => !s)}
-            title="Why is this interpreted?"
-            style={{
-              background: 'none',
-              border: '1px solid var(--rule-l)',
-              color: 'var(--rule)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '.6rem',
-              width: 18,
-              height: 18,
-              borderRadius: '50%',
-              cursor: 'pointer',
-              lineHeight: 1,
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            i
-          </button>
         </div>
         <div style={{ display: 'flex', gap: '1.5rem' }}>
           {LINES.map((l) => (
@@ -115,7 +90,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
                 fontSize: '.72rem',
                 letterSpacing: '.1em',
                 textTransform: 'uppercase',
-                color: '#c8b898',
+                color: 'var(--ink-soft)',
                 cursor: 'pointer',
                 userSelect: 'none',
                 opacity: hidden[l.key] ? 0.4 : 1,
@@ -225,21 +200,19 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
         </svg>
       </div>
 
-      {showNote && (
-        <div
-          style={{
-            marginTop: '.75rem',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '.68rem',
-            letterSpacing: '.08em',
-            color: '#8a8070',
-            fontStyle: 'italic',
-          }}
-        >
-          Arc reflects page order. If your story is told non-chronologically — events presented out
-          of sequence — this structural reading may not map to your intended narrative shape.
-        </div>
-      )}
+      <div
+        style={{
+          marginTop: '.75rem',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '.68rem',
+          letterSpacing: '.08em',
+          color: '#8a8070',
+          fontStyle: 'italic',
+        }}
+      >
+        Arc reflects page order. If your story is told non-chronologically — events presented out
+        of sequence — this structural reading may not map to your intended narrative shape.
+      </div>
     </section>
   );
 }

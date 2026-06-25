@@ -69,12 +69,26 @@ export default function RootLayout({
             </span>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <a href="/about" style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                letterSpacing: '.12em', textTransform: 'uppercase',
+                color: 'var(--ink-faint)', textDecoration: 'none',
+              }}>
+                About
+              </a>
               <a href="/glossary" style={{
                 fontFamily: 'var(--font-mono)', fontSize: '.5rem',
                 letterSpacing: '.12em', textTransform: 'uppercase',
                 color: 'var(--ink-faint)', textDecoration: 'none',
               }}>
                 Glossary
+              </a>
+              <a href="/feedback" style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                letterSpacing: '.12em', textTransform: 'uppercase',
+                color: 'var(--ink-faint)', textDecoration: 'none',
+              }}>
+                Feedback
               </a>
               <SignedOut>
                 <SignInButton mode="modal">
