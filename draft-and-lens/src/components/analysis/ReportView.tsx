@@ -178,8 +178,8 @@ export function ReportView({
     setConvLoading(false);
   };
 
-  const title =
-    diagnostic && diagnostic.title && diagnostic.title !== 'Untitled' ? diagnostic.title : '';
+  const rawTitle = diagnostic && diagnostic.title && diagnostic.title !== 'Untitled' ? diagnostic.title : '';
+  const title = rawTitle.length > 60 ? rawTitle.slice(0, 60).trimEnd() + '…' : rawTitle;
   const traditionLine = diagnostic
     ? [diagnostic.tradition, diagnostic.register].filter(Boolean).join('  ·  ')
     : '';
