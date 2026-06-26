@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 
 import { hasAnchors } from '@/lib/anchor';
@@ -529,11 +530,11 @@ export function ReportView({
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
                           {id ? (
-                            <img
+                            <Image
                               src={`/lenses/${id}.jpg`}
                               alt={name}
                               width={38} height={38}
-                              style={{ width: 38, height: 38, objectFit: 'cover', display: 'block' }}
+                              style={{ objectFit: 'cover', display: 'block' }}
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}

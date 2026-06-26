@@ -43,10 +43,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     systemPrompt = buildConversationLensSystem(meta, tradition);
   } else {
     // default: editorial voice
-    // diagnostic is a plain JSON object from the client — cast to server type for prompt building
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    systemPrompt = buildConversationEditorialSystem({
-      diagnostic: diagnostic as any,
+      systemPrompt = buildConversationEditorialSystem({
+      diagnostic: diagnostic as Parameters<typeof buildConversationEditorialSystem>[0]['diagnostic'],
       reportText: typeof reportText === 'string' ? reportText : '',
     });
   }
