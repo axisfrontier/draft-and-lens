@@ -622,33 +622,26 @@ export function ReportView({
                 letterSpacing: '.16em', textTransform: 'uppercase',
                 color: '#8a8070', marginRight: '.25rem', flexShrink: 0,
               }}>Address to</span>
-              <button
-                onClick={() => setConvTarget('editorial')}
-                style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                  letterSpacing: '.1em', textTransform: 'uppercase',
-                  padding: '.3rem .75rem',
-                  background: convTarget === 'editorial' ? 'var(--amber-d)' : 'transparent',
-                  color: convTarget === 'editorial' ? 'var(--black-band)' : '#8a8070',
-                  border: `1px solid ${convTarget === 'editorial' ? 'var(--amber-d)' : 'var(--border-dark)'}`,
-                  cursor: 'pointer',
-                }}
-              >Editorial</button>
-              {LENS_GROUPS.flatMap(g => g.entries).filter(e => e.id).map(({ name, id }) => (
-                <button
-                  key={id}
-                  onClick={() => setConvTarget(id!)}
-                  style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                    letterSpacing: '.1em', textTransform: 'uppercase',
-                    padding: '.3rem .75rem',
-                    background: convTarget === id ? 'var(--amber-d)' : 'transparent',
-                    color: convTarget === id ? 'var(--black-band)' : '#8a8070',
-                    border: `1px solid ${convTarget === id ? 'var(--amber-d)' : 'var(--border-dark)'}`,
-                    cursor: 'pointer',
-                  }}
-                >{name}</button>
-              ))}
+              {(['editorial', ...LENS_GROUPS.flatMap(g => g.entries).filter(e => e.id).map(e => e.id!)] as string[]).map((targetId) => {
+                const label = targetId === 'editorial' ? 'Editorial' : (LENS_GROUPS.flatMap(g => g.entries).find(e => e.id === targetId)?.name ?? targetId);
+                const isActive = convTarget === targetId;
+                return (
+                  <button
+                    key={targetId}
+                    onClick={() => setConvTarget(targetId)}
+                    style={{
+                      fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                      letterSpacing: '.1em', textTransform: 'uppercase',
+                      padding: '.3rem .75rem',
+                      background: isActive ? 'var(--amber-d)' : 'transparent',
+                      color: isActive ? 'var(--black-band)' : '#8a8070',
+                      border: `1px solid ${isActive ? 'var(--amber-d)' : '#3a3530'}`,
+                      cursor: 'pointer', outline: 'none',
+                      appearance: 'none' as const,
+                    }}
+                  >{label}</button>
+                );
+              })}
             </div>
 
             {/* Message thread */}
@@ -693,9 +686,10 @@ export function ReportView({
                 onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { void sendConvMessage(); } }}
                 placeholder="Ask about a specific note, push back on something, or ask a lens voice to go deeper…"
                 style={{
-                  flex: 1, resize: 'vertical',
+                  flex: 1, resize: 'none',
                   background: 'var(--surface-input)', color: 'var(--paper-dark)',
-                  border: '1px solid var(--amber-d)', padding: '1rem 1.25rem',
+                  border: '1px solid var(--amber-l)', outline: 'none',
+                  padding: '1rem 1.25rem',
                   fontFamily: 'var(--font-serif)', fontSize: '.88rem',
                   lineHeight: 1.8, fontStyle: 'italic', borderRadius: 14,
                 }}

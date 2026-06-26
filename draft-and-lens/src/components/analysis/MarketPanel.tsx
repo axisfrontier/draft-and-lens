@@ -12,10 +12,8 @@ const MATCH_STYLES: Record<string, { bg: string; border: string; text: string }>
 const NEUTRAL_MATCH = { bg: 'rgba(74,72,64,.2)', border: 'rgba(74,72,64,.3)', text: '#9a9080' };
 
 export function MarketPanel({ market }: { market: Market | null }) {
-  if (!market) return null;
-  const studios = market.studios ?? [];
-  const knownWork = market.knownWork?.trim() ?? '';
-  if (studios.length === 0 && !knownWork) return null;
+  const studios = market?.studios ?? [];
+  const knownWork = market?.knownWork?.trim() ?? '';
 
   return (
     <section style={{ background: 'var(--black-band)', margin: '2.5rem -3rem 0', padding: '3rem 3rem 2.5rem' }}>
@@ -72,6 +70,11 @@ export function MarketPanel({ market }: { market: Market | null }) {
         </div>
       )}
 
+      {studios.length === 0 && (
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', color: '#5a5448', fontStyle: 'italic' }}>
+          Market analysis is generated for longer submissions.
+        </div>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {studios.map((s, i) => {
           const ms = MATCH_STYLES[s.match] ?? NEUTRAL_MATCH;
