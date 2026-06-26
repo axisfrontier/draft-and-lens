@@ -74,25 +74,7 @@ export function parseReport(reportRaw: string): ParsedReport {
   let actionPlan: ReportSectionData | null = null;
 
   const place = (sec: ReportSectionData): void => {
-    const h = sec.heading.toUpperCase();
-    if (h.includes('CRAFT DIRECTIVE') || h.includes('WHAT TO FIX')) {
-      craftDirectives = sec;
-    } else if (
-      h.includes('WHERE TO BEGIN') ||
-      h.includes('NEXT STEP') ||
-      h.includes('WHERE TO START')
-    ) {
-      whereToBegin = sec;
-    } else if (
-      h.includes('ACTION PLAN') ||
-      h.includes('REVISION PLAN') ||
-      h.includes('STEP-BY-STEP') ||
-      h.includes('NEXT STEPS')
-    ) {
-      actionPlan = sec;
-    } else {
-      sections.push(sec);
-    }
+    sections.push(sec);
   };
 
   let cur: ReportSectionData | null = null;

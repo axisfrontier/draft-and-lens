@@ -235,7 +235,7 @@ export function ReportView({
         height: 'calc(100vh - var(--nav-h))',
         overflowY: 'auto', background: 'var(--cream)',
         borderLeft: '1px solid var(--rule-l)',
-        padding: '1.5rem 0', alignSelf: 'start',
+        padding: '0', alignSelf: 'start',
       }}>
         <div style={{
           fontFamily: 'var(--font-mono)', fontSize: '.52rem',
@@ -603,30 +603,33 @@ export function ReportView({
 
           {/* Personal editor */}
           <div id="sec-editor" style={{
-            marginTop: '3rem', background: 'var(--black-band)',
+            background: 'var(--black-band)',
             margin: '3rem -3rem 0', padding: '3rem 3rem 2.5rem',
             borderTop: '3px solid var(--amber-d)',
           }}>
             <div style={{
-              fontFamily: 'var(--font-serif)', fontSize: '1.4rem',
-              fontWeight: 700, color: '#e8dfc4', marginBottom: '.5rem',
-            }}>Speak with your personal editor</div>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.62rem',
-              letterSpacing: '.08em', color: '#8a8070', marginBottom: '1.5rem',
-            }}>Ask a question, push back on a note, or request elaboration.</div>
+              fontFamily: 'var(--font-serif)', fontSize: '1.6rem',
+              fontWeight: 700, color: 'var(--paper)', marginBottom: '1.25rem',
+            }}>Speak with your editor</div>
 
-            {/* Target buttons */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.2rem' }}>
+            <div style={{ borderTop: '1px solid var(--border-dark)', marginBottom: '1.25rem' }} />
+
+            {/* Address to row */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.5rem', marginBottom: '1.25rem' }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                letterSpacing: '.16em', textTransform: 'uppercase',
+                color: '#8a8070', marginRight: '.25rem', flexShrink: 0,
+              }}>Address to</span>
               <button
                 onClick={() => setConvTarget('editorial')}
                 style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.58rem',
                   letterSpacing: '.1em', textTransform: 'uppercase',
-                  padding: '.3rem .7rem',
+                  padding: '.3rem .75rem',
                   background: convTarget === 'editorial' ? 'var(--amber-d)' : 'transparent',
-                  color: convTarget === 'editorial' ? '#1a1610' : '#8a8070',
-                  border: `1px solid ${convTarget === 'editorial' ? 'var(--amber-d)' : '#3a3530'}`,
+                  color: convTarget === 'editorial' ? 'var(--black-band)' : '#8a8070',
+                  border: `1px solid ${convTarget === 'editorial' ? 'var(--amber-d)' : 'var(--border-dark)'}`,
                   cursor: 'pointer',
                 }}
               >Editorial</button>
@@ -637,10 +640,10 @@ export function ReportView({
                   style={{
                     fontFamily: 'var(--font-mono)', fontSize: '.58rem',
                     letterSpacing: '.1em', textTransform: 'uppercase',
-                    padding: '.3rem .7rem',
+                    padding: '.3rem .75rem',
                     background: convTarget === id ? 'var(--amber-d)' : 'transparent',
-                    color: convTarget === id ? '#1a1610' : '#8a8070',
-                    border: `1px solid ${convTarget === id ? 'var(--amber-d)' : '#3a3530'}`,
+                    color: convTarget === id ? 'var(--black-band)' : '#8a8070',
+                    border: `1px solid ${convTarget === id ? 'var(--amber-d)' : 'var(--border-dark)'}`,
                     cursor: 'pointer',
                   }}
                 >{name}</button>
@@ -681,33 +684,35 @@ export function ReportView({
             )}
 
             {/* Input */}
-            <div style={{ display: 'flex', gap: '.75rem', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
               <textarea
-                rows={3}
+                rows={4}
                 value={convInput}
                 onChange={(e) => setConvInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { void sendConvMessage(); } }}
-                placeholder="Ask a question or push back on a note…"
+                placeholder="Ask about a specific note, push back on something, or ask a lens voice to go deeper…"
                 style={{
                   flex: 1, resize: 'vertical',
-                  background: '#1a1610', color: '#c8c0a8',
-                  border: '1px solid #3a3530', padding: '.75rem',
-                  fontFamily: 'var(--font-serif)', fontSize: '.9rem',
-                  lineHeight: 1.6,
+                  background: 'var(--surface-input)', color: 'var(--paper-dark)',
+                  border: '1px solid var(--amber-d)', padding: '1rem 1.25rem',
+                  fontFamily: 'var(--font-serif)', fontSize: '.88rem',
+                  lineHeight: 1.8, fontStyle: 'italic', borderRadius: 14,
                 }}
               />
               <button
                 onClick={() => void sendConvMessage()}
                 disabled={convLoading || !convInput.trim()}
                 style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-                  letterSpacing: '.12em', textTransform: 'uppercase',
-                  padding: '.6rem 1.2rem',
-                  background: 'var(--amber-d)', color: '#1a1610',
-                  border: 'none', cursor: 'pointer',
-                  opacity: (convLoading || !convInput.trim()) ? 0.4 : 1,
+                  fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+                  letterSpacing: '.14em', textTransform: 'uppercase',
+                  padding: '.95rem 1.4rem',
+                  background: (convLoading || !convInput.trim()) ? 'var(--border-dark)' : 'var(--amber)',
+                  color: (convLoading || !convInput.trim()) ? 'var(--ink-soft)' : 'var(--black-band)',
+                  border: 'none', cursor: (convLoading || !convInput.trim()) ? 'not-allowed' : 'pointer',
+                  fontWeight: 500, borderRadius: 14, flexShrink: 0,
+                  transition: 'all .15s',
                 }}
-              >Send</button>
+              >Send →</button>
             </div>
             <div style={{
               fontFamily: 'var(--font-mono)', fontSize: '.52rem',
