@@ -494,102 +494,106 @@ export function ReportView({
               }}>How other tradition experts might read this</div>
             </div>
 
-            {LENS_GROUPS.map((group) => (
-              <div key={group.label}>
-                <div style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.72rem',
-                  letterSpacing: '.2em', textTransform: 'uppercase',
-                  color: 'var(--amber-d)', margin: '1.5rem 0 .75rem',
-                  paddingBottom: '.4rem', borderBottom: '1px solid var(--rule-l)',
-                }}>{group.label}</div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                  gap: '.4rem', marginBottom: '.5rem',
-                }}>
-                  {group.entries.map(({ name, id }) => {
-                    const isActive = id && activeLensId === id;
-                    const isLoading = id && lensLoading === id;
-                    return (
-                      <div
-                        key={name}
-                        onClick={() => id && callLens(id)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '.4rem',
-                          padding: '.35rem .5rem',
-                          border: `1px solid ${isActive ? 'var(--amber-d)' : 'var(--rule-l)'}`,
-                          background: isActive ? 'var(--black-band)' : 'var(--cream)',
-                          cursor: id ? 'pointer' : 'default',
-                          width: '100%',
-                          transition: 'border-color .15s, background .15s',
-                        }}
-                      >
-                        <div style={{
-                          width: 38, height: 38, flexShrink: 0,
-                          background: 'var(--ink-mid)', overflow: 'hidden',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          {id ? (
-                            <Image
-                              src={`/lenses/${id}.jpg`}
-                              alt={name}
-                              width={38} height={38}
-                              style={{ objectFit: 'cover', display: 'block' }}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
+            {LENS_GROUPS.map((group) => {
+              const groupHasActive = group.entries.some(e => e.id === activeLensId);
+              return (
+                <div key={group.label}>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+                    letterSpacing: '.2em', textTransform: 'uppercase',
+                    color: 'var(--amber-d)', margin: '1.5rem 0 .75rem',
+                    paddingBottom: '.4rem', borderBottom: '1px solid var(--rule-l)',
+                  }}>{group.label}</div>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                    gap: '.4rem', marginBottom: '.5rem',
+                  }}>
+                    {group.entries.map(({ name, id }) => {
+                      const isActive = id && activeLensId === id;
+                      const isLoading = id && lensLoading === id;
+                      return (
+                        <div
+                          key={name}
+                          onClick={() => id && callLens(id)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '.4rem',
+                            padding: '.35rem .5rem',
+                            border: `1px solid ${isActive ? 'var(--amber-d)' : 'var(--rule-l)'}`,
+                            background: isActive ? 'var(--black-band)' : 'var(--cream)',
+                            cursor: id ? 'pointer' : 'default',
+                            width: '100%',
+                            transition: 'border-color .15s, background .15s',
+                          }}
+                        >
+                          <div style={{
+                            width: 38, height: 38, flexShrink: 0,
+                            background: 'var(--ink-mid)', overflow: 'hidden',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            {id ? (
+                              <Image
+                                src={`/lenses/${id}.jpg`}
+                                alt={name}
+                                width={38} height={38}
+                                style={{ objectFit: 'cover', display: 'block', filter: 'grayscale(100%)' }}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <span style={{
+                                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                                color: 'var(--ink-faint)', textTransform: 'uppercase',
+                              }}>{name.charAt(0)}</span>
+                            )}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
                             <span style={{
-                              fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                              color: 'var(--ink-faint)', textTransform: 'uppercase',
-                            }}>{name.charAt(0)}</span>
-                          )}
+                              fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                              letterSpacing: '.06em', textTransform: 'uppercase',
+                              color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
+                              display: 'block',
+                            }}>{name}</span>
+                            {isLoading && (
+                              <span style={{
+                                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                                color: 'var(--amber-d)', letterSpacing: '.06em',
+                              }}>reading…</span>
+                            )}
+                          </div>
                         </div>
-                        <div style={{ minWidth: 0 }}>
-                          <span style={{
-                            fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                            letterSpacing: '.06em', textTransform: 'uppercase',
-                            color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
-                            display: 'block',
-                          }}>{name}</span>
-                          {isLoading && (
-                            <span style={{
-                              fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                              color: 'var(--amber-d)', letterSpacing: '.06em',
-                            }}>reading…</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+                      );
+                    })}
+                  </div>
 
-            {/* Active lens reading */}
-            {activeLensId && (lensReadings[activeLensId] || lensLoading === activeLensId) && (
-              <div style={{
-                marginTop: '1.5rem', background: 'var(--black-band)',
-                padding: '2rem 2.5rem', borderLeft: '2px solid var(--amber-d)',
-              }}>
-                <div style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-                  letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: 'var(--amber-d)', marginBottom: '.75rem',
-                }}>
-                  {LENS_GROUPS.flatMap(g => g.entries).find(e => e.id === activeLensId)?.name ?? activeLensId}
-                </div>
-                <div style={{
-                  fontSize: '.9rem', lineHeight: 1.85, color: '#c8c0a8',
-                  fontStyle: 'italic', whiteSpace: 'pre-wrap',
-                }}>
-                  {lensReadings[activeLensId] || (
-                    <span style={{ opacity: 0.5 }}>Reading your work through this lens…</span>
+                  {/* Reading panel — appears under this group if it contains the active lens */}
+                  {groupHasActive && activeLensId && (lensReadings[activeLensId] || lensLoading === activeLensId) && (
+                    <div style={{
+                      marginTop: '.75rem', marginBottom: '.5rem',
+                      background: 'var(--black-band)',
+                      padding: '2rem 2.5rem', borderLeft: '2px solid var(--amber-d)',
+                    }}>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase',
+                        color: 'var(--amber-d)', marginBottom: '.75rem',
+                      }}>
+                        {group.entries.find(e => e.id === activeLensId)?.name ?? activeLensId}
+                      </div>
+                      <div style={{
+                        fontSize: '.9rem', lineHeight: 1.85, color: '#c8c0a8',
+                        fontStyle: 'italic', whiteSpace: 'pre-wrap',
+                      }}>
+                        {lensReadings[activeLensId] || (
+                          <span style={{ opacity: 0.5 }}>Reading your work through this lens…</span>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
 
           {/* Market */}
