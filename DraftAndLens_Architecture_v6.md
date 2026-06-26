@@ -14,7 +14,7 @@
 > - **Must-choose submission type** (§15): the user explicitly declares the work type; auto-detect no longer routes.
 > - **Brain model + reliability corrections** (§03): narrator verifier moved to Sonnet; the analyst effort level is a tunable; Brain 1b and the narrator verifier are skipped on works under 5,000 words and structurally sample (not trim) longer ones; the analyst const-crash was fixed; a device-vs-instance rule was added to the analyst prompt and the lens corpus.
 > - **DLTrace** (§20): a development-only pipeline tracer. Must be stripped or gated out of production.
-> - **The Editor → Mentor → Interrogate roadmap** (§21): three composing reading roles, recorded here as gated future work with their conditions.
+> - **The Editor + Mentor → Interrogate roadmap** (§21): editor and mentor are one voice in two registers — the mentor *disposition* is present on every read (free), *memory* is revision/persistence-gated (paid); Interrogate is a distinct opt-in mode.
 >
 > The v5 sections on partial-read honesty (now §13), known-work market matching (now §14), and latency (now §14b) are carried forward intact and remain as binding as the originals.
 
@@ -445,9 +445,10 @@ export const TIERS = {
 > Prices and the exact free-tier lens count are product decisions from the pricing strategy doc, recorded here for the build to gate against — confirm final numbers at launch. The structural point is the **feature gating**, which the build must enforce server-side (a law).
 
 ### Mentor tiering (the agreed decision — see §21 for the mechanism)
-- **Free:** full honest reading always, PLUS a *real* single-session mentor taster (revise and resubmit within one browser session; the prior draft + its analysis are still in memory, so the comparison is genuine — no fabrication).
-- **Paid:** PERSISTENT mentor — remembers across sessions, tracks revisions over time, names long-term tendencies. Justified because it genuinely costs more to provide (storage + compute), exactly as a developmental editor charges more for ongoing mentorship than a one-off read.
-- In the free tier, surface — where contextually appropriate, ideally *after* the single-session taster has delivered value — what persistent Mentor adds. Describe the capability honestly; never fake its output.
+The free/paid line is **disposition (free) vs memory (paid)**, NOT editor (free) vs mentor (paid). The mentor *disposition* — developmental tone, encouragement, the closing "where to grow next" — is present on every read from the first, and is never gated.
+- **Free:** full honest reading WITH the mentor disposition always (never hobbled), PLUS a *real* single-session mentor taster (revise and resubmit within one browser session; the prior draft + its analysis are still in memory, so the comparison is genuine — no fabrication).
+- **Paid:** the PERSISTENT *memory* register — remembers across sessions, tracks revisions over time, names long-term tendencies. Justified because it genuinely costs more to provide (storage + compute), exactly as a developmental editor charges more for ongoing mentorship than a one-off read.
+- In the free tier, surface — where contextually appropriate, ideally *after* the single-session taster has delivered value — what persistent memory adds. Describe the capability honestly; never fake its output.
 
 ---
 
@@ -773,16 +774,30 @@ A pipeline tracer: timestamped marks for every brain (including Brain 2's thinki
 
 ---
 
-## 21 · The Editor → Mentor → Interrogate Roadmap (gated future work)
+## 21 · The Editor + Mentor (one voice, two registers) → Interrogate Roadmap
 
-Three composing reading roles. The default read is editor-only. The other two are recorded production requirements, each with its conditions. **All three are post the server-side migration.** None may be faked (a law).
+**Revised v6.0/amended June 2026 — supersedes the earlier "editor-only MVP / mentor activates later" framing.** Editor and Mentor are NOT two roles gated by submission count. They are **one voice in two registers**, both present from the first read. Interrogate remains a distinct opt-in mode. Governing principle doc: `LearnedCorpus.md` (Principle 10 — Editor/Mentor as Register). None may be faked (a law).
 
-### 21a · Mentor mode — MUST build into production
-- **MVP is editor-only** (no cross-session memory; the browser can't safely persist it).
-- **Mentor mode activates when a user resubmits the SAME work, REVISED**, after a prior reading. D&L then stays an editor AND mentors: it judges whether the revision fixed what the earlier reading flagged, and — over multiple revisions — names recurring writer tendencies.
-- **Critical gate:** mentor mode triggers only on a *genuine revision relationship* (same work, actually changed) — never on an unchanged resubmission or a different work, which would invent continuity that isn't there.
-- **Detecting the relationship:** *ask the user* ("Is this a revision of something you've had read?") as the gate — it's faster, cheaper, and captures intent better than diffing. Then use the stored prior draft as the comparison payload. Keep a light similarity sanity-check only as a backstop against a mismatched claim. (`work_key` + `revisions` in §08.)
-- **Tiering (§07):** free gets the *real* single-session taster (revise/resubmit within one browser session, comparing both drafts from in-memory data — genuine, no fabrication); paid gets *persistent* mentor (across sessions, long-term tendencies). Surface the paid capability honestly in free, after the taster delivers value.
+### 21a · Editor & Mentor — one voice, two registers (disposition free + always on; memory paid + revision-gated)
+
+The earlier spec was wrong to treat the mentor as a *mode that activates* on revision. The mentor *disposition* costs nothing to store and needs no prior, so it is present on **every** read from the first. What a genuine revision adds is not the mentor switching on — it is **memory**.
+
+- **The editor register leads the analysis** — tradition ID, craft observation, structural diagnosis, what works and what could be raised, all on the work's own terms.
+- **The mentor register carries the disposition** — developmental tone, encouragement, treating the writer as someone with capacity who is growing. It is *how the editor speaks*, not a separate section or analysis.
+
+**Disposition vs memory (the real distinction):**
+- **Disposition** — tone, encouragement, "what this could reach toward." Needs nothing stored. **Present on every read, from the first. Free. Never gated.** Shows up two ways: (1) a developmental *thread throughout* so no note lands cold; (2) a distinct *closing developmental note* ("where to grow next") — one clear forward direction on the writer's own terms.
+- **Memory** — "last time your dialogue over-explained; it still does," "you've resolved the ending you wrestled with," recurring tendencies across revisions. Cannot exist on a first read (no prior). **Requires persistence; this is the genuine paid/return-visit capability.**
+
+**A genuine revision gives the mentor MATERIAL, it does not "activate" it.** On a revision the memory register naturally takes more of the reading's weight (tone and analysis both respond to what changed); the editor still leads on the new material.
+
+- **Critical gate (memory only):** the memory register engages only on a *genuine revision relationship* (same work, actually changed) — never on an unchanged resubmission or a different work, which would invent continuity that isn't there. The *disposition* is never gated.
+- **Detecting the relationship:** a code-based diff against the stored prior version (magnitude + location) gates the memory register; a low-confidence match falls back to asking the user ("Is this a revision of something you've had read?"). Script/story/play are separate works, not revisions of each other. (`work_key` + `revisions` in §08.)
+- **The line that must not be crossed:** the disposition is **developmental, never directive** — about the writer's *capacity* ("you can take this further"), never instruction about the work's *correct form* ("here's what you should do to make this good"). Warmth must never become a softer route to the generic rubric tradition-on-its-own-terms exists to refuse. The closing note points toward growth; it never prescribes a correct version and never rewrites.
+- **No-fabrication law:** the memory register never simulates a past it lacks. On a first read it reads developmentally but invents no history. Memory is real or described, never performed.
+
+### 21a-tier · Mentor tiering (§07) — restated
+The free/paid line is **disposition (free) vs memory (paid)**, NOT editor (free) vs mentor (paid). Free = full honest reading WITH the mentor disposition always (never hobbled) + the real single-session taster. Paid = the memory register (persistent cross-session, tracks revisions, names long-term tendencies). Surface the paid capability honestly in free, after the taster delivers value.
 
 ### 21b · Interrogate / "push harder" mode — file for live production (opt-in)
 - The **default** reading stays strictly on the work's own terms (judge execution vs the work's own ambition, never impose a rubric — the core principle).
@@ -796,5 +811,5 @@ Define what "best-in-class" means *per tradition* from a **craft and success** a
 
 ---
 
-*Document version 6.0 — June 2026 · Draft & Lens*
-*Supersedes v5.0. Changes: Treatment as a fourth mode threaded through every brain (§03, §06, §06a); inline note anchoring (§18); the glossary term system, client-side and non-IP (§19); honest staged progress, Stop/abort, and must-choose (§14b, §15); corrected brain model assignments and reliability fixes — narrator verifier→Sonnet, analyst effort tunable, Brain 1b + narrator verifier skipped under 5,000 words with structural sampling (not head+tail trim) on longer works, device-vs-instance rule added to the analyst prompt and lens corpus, the analyst const-crash (§03); the lens subjective-framing contract and conditional illustrative-taster rule, plus the lenses-not-fed-the-corpus build rule (§17 items 13–14, §17a); DLTrace as dev-only instrumentation (§20); the Editor→Mentor→Interrogate roadmap with the mentor tiering and best-in-class research requirements (§21); tiers reconciled with the pricing strategy and lens selection (§07, §16). Governing docs referenced throughout: LearnedCorpus v2.3 (Principle 9 device-vs-instance; SCOPE clause — corpus binds the editor not the voices; Illustrative Examples — showing not rewriting; 1–8 and original Core unchanged), ThinkingDiscipline.*
+*Document version 6.0 — June 2026 · Draft & Lens (§21 amended June 2026)*
+*Supersedes v5.0. Changes: Treatment as a fourth mode threaded through every brain (§03, §06, §06a); inline note anchoring (§18); the glossary term system, client-side and non-IP (§19); honest staged progress, Stop/abort, and must-choose (§14b, §15); corrected brain model assignments and reliability fixes — narrator verifier→Sonnet, analyst effort tunable, Brain 1b + narrator verifier skipped under 5,000 words with structural sampling (not head+tail trim) on longer works, device-vs-instance rule added to the analyst prompt and lens corpus, the analyst const-crash (§03); the lens subjective-framing contract and conditional illustrative-taster rule, plus the lenses-not-fed-the-corpus build rule (§17 items 13–14, §17a); DLTrace as dev-only instrumentation (§20); the Editor+Mentor→Interrogate roadmap (§21). **§21 amendment (June 2026): editor and mentor reframed as one voice in two registers — the mentor *disposition* is present on every read (free, never gated), *memory* is revision/persistence-gated (paid); §07 mentor tiering restated to disposition-free/memory-paid accordingly.** Tiers reconciled with the pricing strategy and lens selection (§07, §16). Governing docs referenced throughout: LearnedCorpus v2.4 (Principle 10 — Editor/Mentor as Register; Principle 9 device-vs-instance; SCOPE clause — corpus binds the editor not the voices; Illustrative Examples — showing not rewriting; earlier principles and the original Core unchanged), ThinkingDiscipline.*

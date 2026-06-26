@@ -17,12 +17,33 @@ import { VerdictBand } from './VerdictBand';
 import { extractVerdict, parseReport } from './report';
 import type { Coverage, Diagnostic, Market, Scores } from './types';
 
-const LENS_GROUPS: ReadonlyArray<{ label: string; names: string[] }> = [
-  { label: 'Directors', names: ['Spielberg', 'Coppola', 'Coen Brothers', 'Villeneuve', 'Ridley Scott', 'Wilder', 'Jeunet', 'Wenders', 'Tarantino', 'Wachowskis', 'Lucas', 'Petalune'] },
-  { label: 'Novelists & Short Story Writers', names: ['Hemingway', 'Carver', "O'Connor", 'Chekhov', 'Nabokov', 'Bukowski', 'Atwood', 'Eyre'] },
-  { label: 'Screenwriters', names: ['Sorkin', 'Roth', 'Kaufman', 'Pinter'] },
-  { label: 'Showrunners', names: ['Simon', 'Key'] },
-  { label: 'Producers', names: ['Bruckheimer', 'Feige'] },
+interface LensEntry { name: string; id: string | null }
+
+const LENS_GROUPS: ReadonlyArray<{ label: string; entries: LensEntry[] }> = [
+  { label: 'Directors', entries: [
+    { name: 'Spielberg', id: 'spielberg' }, { name: 'Coppola', id: 'coppola' },
+    { name: 'Coen Brothers', id: 'coens' }, { name: 'Villeneuve', id: 'villeneuve' },
+    { name: 'Ridley Scott', id: 'scott' }, { name: 'Welles', id: 'welles' },
+    { name: 'Jeunet', id: 'jeunet' }, { name: 'Wenders', id: 'wenders' },
+    { name: 'Tarantino', id: 'tarantino' }, { name: 'Wachowskis', id: 'wachowski' },
+    { name: 'Lucas', id: 'lucas' }, { name: 'Miyazaki', id: 'miyazaki' },
+  ]},
+  { label: 'Novelists & Short Story Writers', entries: [
+    { name: 'Hemingway', id: 'hemingway' }, { name: 'Carver', id: 'carver' },
+    { name: "O'Connor", id: 'oconnor' }, { name: 'Chekhov', id: 'chekhov' },
+    { name: 'Nabokov', id: 'nabokov' }, { name: 'Bukowski', id: 'bukowski' },
+    { name: 'King', id: 'king' },
+  ]},
+  { label: 'Screenwriters', entries: [
+    { name: 'Sorkin', id: 'sorkin' }, { name: 'Roth', id: 'roth' },
+    { name: 'Kaufman', id: 'kaufman' }, { name: 'Puzo', id: 'puzo' },
+  ]},
+  { label: 'Showrunners', entries: [
+    { name: 'Simon', id: 'simon' }, { name: 'Fey', id: 'fey' },
+  ]},
+  { label: 'Producers', entries: [
+    { name: 'Bruckheimer', id: 'bruckheimer' }, { name: 'Feige', id: 'feige' },
+  ]},
 ];
 
 export function ReportView({
@@ -46,6 +67,113 @@ export function ReportView({
   const parsed = parseReport(report);
   const anchored = hasAnchors(report);
   const [view, setView] = useState<'report' | 'anchored'>('report');
+
+  // Lens voices
+  const [activeLensId, setActiveLensId] = useState<string | null>(null);
+  const [lensReadings, setLensReadings] = useState<Record<string, string>>({});
+  const [lensLoading, setLensLoading] = useState<string | null>(null);
+
+  // Personal editor
+  const [convMessages, setConvMessages] = useState<Array<{role: 'user'|'assistant', content: string}>>([]);
+  const [convInput, setConvInput] = useState('');
+  const [convTarget, setConvTarget] = useState<string>('editorial');
+  const [convLoading, setConvLoading] = useState(false);
+
+  const callLens = async (lensId: string) => {
+    if (lensLoading || (lensReadings[lensId] && activeLensId === lensId)) {
+      setActiveLensId(lensId);
+      return;
+    }
+    setActiveLensId(lensId);
+    if (lensReadings[lensId]) return;
+    setLensLoading(lensId);
+    let reading = '';
+    try {
+      const res = await fetch('/api/lens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lensId,
+          text: submittedText,
+          tradition: diagnostic?.tradition,
+          register: diagnostic?.register,
+          ambition: diagnostic?.ambition,
+        }),
+      });
+      if (!res.body) throw new Error('No stream');
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const ev = JSON.parse(line) as {type: string; delta?: string; reading?: string};
+            if (ev.type === 'text' && ev.delta) {
+              reading += ev.delta;
+              setLensReadings((prev) => ({ ...prev, [lensId]: reading }));
+            }
+          } catch { /* ignore malformed */ }
+        }
+      }
+    } catch { /* show error inline */ }
+    setLensLoading(null);
+  };
+
+  const sendConvMessage = async () => {
+    const msg = convInput.trim();
+    if (!msg || convLoading) return;
+    setConvInput('');
+    const newMsg = { role: 'user' as const, content: msg };
+    setConvMessages((prev) => [...prev, newMsg]);
+    setConvLoading(true);
+    try {
+      const res = await fetch('/api/converse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          target: convTarget,
+          reportText: report,
+          diagnostic,
+          history: convMessages,
+        }),
+      });
+      if (!res.body) throw new Error('No stream');
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let reply = '';
+      let buf = '';
+      setConvMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const ev = JSON.parse(line) as {type: string; delta?: string};
+            if (ev.type === 'text' && ev.delta) {
+              reply += ev.delta;
+              setConvMessages((prev) => {
+                const next = [...prev];
+                next[next.length - 1] = { role: 'assistant', content: reply };
+                return next;
+              });
+            }
+          } catch { /* ignore */ }
+        }
+      }
+    } catch { /* ignore */ }
+    setConvLoading(false);
+  };
 
   const title =
     diagnostic && diagnostic.title && diagnostic.title !== 'Untitled' ? diagnostic.title : '';
@@ -378,38 +506,208 @@ export function ReportView({
                   gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
                   gap: '.4rem', marginBottom: '.5rem',
                 }}>
-                  {group.names.map((name) => (
-                    <div key={name} style={{
-                      display: 'flex', alignItems: 'center', gap: '.4rem',
-                      padding: '.35rem .5rem',
-                      border: '1px solid var(--rule-l)', background: 'var(--cream)',
-                      cursor: 'pointer', width: '100%',
-                    }}>
-                      <div style={{
-                        width: 38, height: 38, flexShrink: 0,
-                        background: 'var(--ink-mid)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <span style={{
-                          fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                          color: 'var(--ink-faint)', textTransform: 'uppercase',
-                        }}>{name.charAt(0)}</span>
+                  {group.entries.map(({ name, id }) => {
+                    const isActive = id && activeLensId === id;
+                    const isLoading = id && lensLoading === id;
+                    return (
+                      <div
+                        key={name}
+                        onClick={() => id && callLens(id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '.4rem',
+                          padding: '.35rem .5rem',
+                          border: `1px solid ${isActive ? 'var(--amber-d)' : 'var(--rule-l)'}`,
+                          background: isActive ? 'var(--black-band)' : 'var(--cream)',
+                          cursor: id ? 'pointer' : 'default',
+                          width: '100%',
+                          transition: 'border-color .15s, background .15s',
+                        }}
+                      >
+                        <div style={{
+                          width: 38, height: 38, flexShrink: 0,
+                          background: 'var(--ink-mid)', overflow: 'hidden',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {id ? (
+                            <img
+                              src={`/lenses/${id}.jpg`}
+                              alt={name}
+                              width={38} height={38}
+                              style={{ width: 38, height: 38, objectFit: 'cover', display: 'block' }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <span style={{
+                              fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                              color: 'var(--ink-faint)', textTransform: 'uppercase',
+                            }}>{name.charAt(0)}</span>
+                          )}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <span style={{
+                            fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                            letterSpacing: '.06em', textTransform: 'uppercase',
+                            color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
+                            display: 'block',
+                          }}>{name}</span>
+                          {isLoading && (
+                            <span style={{
+                              fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                              color: 'var(--amber-d)', letterSpacing: '.06em',
+                            }}>reading…</span>
+                          )}
+                        </div>
                       </div>
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                        letterSpacing: '.06em', textTransform: 'uppercase',
-                        color: 'var(--ink-soft)',
-                      }}>{name}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
+
+            {/* Active lens reading */}
+            {activeLensId && (lensReadings[activeLensId] || lensLoading === activeLensId) && (
+              <div style={{
+                marginTop: '1.5rem', background: 'var(--black-band)',
+                padding: '2rem 2.5rem', borderLeft: '2px solid var(--amber-d)',
+              }}>
+                <div style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                  letterSpacing: '.14em', textTransform: 'uppercase',
+                  color: 'var(--amber-d)', marginBottom: '.75rem',
+                }}>
+                  {LENS_GROUPS.flatMap(g => g.entries).find(e => e.id === activeLensId)?.name ?? activeLensId}
+                </div>
+                <div style={{
+                  fontSize: '.9rem', lineHeight: 1.85, color: '#c8c0a8',
+                  fontStyle: 'italic', whiteSpace: 'pre-wrap',
+                }}>
+                  {lensReadings[activeLensId] || (
+                    <span style={{ opacity: 0.5 }}>Reading your work through this lens…</span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Market */}
           <div id="sec-studios">
             <MarketPanel market={market} />
+          </div>
+
+          {/* Personal editor */}
+          <div id="sec-editor" style={{
+            marginTop: '3rem', background: 'var(--black-band)',
+            margin: '3rem -3rem 0', padding: '3rem 3rem 2.5rem',
+            borderTop: '3px solid var(--amber-d)',
+          }}>
+            <div style={{
+              fontFamily: 'var(--font-serif)', fontSize: '1.4rem',
+              fontWeight: 700, color: '#e8dfc4', marginBottom: '.5rem',
+            }}>Speak with your personal editor</div>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+              letterSpacing: '.08em', color: '#8a8070', marginBottom: '1.5rem',
+            }}>Ask a question, push back on a note, or request elaboration.</div>
+
+            {/* Target buttons */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.2rem' }}>
+              <button
+                onClick={() => setConvTarget('editorial')}
+                style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                  letterSpacing: '.1em', textTransform: 'uppercase',
+                  padding: '.3rem .7rem',
+                  background: convTarget === 'editorial' ? 'var(--amber-d)' : 'transparent',
+                  color: convTarget === 'editorial' ? '#1a1610' : '#8a8070',
+                  border: `1px solid ${convTarget === 'editorial' ? 'var(--amber-d)' : '#3a3530'}`,
+                  cursor: 'pointer',
+                }}
+              >Editorial</button>
+              {LENS_GROUPS.flatMap(g => g.entries).filter(e => e.id).map(({ name, id }) => (
+                <button
+                  key={id}
+                  onClick={() => setConvTarget(id!)}
+                  style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    letterSpacing: '.1em', textTransform: 'uppercase',
+                    padding: '.3rem .7rem',
+                    background: convTarget === id ? 'var(--amber-d)' : 'transparent',
+                    color: convTarget === id ? '#1a1610' : '#8a8070',
+                    border: `1px solid ${convTarget === id ? 'var(--amber-d)' : '#3a3530'}`,
+                    cursor: 'pointer',
+                  }}
+                >{name}</button>
+              ))}
+            </div>
+
+            {/* Message thread */}
+            {convMessages.length > 0 && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                {convMessages.map((msg, i) => (
+                  <div key={i} style={{
+                    marginBottom: '1rem',
+                    paddingLeft: msg.role === 'user' ? '0' : '1rem',
+                    borderLeft: msg.role === 'assistant' ? '2px solid var(--amber-d)' : 'none',
+                  }}>
+                    <div style={{
+                      fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+                      letterSpacing: '.1em', textTransform: 'uppercase',
+                      color: msg.role === 'user' ? '#8a8070' : 'var(--amber-d)',
+                      marginBottom: '.3rem',
+                    }}>{msg.role === 'user' ? 'You' : (
+                      LENS_GROUPS.flatMap(g => g.entries).find(e => e.id === convTarget)?.name ?? 'Editor'
+                    )}</div>
+                    <div style={{
+                      fontSize: '.88rem', lineHeight: 1.8,
+                      color: msg.role === 'user' ? '#a0988a' : '#c8c0a8',
+                      whiteSpace: 'pre-wrap', fontStyle: msg.role === 'assistant' ? 'italic' : 'normal',
+                    }}>{msg.content}</div>
+                  </div>
+                ))}
+                {convLoading && (
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    color: 'var(--amber-d)', letterSpacing: '.08em',
+                  }}>writing…</div>
+                )}
+              </div>
+            )}
+
+            {/* Input */}
+            <div style={{ display: 'flex', gap: '.75rem', alignItems: 'flex-end' }}>
+              <textarea
+                rows={3}
+                value={convInput}
+                onChange={(e) => setConvInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { void sendConvMessage(); } }}
+                placeholder="Ask a question or push back on a note…"
+                style={{
+                  flex: 1, resize: 'vertical',
+                  background: '#1a1610', color: '#c8c0a8',
+                  border: '1px solid #3a3530', padding: '.75rem',
+                  fontFamily: 'var(--font-serif)', fontSize: '.9rem',
+                  lineHeight: 1.6,
+                }}
+              />
+              <button
+                onClick={() => void sendConvMessage()}
+                disabled={convLoading || !convInput.trim()}
+                style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                  letterSpacing: '.12em', textTransform: 'uppercase',
+                  padding: '.6rem 1.2rem',
+                  background: 'var(--amber-d)', color: '#1a1610',
+                  border: 'none', cursor: 'pointer',
+                  opacity: (convLoading || !convInput.trim()) ? 0.4 : 1,
+                }}
+              >Send</button>
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: '.52rem',
+              color: '#5a5048', marginTop: '.4rem', letterSpacing: '.06em',
+            }}>⌘ + Enter to send</div>
           </div>
 
           {/* Disclaimer */}
