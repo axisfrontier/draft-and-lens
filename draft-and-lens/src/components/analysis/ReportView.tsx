@@ -55,6 +55,7 @@ export function ReportView({
   bible,
   submittedText,
   coverage,
+  mode,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -63,6 +64,7 @@ export function ReportView({
   bible: string;
   submittedText: string;
   coverage: Coverage | null;
+  mode?: string;
 }) {
   const verdict = extractVerdict(report);
   const parsed = parseReport(report);
@@ -181,7 +183,6 @@ export function ReportView({
   const traditionLine = diagnostic
     ? [diagnostic.tradition, diagnostic.register].filter(Boolean).join('  ·  ')
     : '';
-  const mode = '';
   const wc = countWords(submittedText);
   const pages = Math.max(1, Math.round(wc / 250));
 
@@ -332,7 +333,7 @@ export function ReportView({
                 {[
                   { label: 'Pages', value: String(pages) },
                   { label: 'Words', value: wc.toLocaleString() },
-                  { label: 'Mode', value: mode || 'Story' },
+                  { label: 'Mode', value: mode === 'script' ? 'Film Script' : mode === 'treatment' ? 'Treatment' : mode === 'play' ? 'Stage Play' : 'Story' },
                 ].map((item, i, arr) => (
                   <div key={item.label} style={{
                     display: 'flex', justifyContent: 'space-between',

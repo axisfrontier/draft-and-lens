@@ -753,6 +753,7 @@ export default function AppHomePage() {
           bible={bible}
           submittedText={text || uploadedFileText}
           coverage={coverage}
+          mode={mode ?? undefined}
         />
       )}
     </main>
