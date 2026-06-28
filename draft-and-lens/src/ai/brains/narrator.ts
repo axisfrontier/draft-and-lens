@@ -69,9 +69,11 @@ export async function runNarratorCorrection(
     .join('\n');
 
   try {
+    const narratorModel = analysisText.length < 4000 ? MODELS.narratorVerifier : MODELS.narratorCorrector;
+    const narratorTokens = analysisText.length < 4000 ? 3000 : TOKEN_LIMITS.narratorCorrector;
     const corrected = await callTextBrain({
-      model: MODELS.narratorCorrector,
-      maxTokens: TOKEN_LIMITS.narratorCorrector,
+      model: narratorModel,
+      maxTokens: narratorTokens,
       system: buildNarratorCorrectorSystem(protectedList),
       // Corrector system is per-request (embeds the protected list) — not cached.
       cacheSystem: false,

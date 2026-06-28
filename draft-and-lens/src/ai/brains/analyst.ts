@@ -16,7 +16,7 @@ import type {
   DiagnosticResult,
 } from '../../prompts/types';
 import { cachedSystemBlock, getAnthropicClient } from '../client';
-import { ANALYST_EFFORT, MODELS, TOKEN_LIMITS } from '../config';
+import { adaptiveAnalystConfig, MODELS, TOKEN_LIMITS } from '../config';
 
 /**
  * Brain 2 — Analyst (streaming, adaptive thinking, effort tunable). Receives the
@@ -91,11 +91,11 @@ export async function runAnalyst(
     userPrompt = buildRevisionDirective(revisionNote) + userPrompt;
   }
 
+  const { model, maxTokens, effort, useThinking } = adaptiveAnalystConfig(wordCount);
   const params = {
-    model: MODELS.analyst,
-    max_tokens: TOKEN_LIMITS.analyst,
-    thinking: { type: 'adaptive' },
-    output_config: { effort: ANALYST_EFFORT },
+    model,
+    max_tokens: maxTokens,
+    ...(useThinking ? { thinking: { type: 'adaptive' }, output_config: { effort } } : {}),
     system: systemBlocks,
     messages: [{ role: 'user', content: userPrompt }],
   } as unknown as Anthropic.Messages.MessageStreamParams;

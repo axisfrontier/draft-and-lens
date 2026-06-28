@@ -21,6 +21,31 @@ export const MODELS = {
 /** Analyst adaptive thinking effort — tunable (prototype default: medium). */
 export const ANALYST_EFFORT = (process.env.DL_ANALYST_EFFORT ?? 'medium') as 'low' | 'medium' | 'high';
 
+/**
+ * Pick the right model + token ceiling based on word count.
+ * Short pieces don't need Opus — Sonnet is fast and capable enough.
+ * Opus earns its place only on longer, more complex work.
+ *
+ * Tiers:
+ *  < 800 words  → Sonnet, 3 000 tokens, no extended thinking
+ *  800–3 000    → Sonnet, 5 000 tokens, low effort thinking
+ *  3 000+       → Opus,   8 000 tokens, medium effort thinking
+ */
+export function adaptiveAnalystConfig(wordCount: number): {
+  model: string;
+  maxTokens: number;
+  effort: 'low' | 'medium' | 'high';
+  useThinking: boolean;
+} {
+  if (wordCount < 800) {
+    return { model: 'claude-sonnet-4-6', maxTokens: 3000, effort: 'low', useThinking: false };
+  }
+  if (wordCount < 3000) {
+    return { model: 'claude-sonnet-4-6', maxTokens: 5000, effort: 'low', useThinking: true };
+  }
+  return { model: 'claude-opus-4-7', maxTokens: 8000, effort: ANALYST_EFFORT, useThinking: true };
+}
+
 export const TOKEN_LIMITS = {
   moderation: 200,
   diagnostician: 800,
