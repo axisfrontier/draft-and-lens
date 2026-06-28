@@ -561,6 +561,14 @@ export default function AppHomePage() {
                 </button>
               </div>
 
+              <p style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                letterSpacing: '.08em', color: 'var(--ink-faint)',
+                textAlign: 'center', marginTop: '.5rem', lineHeight: 1.6,
+              }}>
+                Your work is yours. We never train AI on it — it&apos;s sent only to generate your reading.
+              </p>
+
               {!running && isSignedIn !== true && (
                 <p style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.6rem',
@@ -724,9 +732,13 @@ export default function AppHomePage() {
 
       {/* ── REPORT ── */}
       {report !== '' && revisionStatus === 'unchanged' && (
-        <div style={{ padding: '1rem 0 0', display: 'flex', justifyContent: 'center' }}>
+        <div style={{
+          position: 'fixed', top: 'var(--nav-h)', left: 0, right: 0, zIndex: 40,
+          display: 'flex', justifyContent: 'center', padding: '.75rem 1rem',
+          pointerEvents: 'none',
+        }}>
           <p style={{
-            padding: '.5rem 1.25rem',
+            padding: '.5rem 1.25rem', pointerEvents: 'auto',
             fontSize: '.78rem', color: 'var(--teal)',
             border: '1px solid var(--teal)', background: 'var(--cream)',
           }}>
