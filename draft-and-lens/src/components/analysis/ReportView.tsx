@@ -241,7 +241,7 @@ export function ReportView({
         <div style={{
           fontFamily: 'var(--font-mono)', fontSize: '.52rem',
           letterSpacing: '.22em', textTransform: 'uppercase',
-          color: 'var(--ink-faint)', padding: '0 1.25rem .75rem',
+          color: 'var(--ink-faint)', padding: '.75rem 1.25rem .75rem',
           borderBottom: '1px solid var(--rule-l)', marginBottom: '.5rem',
         }}>Jump to</div>
 
@@ -701,13 +701,13 @@ export function ReportView({
                   fontFamily: 'var(--font-mono)', fontSize: '.62rem',
                   letterSpacing: '.14em', textTransform: 'uppercase',
                   padding: '.95rem 1.4rem',
-                  background: (convLoading || !convInput.trim()) ? 'var(--border-dark)' : 'var(--amber)',
+                  background: (convLoading || !convInput.trim()) ? 'var(--border-dark)' : 'var(--amber-l)',
                   color: (convLoading || !convInput.trim()) ? 'var(--ink-soft)' : 'var(--black-band)',
                   border: 'none', cursor: (convLoading || !convInput.trim()) ? 'not-allowed' : 'pointer',
                   fontWeight: 500, borderRadius: 14, flexShrink: 0,
                   transition: 'all .15s',
                 }}
-              >Send →</button>
+              >Send</button>
             </div>
             <div style={{
               fontFamily: 'var(--font-mono)', fontSize: '.52rem',

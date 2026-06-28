@@ -260,7 +260,7 @@ export default function AppHomePage() {
                 fontSize: '.92rem', color: 'var(--rule)', lineHeight: 1.85,
                 marginBottom: '1.75rem',
               }}>
-                Draft&amp;Lens reads your script or story the way a master editor would — on its own terms, within its own tradition. After your analysis completes, go deeper: apply the editorial perspective of some of the most celebrated directors, writers, and screenwriters in the industry — each one a craft-accurate simulation of how that voice would read your work. Optional, and entirely on your terms.
+                Draft &amp; Lens reads your script or story the way a master editor would — on its own terms, within its own tradition. Not a rubric, and never a rewrite: a reading that shows you what&rsquo;s working and how to take it further. Then, if you want, go deeper — apply the editorial sensibility of celebrated directors, novelists, and screenwriters, each a lens on how that voice might read your work. Optional, and entirely on your terms.
               </p>
 
               <div style={{
