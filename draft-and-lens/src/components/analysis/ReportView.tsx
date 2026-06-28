@@ -283,6 +283,7 @@ export function ReportView({
 
           {/* Title block */}
           <div id="sec-title" style={{
+            scrollMarginTop: 'calc(var(--nav-h) + 1rem)',
             padding: '3.5rem 0 2.5rem',
             display: 'grid', gridTemplateColumns: '1fr 200px',
             gap: '3rem', borderBottom: '1px solid var(--rule)',
@@ -351,22 +352,22 @@ export function ReportView({
           </div>
 
           {/* Verdict */}
-          <div id="sec-verdict">
+          <div id="sec-verdict" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             {verdict && <VerdictBand verdict={verdict} />}
           </div>
 
           {/* Bible */}
-          <div id="sec-bible">
+          <div id="sec-bible" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <BiblePanel bible={bible} />
           </div>
 
           {/* Dashboard */}
-          <div id="sec-dashboard">
+          <div id="sec-dashboard" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <ScoresDashboard scores={scores} />
           </div>
 
           {/* Story Arc */}
-          <div id="sec-arc">
+          <div id="sec-arc" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <StoryArc beats={scores?.beats ?? []} />
           </div>
 
@@ -461,7 +462,7 @@ export function ReportView({
               <div style={{ marginTop: anchored ? 0 : 0 }}>
                 {parsed.sections.map((sec, i) =>
                   sec.body.trim() ? (
-                    <div key={i} id={`sec-${String(i + 1).padStart(2, '0')}`}>
+                    <div key={i} id={`sec-${String(i + 1).padStart(2, '0')}`} style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
                       <ReportSection
                         index={i}
                         heading={sec.heading}
@@ -478,7 +479,7 @@ export function ReportView({
           )}
 
           {/* Lenses — Choose a Voice */}
-          <div id="sec-lenses" style={{ marginTop: '2.5rem' }}>
+          <div id="sec-lenses" style={{ marginTop: '2.5rem', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <div style={{
               padding: '2rem 0 1.5rem',
               borderBottom: '1px solid var(--rule)',
@@ -598,12 +599,13 @@ export function ReportView({
           </div>
 
           {/* Market */}
-          <div id="sec-studios">
+          <div id="sec-studios" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <MarketPanel market={market} />
           </div>
 
           {/* Personal editor */}
           <div id="sec-editor" style={{
+            scrollMarginTop: 'calc(var(--nav-h) + 1rem)',
             background: 'var(--black-band)',
             margin: '3rem -3rem 0', padding: '3rem 3rem 2.5rem',
             borderTop: '3px solid var(--amber-d)',

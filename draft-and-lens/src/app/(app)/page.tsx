@@ -203,7 +203,9 @@ export default function AppHomePage() {
     abortRef.current?.abort();
   }
 
-  const streamingPreview = report === '' ? stripAnchors(streamed) : '';
+  const streamingPreview = report === ''
+    ? stripAnchors(streamed).replace(/^#{1,3} /gm, '')
+    : '';
 
   const kicker: CSSProperties = {
     fontFamily: 'var(--font-mono)',
