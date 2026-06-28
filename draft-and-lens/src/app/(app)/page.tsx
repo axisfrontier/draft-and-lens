@@ -722,7 +722,7 @@ export default function AppHomePage() {
 
       {/* ── REPORT ── */}
       {report !== '' && revisionStatus === 'unchanged' && (
-        <div style={{ padding: '1rem 2.5rem 0', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '1rem 0 0', display: 'flex', justifyContent: 'center' }}>
           <p style={{
             padding: '.5rem 1.25rem',
             fontSize: '.78rem', color: 'var(--teal)',

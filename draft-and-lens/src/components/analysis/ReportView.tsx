@@ -711,8 +711,8 @@ export function ReportView({
             </div>
             <div style={{
               fontFamily: 'var(--font-mono)', fontSize: '.52rem',
-              color: '#5a5048', marginTop: '.4rem', letterSpacing: '.06em',
-            }}>⌘ + Enter to send</div>
+              color: 'var(--ink-faint)', marginTop: '.4rem', letterSpacing: '.06em',
+            }}>Press Enter to send</div>
           </div>
 
           {/* Disclaimer */}
