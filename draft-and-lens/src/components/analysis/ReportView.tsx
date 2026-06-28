@@ -738,6 +738,11 @@ export function ReportView({
             letterSpacing: '.12em', color: 'var(--ink-faint)',
           }}>
             Copyright &copy; 2026 Draft&amp;Lens
+            <div style={{ marginTop: '.75rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
+              {([['Privacy Policy', '/privacy'], ['Terms of Service', '/terms'], ['Acceptable Use', '/acceptable-use']] as const).map(([label, href]) => (
+                <a key={href} href={href} style={{ color: 'var(--ink-faint)', textDecoration: 'none' }}>{label}</a>
+              ))}
+            </div>
           </footer>
 
         </div>
