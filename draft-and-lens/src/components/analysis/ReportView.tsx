@@ -704,7 +704,7 @@ export function ReportView({
                   letterSpacing: '.14em', textTransform: 'uppercase',
                   padding: '.95rem 1.4rem',
                   background: (convLoading || !convInput.trim()) ? 'var(--border-dark)' : 'var(--amber-l)',
-                  color: (convLoading || !convInput.trim()) ? 'var(--ink-soft)' : 'var(--black-band)',
+                  color: (convLoading || !convInput.trim()) ? '#fff' : 'var(--black-band)',
                   border: 'none', cursor: (convLoading || !convInput.trim()) ? 'not-allowed' : 'pointer',
                   fontWeight: 500, borderRadius: 14, flexShrink: 0,
                   transition: 'all .15s',
