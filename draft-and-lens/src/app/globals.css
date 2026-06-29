@@ -10,8 +10,8 @@
 }
 
 @keyframes pillFlash {
-  0%, 100% { background: var(--amber); opacity: 1; }
-  50% { background: #c88c30; opacity: 0.75; }
+  0%, 100% { background: #a86c10; opacity: 1; }
+  50% { background: #c88c30; opacity: 0.8; }
 }
 
 @layer base {

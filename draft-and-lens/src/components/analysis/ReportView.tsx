@@ -285,7 +285,7 @@ export function ReportView({
 
           {revisionStatus === 'unchanged' && (
             <p style={{
-              marginTop: '2.5rem', marginBottom: '1.5rem', padding: '.85rem 1.25rem',
+              marginTop: '2rem', marginBottom: '2rem', padding: '.85rem 1.25rem',
               fontSize: '.82rem', color: 'var(--teal)',
               borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
             }}>
@@ -294,7 +294,7 @@ export function ReportView({
           )}
           {revisionStatus === 'revised' && (
             <p style={{
-              marginTop: '2.5rem', marginBottom: '1.5rem', padding: '.85rem 1.25rem',
+              marginTop: '2rem', marginBottom: '2rem', padding: '.85rem 1.25rem',
               fontSize: '.82rem', color: 'var(--amber)',
               borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
             }}>
@@ -305,7 +305,7 @@ export function ReportView({
           {/* Title block */}
           <div id="sec-title" style={{
             scrollMarginTop: 'calc(var(--nav-h) + 1rem)',
-            padding: '5rem 0 2.5rem',
+            padding: '2.5rem 0 2.5rem',
             display: 'grid', gridTemplateColumns: '1fr 200px',
             gap: '3rem', borderBottom: '1px solid var(--rule)',
           }}>
@@ -314,7 +314,7 @@ export function ReportView({
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                   letterSpacing: '.22em', textTransform: 'uppercase',
-                  color: 'var(--ink-soft)', marginBottom: '1rem',
+                  color: 'var(--ink-soft)', marginBottom: '2rem',
                 }}>
                   {traditionLine}
                 </div>
