@@ -679,10 +679,10 @@ export default function AppHomePage() {
                       fontFamily: 'var(--font-mono)', fontSize: '.5rem',
                       letterSpacing: '.1em', textTransform: 'uppercase',
                       padding: '.15rem .5rem', borderRadius: 20,
-                      border: isActive ? '1px solid var(--amber-l)' : '1px solid var(--border-dark)',
-                      background: isActive ? 'rgba(200,140,48,.22)' : 'transparent',
-                      color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
-                      animation: isActive ? `thinkPulse 1s ease-in-out ${i * 0.15}s infinite` : 'none',
+                      border: isActive ? '1px solid #e8a83a' : '1px solid var(--border-dark)',
+                      background: isActive ? 'rgba(232,168,58,.25)' : 'transparent',
+                      color: isActive ? '#f0bc55' : 'var(--ink-soft)',
+                      animation: 'none',
                     }}>
                       {labels[i]}
                     </div>
