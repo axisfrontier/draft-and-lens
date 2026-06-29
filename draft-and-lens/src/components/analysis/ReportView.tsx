@@ -373,7 +373,7 @@ export function ReportView({
 
           {/* Editorial Analysis header */}
           <div style={{
-            padding: '2.5rem 0 1.5rem',
+            padding: '2rem 0 1.5rem',
           }}>
             <div style={{
               fontFamily: 'var(--font-mono)', fontSize: '.72rem',

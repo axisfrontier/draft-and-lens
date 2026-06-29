@@ -679,9 +679,9 @@ export default function AppHomePage() {
                       fontFamily: 'var(--font-mono)', fontSize: '.5rem',
                       letterSpacing: '.1em', textTransform: 'uppercase',
                       padding: '.15rem .5rem', borderRadius: 20,
-                      border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
-                      background: isActive ? 'rgba(168,108,16,.15)' : 'transparent',
-                      color: isActive ? 'var(--amber)' : 'var(--ink-soft)',
+                      border: isActive ? '1px solid var(--amber-l)' : '1px solid var(--border-dark)',
+                      background: isActive ? 'rgba(200,140,48,.22)' : 'transparent',
+                      color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
                       animation: isActive ? `thinkPulse 1s ease-in-out ${i * 0.15}s infinite` : 'none',
                     }}>
                       {labels[i]}
@@ -739,19 +739,13 @@ export default function AppHomePage() {
 
       {/* ── REPORT ── */}
       {report !== '' && revisionStatus === 'unchanged' && (
-        <div style={{
-          position: 'fixed', top: 'var(--nav-h)', left: 0, right: 0, zIndex: 40,
-          display: 'flex', justifyContent: 'center', padding: '.75rem 1rem',
-          pointerEvents: 'none',
+        <p style={{
+          marginTop: '1.5rem', padding: '.6rem 1rem',
+          fontSize: '.82rem', color: 'var(--teal)',
+          borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
         }}>
-          <p style={{
-            padding: '.5rem 1.25rem', pointerEvents: 'auto',
-            fontSize: '.78rem', color: 'var(--teal)',
-            border: '1px solid var(--teal)', background: 'var(--cream)',
-          }}>
-            No changes detected since your last reading — showing your previous reading.
-          </p>
-        </div>
+          No changes detected since your last reading — showing your previous reading.
+        </p>
       )}
       {report !== '' && revisionStatus === 'revised' && (
         <p style={{

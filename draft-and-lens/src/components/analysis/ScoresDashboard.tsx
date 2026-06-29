@@ -50,7 +50,7 @@ export function ScoresDashboard({ scores }: { scores: Scores | null }) {
   return (
     <section style={{ marginTop: '1rem' }}>
       {/* header */}
-      <div style={{ padding: '2.5rem 0 1rem', borderBottom: '1px solid var(--rule)', marginBottom: '2rem' }}>
+      <div style={{ padding: '2rem 0 1.5rem', borderBottom: '1px solid var(--rule)', marginBottom: '2rem' }}>
         <div
           style={{
             fontFamily: 'var(--font-mono)',
