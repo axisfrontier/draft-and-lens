@@ -738,25 +738,6 @@ export default function AppHomePage() {
       )}
 
       {/* ── REPORT ── */}
-      {report !== '' && revisionStatus === 'unchanged' && (
-        <p style={{
-          marginTop: '1.5rem', padding: '.6rem 1rem',
-          fontSize: '.82rem', color: 'var(--teal)',
-          borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
-        }}>
-          No changes detected since your last reading — showing your previous reading.
-        </p>
-      )}
-      {report !== '' && revisionStatus === 'revised' && (
-        <p style={{
-          marginTop: '1.5rem', padding: '.6rem 1rem',
-          fontSize: '.82rem', color: 'var(--amber)',
-          borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
-        }}>
-          Updated reading — this responds to your revision of an earlier draft.
-        </p>
-      )}
-
       {report !== '' && (
         <ReportView
           report={report}
@@ -767,6 +748,7 @@ export default function AppHomePage() {
           submittedText={text || uploadedFileText}
           coverage={coverage}
           mode={mode ?? undefined}
+          revisionStatus={revisionStatus ?? undefined}
         />
       )}
     </main>

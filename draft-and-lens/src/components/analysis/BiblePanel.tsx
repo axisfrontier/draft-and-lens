@@ -18,7 +18,7 @@ export function BiblePanel({ bible }: { bible: string }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '1.1rem 0',
+          padding: '1.5rem 0',
           background: 'none',
           border: 'none',
           cursor: 'pointer',

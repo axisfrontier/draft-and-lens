@@ -56,6 +56,7 @@ export function ReportView({
   submittedText,
   coverage,
   mode,
+  revisionStatus,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -65,6 +66,7 @@ export function ReportView({
   submittedText: string;
   coverage: Coverage | null;
   mode?: string;
+  revisionStatus?: string;
 }) {
   const verdict = extractVerdict(report);
   const parsed = parseReport(report);
@@ -281,6 +283,25 @@ export function ReportView({
 
           <PartialReadBanner coverage={coverage} />
 
+          {revisionStatus === 'unchanged' && (
+            <p style={{
+              marginTop: '1.5rem', padding: '.6rem 1rem',
+              fontSize: '.82rem', color: 'var(--teal)',
+              borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
+            }}>
+              No changes detected since your last reading — showing your previous reading.
+            </p>
+          )}
+          {revisionStatus === 'revised' && (
+            <p style={{
+              marginTop: '1.5rem', padding: '.6rem 1rem',
+              fontSize: '.82rem', color: 'var(--amber)',
+              borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
+            }}>
+              Updated reading — this responds to your revision of an earlier draft.
+            </p>
+          )}
+
           {/* Title block */}
           <div id="sec-title" style={{
             scrollMarginTop: 'calc(var(--nav-h) + 1rem)',
@@ -373,7 +394,7 @@ export function ReportView({
 
           {/* Editorial Analysis header */}
           <div style={{
-            padding: '2rem 0 1.5rem',
+            padding: '1.5rem 0 1rem',
           }}>
             <div style={{
               fontFamily: 'var(--font-mono)', fontSize: '.72rem',
@@ -479,9 +500,9 @@ export function ReportView({
           )}
 
           {/* Lenses — Choose a Voice */}
-          <div id="sec-lenses" style={{ marginTop: '2.5rem', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
+          <div id="sec-lenses" style={{ marginTop: '0', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <div style={{
-              padding: '2rem 0 1.5rem',
+              padding: '1.5rem 0 1rem',
               borderBottom: '1px solid var(--rule)',
               marginBottom: '1.75rem',
             }}>
