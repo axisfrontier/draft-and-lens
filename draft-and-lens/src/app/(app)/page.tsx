@@ -677,9 +677,9 @@ export default function AppHomePage() {
                       fontFamily: 'var(--font-mono)', fontSize: '.5rem',
                       letterSpacing: '.1em', textTransform: 'uppercase',
                       padding: '.15rem .5rem', borderRadius: 20,
-                      border: isActive ? '1px solid #e8a83a' : '1px solid var(--border-dark)',
-                      background: isActive ? 'rgba(232,168,58,.25)' : 'transparent',
-                      color: isActive ? '#f0bc55' : 'var(--ink-soft)',
+                      border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
+                      background: isActive ? 'var(--amber)' : 'transparent',
+                      color: isActive ? 'var(--black-band)' : 'var(--ink-soft)',
                       animation: 'none',
                     }}>
                       {labels[i]}
