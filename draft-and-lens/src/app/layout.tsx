@@ -52,6 +52,8 @@ export default function RootLayout({
         className={`${libreBaskerville.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
       >
         <body>
+          {/* Disable browser scroll restoration before first paint */}
+          <script dangerouslySetInnerHTML={{ __html: `history.scrollRestoration='manual';window.scrollTo(0,0);` }} />
           <header style={{
             position: 'sticky', top: 0, zIndex: 100,
             height: 'var(--nav-h)',

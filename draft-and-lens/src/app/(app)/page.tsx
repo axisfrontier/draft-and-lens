@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useRef, useState, type CSSProperties } from 'react';
 
 import { ReportView } from '@/components/analysis/ReportView';
 import type {
@@ -64,10 +64,6 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.txt', '.fountain', '.fdx', '.docx'];
 
 export default function AppHomePage() {
   const { isSignedIn } = useAuth();
-  useEffect(() => {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    window.scrollTo(0, 0);
-  }, []);
   const [mode, setMode] = useState<Mode | null>(null);
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
