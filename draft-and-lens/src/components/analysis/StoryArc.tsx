@@ -10,7 +10,9 @@ import { useState } from 'react';
 
 interface Beat {
   pct: number;
-  intensity: number;
+  tension: number;
+  pace: number;
+  emotion: number;
   label: string;
   note: string;
 }
@@ -24,12 +26,11 @@ const LINES: ReadonlyArray<{
   key: LineKey;
   label: string;
   colour: string;
-  offset: number;
   dash?: string;
 }> = [
-  { key: 'tension', label: 'Tension', colour: 'var(--tension)', offset: -8 },
-  { key: 'pace', label: 'Pace', colour: 'var(--pace)', offset: 4 },
-  { key: 'emotion', label: 'Emotion', colour: 'var(--emotion)', offset: -2, dash: '5 4' },
+  { key: 'tension', label: 'Tension', colour: 'var(--tension)' },
+  { key: 'pace', label: 'Pace', colour: 'var(--pace)' },
+  { key: 'emotion', label: 'Emotion', colour: 'var(--emotion)', dash: '5 4' },
 ];
 
 const clampY = (v: number): number => Math.max(10, Math.min(170, v));
@@ -46,16 +47,22 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
 
   if (!beats || beats.length === 0) return null;
 
-  const points = beats.map((b) => {
-    const x = (b.pct / 100) * W;
-    const intensity = b.intensity || 5;
-    const y = H - (intensity / 10) * (H - 20) - 10;
-    return { x, y, label: b.label, note: b.note };
-  });
-  const allPts = [{ x: 0, y: 90, label: '', note: '' }, ...points];
+  const toY = (v: number) => H - (v / 10) * (H - 20) - 10;
 
-  const lineStr = (offset: number): string =>
-    allPts.map((p) => `${p.x.toFixed(0)},${clampY(p.y + offset).toFixed(0)}`).join(' ');
+  const points = beats.map((b) => ({
+    x: (b.pct / 100) * W,
+    tension: clampY(toY(b.tension || 5)),
+    pace: clampY(toY(b.pace || 5)),
+    emotion: clampY(toY(b.emotion || 5)),
+    label: b.label,
+    note: b.note,
+  }));
+
+  const origin = { x: 0, tension: 90, pace: 90, emotion: 90 };
+  const allPts = [origin, ...points];
+
+  const lineStr = (key: LineKey): string =>
+    allPts.map((p) => `${p.x.toFixed(0)},${p[key].toFixed(0)}`).join(' ');
 
   const toggle = (key: LineKey): void =>
     setHidden((h) => ({ ...h, [key]: !h[key] }));
@@ -160,7 +167,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
             hidden[l.key] ? null : (
               <polyline
                 key={l.key}
-                points={lineStr(l.offset)}
+                points={lineStr(l.key)}
                 fill="none"
                 stroke={l.colour}
                 strokeWidth="1.8"
@@ -173,7 +180,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
           {/* beat markers */}
           {points.map((p, i) => (
             <g key={i}>
-              <g transform={`translate(${(p.x - 8).toFixed(0)},${(p.y - 31).toFixed(0)})`} opacity=".7">
+              <g transform={`translate(${(p.x - 8).toFixed(0)},${(p.tension - 31).toFixed(0)})`} opacity=".7">
                 <path
                   d="M8,2 L8,12 M1,1 L1,13 Q4.5,12 8,13 Q11.5,12 15,13 L15,1 Q11.5,2 8,1 Q4.5,2 1,1Z"
                   stroke="var(--ink-soft)"
@@ -184,7 +191,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
               </g>
               <circle
                 cx={p.x.toFixed(0)}
-                cy={p.y.toFixed(0)}
+                cy={p.tension.toFixed(0)}
                 r="5"
                 fill="var(--paper)"
                 stroke="var(--amber)"

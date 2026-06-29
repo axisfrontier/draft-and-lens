@@ -29,7 +29,13 @@ CONFIRMED TRADITION: ${tradition}
 ${treatmentNote}
 
 Return exactly this JSON structure:
-{"title":"The actual title as it appears in the text. Null if not found.","scores":{"structure":7,"character":5,"dialogue":7,"tone":8,"pace":4,"theme":8},"alignment":{"register":7,"narrator":6,"form":8,"tradition_rules":7,"specificity":6,"earned":7},"beats":[{"pct":10,"intensity":4,"label":"Opening","note":"Brief note"},{"pct":30,"intensity":7,"label":"Inciting Incident","note":"Brief note"},{"pct":50,"intensity":6,"label":"Midpoint","note":"Brief note"},{"pct":75,"intensity":8,"label":"Climax Approach","note":"Brief note"},{"pct":90,"intensity":9,"label":"Resolution","note":"Brief note"}],"summary":"One sentence describing what this work is about."}
+{"title":"The actual title as it appears in the text. Null if not found.","scores":{"structure":7,"character":5,"dialogue":7,"tone":8,"pace":4,"theme":8},"alignment":{"register":7,"narrator":6,"form":8,"tradition_rules":7,"specificity":6,"earned":7},"beats":[{"pct":10,"tension":3,"pace":4,"emotion":5,"label":"Opening","note":"Brief note"},{"pct":30,"tension":7,"pace":6,"emotion":8,"label":"Inciting Incident","note":"Brief note"},{"pct":50,"tension":6,"pace":5,"emotion":6,"label":"Midpoint","note":"Brief note"},{"pct":75,"tension":8,"pace":7,"emotion":9,"label":"Climax Approach","note":"Brief note"},{"pct":90,"tension":9,"pace":8,"emotion":7,"label":"Resolution","note":"Brief note"}],"summary":"One sentence describing what this work is about."}
+
+BEATS — score each narrative moment on three independent dimensions (1-10):
+- tension: the degree of conflict, threat, or unresolved pressure at this point
+- pace: the speed of narrative movement — how much happens, how quickly
+- emotion: the emotional charge or feeling-intensity for the reader at this point
+These three dimensions are genuinely independent. A tense standoff can be slow-paced. A fast-moving scene can be emotionally flat. Score each separately.
 
 SCORES — generic craft quality (1-10): structure, character, dialogue, tone, pace, theme.
 

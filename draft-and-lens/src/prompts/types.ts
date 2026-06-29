@@ -58,7 +58,7 @@ export interface ScoreResult {
   title?: string | null;
   scores?: Record<string, number>;
   alignment?: Record<string, number>;
-  beats?: Array<{ pct: number; intensity: number; label: string; note: string }>;
+  beats?: Array<{ pct: number; tension: number; pace: number; emotion: number; label: string; note: string }>;
   summary?: string;
 }
 
