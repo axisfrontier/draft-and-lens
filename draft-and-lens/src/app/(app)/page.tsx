@@ -64,6 +64,8 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.txt', '.fountain', '.fdx', '.docx'];
 
 export default function AppHomePage() {
   const { isSignedIn } = useAuth();
+  // Scroll to top on load (browser may restore scroll position on refresh)
+  if (typeof window !== 'undefined') window.scrollTo(0, 0);
   const [mode, setMode] = useState<Mode | null>(null);
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
@@ -204,7 +206,11 @@ export default function AppHomePage() {
   }
 
   const streamingPreview = report === ''
-    ? stripAnchors(streamed).replace(/^#{1,3} /gm, '')
+    ? stripAnchors(streamed)
+        .replace(/^#{1,3} /gm, '')
+        .replace(/\*\*(.+?)\*\*/g, '$1')
+        .replace(/\*(.+?)\*/g, '$1')
+        .replace(/^---+$/gm, '')
     : '';
 
   const kicker: CSSProperties = {
@@ -673,8 +679,9 @@ export default function AppHomePage() {
                       fontFamily: 'var(--font-mono)', fontSize: '.5rem',
                       letterSpacing: '.1em', textTransform: 'uppercase',
                       padding: '.15rem .5rem', borderRadius: 20,
-                      border: '1px solid var(--border-dark)',
-                      color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
+                      border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
+                      background: isActive ? 'rgba(168,108,16,.15)' : 'transparent',
+                      color: isActive ? 'var(--amber)' : 'var(--ink-soft)',
                       animation: isActive ? `thinkPulse 1s ease-in-out ${i * 0.15}s infinite` : 'none',
                     }}>
                       {labels[i]}
@@ -747,15 +754,13 @@ export default function AppHomePage() {
         </div>
       )}
       {report !== '' && revisionStatus === 'revised' && (
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 3rem' }}>
-          <p style={{
-            marginTop: '1.5rem', padding: '.6rem 1rem',
-            fontSize: '.82rem', color: 'var(--amber)',
-            borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
-          }}>
-            Updated reading — this responds to your revision of an earlier draft.
-          </p>
-        </div>
+        <p style={{
+          marginTop: '1.5rem', padding: '.6rem 1rem',
+          fontSize: '.82rem', color: 'var(--amber)',
+          borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
+        }}>
+          Updated reading — this responds to your revision of an earlier draft.
+        </p>
       )}
 
       {report !== '' && (

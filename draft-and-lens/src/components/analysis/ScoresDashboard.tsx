@@ -83,6 +83,7 @@ export function ScoresDashboard({ scores }: { scores: Scores | null }) {
           gridTemplateColumns: '240px 1fr',
           gap: '3rem',
           alignItems: 'start',
+          marginTop: '.5rem',
         }}
       >
         <div>

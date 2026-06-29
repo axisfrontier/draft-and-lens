@@ -53,6 +53,7 @@ export function AnchoredView({ report, text }: { report: string; text: string })
           fontSize: '.62rem',
           letterSpacing: '.06em',
           color: 'var(--ink-soft)',
+          marginTop: '1.25rem',
           marginBottom: '1.25rem',
         }}
       >

@@ -5,7 +5,7 @@ export default function PrivacyPage() {
 
   return (
     <main style={{ maxWidth: 760, margin: '4rem auto', padding: '0 2rem 6rem' }}>
-      <a href="/" style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-faint)', textDecoration: 'none', display: 'inline-block', marginBottom: '2rem' }}>← Back to analysis</a>
+      <a href="/" onClick={(e) => { e.preventDefault(); window.close(); }} style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-faint)', textDecoration: 'none', display: 'inline-block', marginBottom: '2rem' }}>← Close</a>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--amber-d)', marginBottom: '.4rem' }}>Legal</div>
       <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-.01em', marginBottom: '.5rem' }}>Privacy Policy</h1>
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.7rem', color: 'var(--ink-faint)', marginBottom: '2rem' }}>Last updated: 29 June 2026</p>
