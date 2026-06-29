@@ -1,3 +1,4 @@
+'use client';
 export default function FeedbackPage() {
   return (
     <main style={{ maxWidth: 760, margin: '4rem auto', padding: '0 2rem 6rem' }}>

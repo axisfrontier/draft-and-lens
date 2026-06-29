@@ -1,3 +1,4 @@
+'use client';
 export default function TermsPage() {
   const h2: React.CSSProperties = { fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', margin: '2rem 0 .75rem' };
   const p: React.CSSProperties = { fontFamily: 'var(--font-sans)', fontSize: '.95rem', lineHeight: 1.85, color: 'var(--ink-mid)', marginBottom: '1.25rem' };
