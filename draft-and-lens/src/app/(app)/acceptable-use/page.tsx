@@ -12,7 +12,7 @@ export default function AcceptableUsePage() {
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.7rem', color: 'var(--ink-faint)', marginBottom: '2rem' }}>Last updated: 29 June 2026</p>
 
       <h2 style={h2}>The spirit of this policy</h2>
-      <p style={p}>Draft &amp; Lens is a tool for serious writers. <strong>Serious literature engaging with dark, difficult, violent, or sexual themes is welcome here</strong> — that is the substance of much great writing, and our reading is designed for it. This policy is not about subject matter. It targets a narrow set of genuinely prohibited content.</p>
+      <p style={p}>Draft &amp; Lens is a tool for serious writers. Serious literature engaging with dark, difficult, violent, or sexual themes is welcome here — that is the substance of much great writing, and our reading is designed for it. This policy is not about subject matter. It targets a narrow set of genuinely prohibited content.</p>
 
       <h2 style={h2}>What is prohibited</h2>
       <p style={p}>You must not submit:</p>

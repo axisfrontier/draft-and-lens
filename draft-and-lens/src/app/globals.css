@@ -9,6 +9,11 @@
   50% { opacity: 1; }
 }
 
+@keyframes pillFlash {
+  0%, 100% { background: var(--amber); opacity: 1; }
+  50% { background: #c88c30; opacity: 0.75; }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

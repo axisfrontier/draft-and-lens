@@ -305,7 +305,7 @@ export function ReportView({
           {/* Title block */}
           <div id="sec-title" style={{
             scrollMarginTop: 'calc(var(--nav-h) + 1rem)',
-            padding: '3.5rem 0 2.5rem',
+            padding: '5rem 0 2.5rem',
             display: 'grid', gridTemplateColumns: '1fr 200px',
             gap: '3rem', borderBottom: '1px solid var(--rule)',
           }}>

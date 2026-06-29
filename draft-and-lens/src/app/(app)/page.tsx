@@ -680,7 +680,7 @@ export default function AppHomePage() {
                       border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
                       background: isActive ? 'var(--amber)' : 'transparent',
                       color: isActive ? 'var(--black-band)' : 'var(--ink-soft)',
-                      animation: 'none',
+                      animation: isActive ? `pillFlash 1s ease-in-out ${i * 0.15}s infinite` : 'none',
                     }}>
                       {labels[i]}
                     </div>
