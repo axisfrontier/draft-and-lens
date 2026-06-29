@@ -111,8 +111,8 @@ export default function AccountPage() {
 
   return (
     <main className="min-h-screen bg-paper p-8 text-ink">
-      <a href="/" className="font-mono text-xs uppercase tracking-widest text-amber-d">
-        ← Back to reading
+      <a href="/" onClick={(e) => { e.preventDefault(); window.close(); }} className="font-mono text-xs uppercase tracking-widest text-amber-d">
+        ← Close
       </a>
       <h1 className="mt-4 font-serif text-2xl">Your work</h1>
       <p className="mt-1 text-sm text-ink-soft">Everything you’ve had read, saved to your account.</p>
