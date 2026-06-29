@@ -64,7 +64,10 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.txt', '.fountain', '.fdx', '.docx'];
 
 export default function AppHomePage() {
   const { isSignedIn } = useAuth();
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }, []);
   const [mode, setMode] = useState<Mode | null>(null);
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
