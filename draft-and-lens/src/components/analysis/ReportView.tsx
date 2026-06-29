@@ -285,7 +285,7 @@ export function ReportView({
 
           {revisionStatus === 'unchanged' && (
             <p style={{
-              marginTop: '1.5rem', padding: '.6rem 1rem',
+              marginTop: '2.5rem', marginBottom: '1.5rem', padding: '.85rem 1.25rem',
               fontSize: '.82rem', color: 'var(--teal)',
               borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
             }}>
@@ -294,7 +294,7 @@ export function ReportView({
           )}
           {revisionStatus === 'revised' && (
             <p style={{
-              marginTop: '1.5rem', padding: '.6rem 1rem',
+              marginTop: '2.5rem', marginBottom: '1.5rem', padding: '.85rem 1.25rem',
               fontSize: '.82rem', color: 'var(--amber)',
               borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
             }}>
