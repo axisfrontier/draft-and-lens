@@ -9,8 +9,8 @@ export const MODELS = {
   diagnostician: 'claude-sonnet-4-6',
   structuralReader: 'claude-sonnet-4-6',
   narratorVerifier: 'claude-sonnet-4-6',
-  narratorCorrector: 'claude-opus-4-7',
-  analyst: 'claude-opus-4-7',
+  narratorCorrector: 'claude-opus-4-8',
+  analyst: 'claude-opus-4-8',
   scorer: 'claude-sonnet-4-6',
   market: 'claude-sonnet-4-6',
   bible: 'claude-sonnet-4-6',
@@ -43,7 +43,7 @@ export function adaptiveAnalystConfig(wordCount: number): {
   if (wordCount < 3000) {
     return { model: 'claude-sonnet-4-6', maxTokens: 5000, effort: 'low', useThinking: true };
   }
-  return { model: 'claude-opus-4-7', maxTokens: 8000, effort: ANALYST_EFFORT, useThinking: true };
+  return { model: 'claude-opus-4-8', maxTokens: 8000, effort: ANALYST_EFFORT, useThinking: true };
 }
 
 export const TOKEN_LIMITS = {
