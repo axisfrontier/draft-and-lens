@@ -398,7 +398,7 @@ export function ReportView({
 
           {/* Dashboard */}
           <div id="sec-dashboard" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
-            <ScoresDashboard scores={scores} />
+            <ScoresDashboard scores={scores} tradition={diagnostic?.tradition} />
           </div>
 
           {/* Story Arc */}
