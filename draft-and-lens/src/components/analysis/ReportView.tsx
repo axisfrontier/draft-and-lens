@@ -426,13 +426,17 @@ export function ReportView({
             padding: '1.5rem 0', borderBottom: '1px solid var(--rule-l)',
             marginBottom: '2.5rem',
           }}>
-            <button type="button" style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.62rem',
-              letterSpacing: '.16em', textTransform: 'uppercase',
-              padding: '.55rem 1.1rem', background: 'transparent',
-              border: '1px solid var(--rule)', color: 'var(--ink-soft)',
-              cursor: 'pointer',
-            }}>New Analysis</button>
+            <button
+              type="button"
+              onClick={() => { window.location.href = '/'; }}
+              style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+                letterSpacing: '.16em', textTransform: 'uppercase',
+                padding: '.55rem 1.1rem', background: 'transparent',
+                border: '1px solid var(--rule)', color: 'var(--ink-soft)',
+                cursor: 'pointer',
+              }}
+            >New Analysis</button>
             <button
               type="button"
               onClick={() => {
