@@ -15,12 +15,6 @@ const ALIGN_DIMS: ReadonlyArray<{ key: string; label: string }> = [
   { key: 'earned', label: 'Earned Weight' },
 ];
 
-function barColour(s: number): string {
-  if (s >= 7) return 'var(--teal)';
-  if (s >= 5) return 'var(--amber)';
-  return 'var(--tension)';
-}
-
 function scoreLabel(s: number): string {
   if (s >= 9) return 'Fully earned';
   if (s >= 7) return 'Landing well';
@@ -143,9 +137,6 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
                     >
                       {scoreLabel(s)}
                     </span>
-                  </div>
-                  <div style={{ height: 2, background: 'var(--rule-l)' }}>
-                    <div style={{ height: '100%', width: `${s * 10}%`, background: barColour(s) }} />
                   </div>
                 </div>
               );
