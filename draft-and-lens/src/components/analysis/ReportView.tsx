@@ -573,7 +573,12 @@ export function ReportView({
                                 src={`/lenses/${id}.jpg`}
                                 alt={name}
                                 width={38} height={38}
-                                style={{ objectFit: 'cover', display: 'block', filter: 'grayscale(100%)' }}
+                                style={{
+                                  width: '100%', height: '100%',
+                                  objectFit: 'cover',
+                                  objectPosition: id === 'coens' ? 'center top' : 'center',
+                                  display: 'block', filter: 'grayscale(100%)',
+                                }}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
                                 }}
