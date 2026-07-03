@@ -31,12 +31,12 @@ export function VerdictBand({ verdict }: { verdict: Verdict }) {
           {verdict.ruling}
         </div>
         {hasDetail && (
-          <div style={{ width: 1, background: '#3a3628', alignSelf: 'stretch', flexShrink: 0 }} />
+          <div style={{ width: 1, background: 'var(--ink-mid)', alignSelf: 'stretch', flexShrink: 0 }} />
         )}
         {hasDetail && (
           <div style={{
             fontSize: '.88rem', lineHeight: 1.75,
-            color: '#b8b0a0', fontStyle: 'italic', maxWidth: 500,
+            color: 'var(--rule)', fontStyle: 'italic', maxWidth: 500,
           }}>
             {verdict.detail}
           </div>

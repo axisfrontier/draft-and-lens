@@ -46,7 +46,7 @@ export function MarketPanel({ market }: { market: Market | null }) {
           fontFamily: 'var(--font-mono)',
           fontSize: '.6rem',
           letterSpacing: '.1em',
-          color: '#8a8478',
+          color: 'var(--ink-faint)',
           fontStyle: 'italic',
           marginBottom: knownWork ? '1.25rem' : '2rem',
         }}
@@ -71,7 +71,7 @@ export function MarketPanel({ market }: { market: Market | null }) {
       )}
 
       {studios.length === 0 && (
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', color: '#5a5448', fontStyle: 'italic' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', color: 'var(--ink-soft)', fontStyle: 'italic' }}>
           Market analysis is generated for longer submissions.
         </div>
       )}

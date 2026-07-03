@@ -626,7 +626,7 @@ export function ReportView({
                         {group.entries.find(e => e.id === activeLensId)?.name ?? activeLensId}
                       </div>
                       <div style={{
-                        fontSize: '.9rem', lineHeight: 1.85, color: '#c8c0a8',
+                        fontSize: '.9rem', lineHeight: 1.85, color: 'var(--paper-dark)',
                         fontStyle: 'italic', whiteSpace: 'pre-wrap',
                       }}>
                         {lensReadings[activeLensId] || (
@@ -707,7 +707,7 @@ export function ReportView({
                     )}</div>
                     <div style={{
                       fontSize: '.88rem', lineHeight: 1.8,
-                      color: msg.role === 'user' ? '#a0988a' : '#c8c0a8',
+                      color: msg.role === 'user' ? '#a0988a' : 'var(--paper-dark)',
                       whiteSpace: 'pre-wrap', fontStyle: msg.role === 'assistant' ? 'italic' : 'normal',
                     }}>{msg.content}</div>
                   </div>

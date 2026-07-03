@@ -146,7 +146,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
             >
               {hover.label}
             </div>
-            <div style={{ fontSize: '.78rem', lineHeight: 1.5, color: '#c8c0a8', fontStyle: 'italic' }}>
+            <div style={{ fontSize: '.78rem', lineHeight: 1.5, color: 'var(--paper-dark)', fontStyle: 'italic' }}>
               {hover.note}
             </div>
           </div>
