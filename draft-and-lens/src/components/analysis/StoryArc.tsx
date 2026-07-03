@@ -4,7 +4,7 @@
  * Story Arc — Stage E. Tension / Pace / Emotion plotted from the scorer's
  * beats (pct + intensity), with act dividers, hover tooltips, and a toggleable
  * legend. Beat→curve math ported verbatim from the prototype's arc renderer:
- * three lines share one beat curve with small Y offsets for separation.
+ * each line is plotted independently from its own value, no shared offset.
  */
 import { useState } from 'react';
 
