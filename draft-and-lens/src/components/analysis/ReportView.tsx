@@ -229,10 +229,10 @@ export function ReportView({
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr var(--sidebar-w)', minHeight: '100vh', background: 'var(--paper)' }}>
+    <div className="report-grid" style={{ display: 'grid', gridTemplateColumns: '1fr var(--sidebar-w)', minHeight: '100vh', background: 'var(--paper)' }}>
 
       {/* ── RIGHT SIDEBAR ── */}
-      <aside style={{
+      <aside className="report-sidebar" style={{
         position: 'sticky', top: 'var(--nav-h)',
         gridColumn: 2, gridRow: 1,
         height: 'calc(100vh - var(--nav-h))',

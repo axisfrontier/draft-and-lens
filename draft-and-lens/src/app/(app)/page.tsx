@@ -679,7 +679,7 @@ export default function AppHomePage() {
                       padding: '.15rem .5rem', borderRadius: 20,
                       border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
                       background: isActive ? 'var(--amber)' : 'transparent',
-                      color: isActive ? 'var(--black-band)' : 'var(--ink-soft)',
+                      color: isActive ? 'var(--black-band)' : 'var(--paper-dark)',
                       animation: isActive ? `pillFlash 1s ease-in-out ${i * 0.15}s infinite` : 'none',
                     }}>
                       {labels[i]}
@@ -714,7 +714,7 @@ export default function AppHomePage() {
             whiteSpace: 'pre-wrap',
             fontFamily: 'var(--font-serif)',
             fontSize: '.92rem', lineHeight: 1.88,
-            color: 'var(--paper-dark)',
+            color: 'var(--ink-soft)',
           }}>
             {streamingPreview}
           </article>

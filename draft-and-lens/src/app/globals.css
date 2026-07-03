@@ -23,3 +23,13 @@
     @apply bg-paper font-sans text-ink antialiased;
   }
 }
+
+@media (max-width: 900px) {
+  .report-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .report-sidebar {
+    display: none !important;
+  }
+}
