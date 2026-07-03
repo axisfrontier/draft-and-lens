@@ -654,55 +654,76 @@ export default function AppHomePage() {
       {running && (
         <div style={{
           position: 'fixed', top: 'var(--nav-h)', left: 0, right: 0, zIndex: 68,
-          background: 'var(--black-band)', borderBottom: '2px solid var(--amber-d)',
+          background: 'var(--black-band)',
           padding: '.7rem 2.5rem',
         }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '2rem',
-            maxWidth: 1100, margin: '0 auto',
-          }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontFamily: 'var(--font-serif)', fontSize: '.95rem',
-                color: 'var(--paper)', marginBottom: '.4rem',
-              }}>{stage || 'Reading your work'}</div>
-              <div style={{ display: 'flex', gap: '.5rem' }}>
-                {(['read', 'structure', 'writing', 'support'] as const).map((s, i) => {
-                  const labels = ['Reading', 'Structure', 'Writing the reading', 'Market & bible'];
-                  const stageMap: Record<string, string> = { read: 'read', structure: 'structure', writing: 'writing', 'Final check': 'support' };
-                  const currentKey = stageMap[stage] ?? (stage === 'Mapping the structure' || stage === 'Verifying the narrator' ? 'structure' : stage === 'Writing the reading' ? 'writing' : stage === 'Reading your work' ? 'read' : '');
-                  const isActive = currentKey === s;
-                  return (
-                    <div key={s} style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                      letterSpacing: '.1em', textTransform: 'uppercase',
-                      padding: '.15rem .5rem', borderRadius: 20,
-                      border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
-                      background: isActive ? 'var(--amber)' : 'transparent',
-                      color: isActive ? 'var(--black-band)' : 'var(--paper-dark)',
-                      animation: isActive ? `pillFlash 1s ease-in-out ${i * 0.15}s infinite` : 'none',
-                    }}>
-                      {labels[i]}
+          {(() => {
+            const stageKeys = ['read', 'structure', 'writing', 'support'] as const;
+            const stageMap: Record<string, string> = { read: 'read', structure: 'structure', writing: 'writing', 'Final check': 'support' };
+            const currentKey = stageMap[stage] ?? (stage === 'Mapping the structure' || stage === 'Verifying the narrator' ? 'structure' : stage === 'Writing the reading' ? 'writing' : stage === 'Reading your work' ? 'read' : '');
+            const stageIndex = Math.max(0, stageKeys.indexOf(currentKey as typeof stageKeys[number]));
+            return (
+              <>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '2rem',
+                  maxWidth: 1100, margin: '0 auto',
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontFamily: 'var(--font-serif)', fontSize: '.95rem',
+                      color: 'var(--paper)', marginBottom: '.4rem',
+                    }}>{stage || 'Reading your work'}</div>
+                    <div style={{ display: 'flex', gap: '.5rem' }}>
+                      {stageKeys.map((s, i) => {
+                        const labels = ['Reading', 'Structure', 'Writing the reading', 'Market & bible'];
+                        const isActive = currentKey === s;
+                        return (
+                          <div key={s} style={{
+                            fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                            letterSpacing: '.1em', textTransform: 'uppercase',
+                            padding: '.15rem .5rem', borderRadius: 20,
+                            border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
+                            background: isActive ? 'var(--amber)' : 'transparent',
+                            color: isActive ? 'var(--black-band)' : 'var(--paper-dark)',
+                            animation: isActive ? `pillFlash 1s ease-in-out ${i * 0.15}s infinite` : 'none',
+                          }}>
+                            {labels[i]}
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={stop}
-              style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.55rem',
-                letterSpacing: '.14em', textTransform: 'uppercase',
-                color: 'var(--paper)', background: 'transparent',
-                border: '1px solid var(--border-dark)',
-                padding: '.35rem .8rem', borderRadius: 20,
-                cursor: 'pointer', flexShrink: 0,
-              }}
-            >
-              Stop
-            </button>
-          </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={stop}
+                    style={{
+                      fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+                      letterSpacing: '.14em', textTransform: 'uppercase',
+                      color: 'var(--paper)', background: 'transparent',
+                      border: '1px solid var(--border-dark)',
+                      padding: '.35rem .8rem', borderRadius: 20,
+                      cursor: 'pointer', flexShrink: 0,
+                    }}
+                  >
+                    Stop
+                  </button>
+                </div>
+                {/* Progress track — fills as stages advance, breathes within a stage */}
+                <div style={{
+                  position: 'absolute', left: 0, right: 0, bottom: 0,
+                  height: 2, background: 'var(--border-dark)',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${((stageIndex + 1) / stageKeys.length) * 100}%`,
+                    background: 'var(--amber)',
+                    transition: 'width 1s ease',
+                    animation: 'breathe 2.8s ease-in-out infinite',
+                  }} />
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
