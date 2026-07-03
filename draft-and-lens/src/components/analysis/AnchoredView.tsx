@@ -8,6 +8,7 @@
  */
 import { useRef, useState } from 'react';
 
+import { annotateGlossary } from '../glossary/annotate';
 import { resolveAnchors } from '@/lib/anchor';
 
 export function AnchoredView({ report, text }: { report: string; text: string }) {
@@ -24,6 +25,10 @@ export function AnchoredView({ report, text }: { report: string; text: string })
   }
 
   const { segments, notes, orphans } = resolveAnchors(report, text);
+  // One count map shared across all notes + orphans, so a glossary term is
+  // annotated at most once across the whole panel — mirrors FormattedBody's
+  // per-body scoping for the main report sections.
+  const glossCounts = new Map<string, number>();
 
   /** Clicking a span → scroll the note into view. */
   const activateFromSpan = (i: number): void => {
@@ -142,7 +147,9 @@ export function AnchoredView({ report, text }: { report: string; text: string })
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: '.8rem', lineHeight: 1.55, color: 'var(--ink-mid)' }}>{r.note}</div>
+              <div style={{ fontSize: '.8rem', lineHeight: 1.55, color: 'var(--ink-mid)' }}>
+                {annotateGlossary(r.note, glossCounts, `note-${i}`)}
+              </div>
             </div>
           ))}
 
@@ -173,7 +180,7 @@ export function AnchoredView({ report, text }: { report: string; text: string })
                     color: 'var(--ink-soft)',
                   }}
                 >
-                  {o}
+                  {annotateGlossary(o, glossCounts, `orphan-${i}`)}
                 </div>
               ))}
             </div>
