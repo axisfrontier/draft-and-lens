@@ -314,8 +314,10 @@ export function ReportView({
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                   letterSpacing: '.22em', textTransform: 'uppercase',
-                  color: 'var(--ink-soft)', marginBottom: '3rem',
+                  color: '#c8b898', marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '.75rem',
                 }}>
+                  <span style={{ width: '24px', height: '1px', background: 'var(--amber)', flexShrink: 0 }} />
                   {traditionLine}
                 </div>
               )}
@@ -326,6 +328,8 @@ export function ReportView({
                   fontWeight: 700, lineHeight: 1.05,
                   letterSpacing: '-.02em', color: 'var(--ink)',
                   marginBottom: '.6rem',
+                  whiteSpace: 'nowrap', overflow: 'hidden',
+                  textOverflow: 'ellipsis', maxWidth: '100%',
                 }}>
                   {title}
                 </h1>
@@ -337,9 +341,19 @@ export function ReportView({
                   fontWeight: 700, lineHeight: 1.05,
                   letterSpacing: '-.02em', color: 'var(--ink)',
                   marginBottom: '.6rem',
+                  whiteSpace: 'nowrap', overflow: 'hidden',
+                  textOverflow: 'ellipsis', maxWidth: '100%',
                 }}>
                   Untitled
                 </h1>
+              )}
+              {typeof diagnostic?.summary === 'string' && diagnostic.summary.trim() !== '' && (
+                <div style={{
+                  fontSize: '.88rem', lineHeight: 1.8, color: 'var(--ink-soft)',
+                  maxWidth: '500px', borderLeft: '2px solid var(--rule)', paddingLeft: '1rem',
+                }}>
+                  {diagnostic.summary}
+                </div>
               )}
             </div>
             <div>
