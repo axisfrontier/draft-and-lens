@@ -77,7 +77,7 @@ export function extractAnchors(report: string): Anchor[] {
       .replace(/^#+\s*/gm, '')
       .replace(/^[-•\d.]+\s*/, '')
       .trim();
-    if (note.length < 4) note = quote;
+    if (note.length < 4) note = 'No distinct note was generated for this passage.';
     anchors.push({ id: 'anchor-' + idx++, quote, note, occurrence: 0 });
   }
 
