@@ -314,7 +314,7 @@ export function ReportView({
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                   letterSpacing: '.22em', textTransform: 'uppercase',
-                  color: '#c8b898', marginBottom: '1rem',
+                  color: 'var(--ink-soft)', marginBottom: '1rem',
                   display: 'flex', alignItems: 'center', gap: '.75rem',
                 }}>
                   <span style={{ width: '24px', height: '1px', background: 'var(--amber)', flexShrink: 0 }} />
