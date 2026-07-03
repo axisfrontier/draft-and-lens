@@ -104,8 +104,8 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '.85rem 2rem',
+              gridTemplateColumns: '1fr',
+              gap: '.85rem',
               marginTop: '.5rem',
             }}
           >
