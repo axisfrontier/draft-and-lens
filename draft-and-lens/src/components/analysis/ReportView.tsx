@@ -307,7 +307,7 @@ export function ReportView({
             scrollMarginTop: 'calc(var(--nav-h) + 1rem)',
             padding: `${revisionStatus ? '1rem' : '3.5rem'} 0 2.5rem`,
             display: 'grid', gridTemplateColumns: '1fr 200px',
-            gap: '3rem', borderBottom: '1px solid var(--rule)',
+            gap: '1.5rem', borderBottom: '1px solid var(--rule)',
           }}>
             <div>
               {traditionLine && (
