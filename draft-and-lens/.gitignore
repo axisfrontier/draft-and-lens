@@ -45,3 +45,6 @@ scripts/.extracted/
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Vercel deploy hook URL (local only, never commit)
+.deploy-hook

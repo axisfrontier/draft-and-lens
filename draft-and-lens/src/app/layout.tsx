@@ -1,13 +1,8 @@
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, IBM_Plex_Sans, Libre_Baskerville } from 'next/font/google';
+
+import { SiteNav } from '@/components/nav/SiteNav';
 
 import './globals.css';
 
@@ -54,80 +49,7 @@ export default function RootLayout({
         <body>
           {/* Disable browser scroll restoration before first paint */}
           <script dangerouslySetInnerHTML={{ __html: `history.scrollRestoration='manual';window.scrollTo(0,0);` }} />
-          <header style={{
-            position: 'sticky', top: 0, zIndex: 100,
-            height: 'var(--nav-h)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 2.5rem',
-            background: 'var(--black-band)',
-            borderBottom: '2px solid var(--amber)',
-          }}>
-            <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.95rem',
-              letterSpacing: '.2em', textTransform: 'uppercase',
-              color: 'var(--paper)', fontWeight: 500,
-            }}>
-              DRAFT<span style={{ color: 'var(--amber-l)' }}>&amp;</span>LENS
-            </span>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <a href="/about" target="_blank" rel="noopener noreferrer" style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                letterSpacing: '.12em', textTransform: 'uppercase',
-                color: 'var(--ink-faint)', textDecoration: 'none',
-              }}>
-                About
-              </a>
-              <a href="/glossary" target="_blank" rel="noopener noreferrer" style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                letterSpacing: '.12em', textTransform: 'uppercase',
-                color: 'var(--ink-faint)', textDecoration: 'none',
-              }}>
-                Glossary
-              </a>
-              <a href="/feedback" target="_blank" rel="noopener noreferrer" style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                letterSpacing: '.12em', textTransform: 'uppercase',
-                color: 'var(--ink-faint)', textDecoration: 'none',
-              }}>
-                Feedback
-              </a>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button type="button" style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    padding: '.35rem .85rem', background: 'transparent',
-                    border: '1px solid var(--ink-mid)', color: 'var(--ink-faint)',
-                    cursor: 'pointer',
-                  }}>
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button type="button" style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    padding: '.35rem .85rem', background: 'var(--amber)',
-                    border: '1px solid var(--amber)', color: 'var(--black-band)',
-                    cursor: 'pointer', fontWeight: 500,
-                  }}>
-                    Create account
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <a href="/account" style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.5rem',
-                  letterSpacing: '.12em', textTransform: 'uppercase',
-                  color: 'var(--ink-faint)', textDecoration: 'none',
-                }}>
-                  Your work
-                </a>
-                <UserButton />
-              </SignedIn>
-            </div>
-          </header>
+          <SiteNav />
           {children}
         </body>
       </html>
