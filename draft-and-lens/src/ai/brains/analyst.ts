@@ -95,7 +95,6 @@ export async function runAnalyst(
   const params = {
     model,
     max_tokens: maxTokens,
-    speed: 'fast',
     ...(useThinking ? { thinking: { type: 'adaptive' }, output_config: { effort } } : {}),
     system: systemBlocks,
     messages: [{ role: 'user', content: userPrompt }],
