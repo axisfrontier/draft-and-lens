@@ -362,7 +362,7 @@ export function ReportView({
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                   letterSpacing: '.2em', textTransform: 'uppercase',
-                  color: '#c8b898', marginBottom: '.6rem',
+                  color: 'var(--ink-soft)', marginBottom: '.6rem',
                 }}>Document</div>
                 {[
                   { label: 'Pages', value: String(pages) },
