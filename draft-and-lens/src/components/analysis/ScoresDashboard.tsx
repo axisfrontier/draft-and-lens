@@ -30,7 +30,6 @@ const labelStyle = {
   textTransform: 'uppercase' as const,
   color: 'var(--amber-d)',
   marginBottom: '1.25rem',
-  paddingTop: '.5rem',
   paddingBottom: '.5rem',
   borderBottom: '1px solid var(--rule)',
 };
@@ -52,7 +51,7 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
   return (
     <section style={{ marginTop: '0' }}>
       {/* header */}
-      <div style={{ padding: '1.5rem 0 1rem', borderBottom: '1px solid var(--rule)', marginBottom: '2rem' }}>
+      <div style={{ padding: '2.5rem 0 1rem', borderBottom: '1px solid var(--rule)', marginBottom: '2rem' }}>
         <div
           style={{
             fontFamily: 'var(--font-mono)',
@@ -86,6 +85,9 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
           gap: '3rem',
           alignItems: 'start',
           marginTop: '.5rem',
+          marginBottom: '2.5rem',
+          paddingBottom: '2.5rem',
+          borderBottom: '1px solid var(--rule-l)',
         }}
       >
         <div>
