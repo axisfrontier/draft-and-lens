@@ -26,16 +26,11 @@ export const ANALYST_EFFORT = (process.env.DL_ANALYST_EFFORT ?? 'medium') as 'lo
  * Short pieces don't need Opus — Sonnet is fast and capable enough.
  * Opus earns its place only on longer, more complex work.
  *
- * The report structure asks for the full 13-section analysis regardless of
- * word count, so every tier's ceiling must cover 13 sections of quoted,
- * plain-language-annotated prose — not just the shortest possible reading.
- * The 3 000+ tier also spends part of its budget on adaptive extended
- * thinking, which competes with the visible report for the same ceiling.
- *
- * Tiers:
- *  < 800 words  → Sonnet, 5 000 tokens, no extended thinking
- *  800–3 000    → Sonnet, 8 000 tokens, low effort thinking
- *  3 000+       → Opus,   16 000 tokens, medium effort thinking
+ * Output length is fixed by the report structure (13-15 numbered sections
+ * plus a verdict, regardless of submission length) — a 200-word piece and
+ * a 10,000-word script both owe the same full analysis. So only the model
+ * and thinking effort scale with word count; the token ceiling itself must
+ * stay generous at every tier, or short submissions truncate mid-report.
  */
 export function adaptiveAnalystConfig(wordCount: number): {
   model: string;
@@ -44,10 +39,10 @@ export function adaptiveAnalystConfig(wordCount: number): {
   useThinking: boolean;
 } {
   if (wordCount < 800) {
-    return { model: 'claude-sonnet-4-6', maxTokens: 5000, effort: 'low', useThinking: false };
+    return { model: 'claude-sonnet-4-6', maxTokens: 16000, effort: 'low', useThinking: false };
   }
   if (wordCount < 3000) {
-    return { model: 'claude-sonnet-4-6', maxTokens: 8000, effort: 'low', useThinking: true };
+    return { model: 'claude-sonnet-4-6', maxTokens: 16000, effort: 'low', useThinking: true };
   }
   return { model: 'claude-opus-4-8', maxTokens: 16000, effort: ANALYST_EFFORT, useThinking: true };
 }
