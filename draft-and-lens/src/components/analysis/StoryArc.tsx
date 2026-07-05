@@ -68,7 +68,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
     setHidden((h) => ({ ...h, [key]: !h[key] }));
 
   return (
-    <section style={{ marginTop: '2.5rem', paddingBottom: '2.5rem', borderBottom: '1px solid var(--rule-l)' }}>
+    <section style={{ marginTop: '0', paddingBottom: '2.5rem', borderBottom: '1px solid var(--rule-l)' }}>
       {/* header: label + info, legend */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
@@ -97,7 +97,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
                 fontSize: '.72rem',
                 letterSpacing: '.1em',
                 textTransform: 'uppercase',
-                color: 'var(--ink-soft)',
+                color: '#c8b898',
                 cursor: 'pointer',
                 userSelect: 'none',
                 opacity: hidden[l.key] ? 0.4 : 1,
