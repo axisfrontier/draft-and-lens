@@ -518,7 +518,7 @@ export function ReportView({
           {/* Lenses — Choose a Voice */}
           <div id="sec-lenses" style={{ marginTop: '0', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
             <div style={{
-              padding: '1.5rem 0 1rem',
+              padding: '2rem 0 1.5rem',
               borderBottom: '1px solid var(--rule)',
               marginBottom: '1.75rem',
             }}>
@@ -579,7 +579,10 @@ export function ReportView({
                                   width: '100%', height: '100%',
                                   objectFit: 'cover',
                                   objectPosition: id === 'coens' ? 'center top' : 'center',
-                                  display: 'block', filter: 'grayscale(100%)',
+                                  display: 'block',
+                                  filter: isActive
+                                    ? 'grayscale(30%) contrast(1.05) sepia(15%)'
+                                    : 'grayscale(100%) contrast(1.1)',
                                 }}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
@@ -592,12 +595,13 @@ export function ReportView({
                               }}>{name.charAt(0)}</span>
                             )}
                           </div>
-                          <div style={{ minWidth: 0 }}>
+                          <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
                             <span style={{
-                              fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                              letterSpacing: '.06em', textTransform: 'uppercase',
-                              color: isActive ? 'var(--amber-l)' : 'var(--ink-soft)',
-                              display: 'block',
+                              fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+                              letterSpacing: '.08em', textTransform: 'uppercase',
+                              color: isActive ? 'var(--amber-l)' : 'var(--amber-d)',
+                              display: 'block', lineHeight: 1.2,
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             }}>{name}</span>
                             {isLoading && (
                               <span style={{
