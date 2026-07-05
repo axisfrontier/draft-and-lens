@@ -28,7 +28,10 @@ let _client: Anthropic | null = null;
 
 export function getAnthropicClient(): Anthropic {
   if (!_client) {
-    _client = new Anthropic({ apiKey: getApiKey() });
+    _client = new Anthropic({
+      apiKey: getApiKey(),
+      defaultHeaders: { 'anthropic-beta': 'fast-mode-2026-02-01' },
+    });
   }
   return _client;
 }
