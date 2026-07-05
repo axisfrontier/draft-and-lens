@@ -49,9 +49,10 @@ export function ReportSection({
           <span
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '1.4rem',
+              fontSize: '1.5rem',
               fontWeight: 700,
-              color: 'var(--rule-l)',
+              lineHeight: 1,
+              color: 'var(--ink-soft)',
               width: '2.5rem',
             }}
           >

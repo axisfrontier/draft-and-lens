@@ -92,8 +92,8 @@ export function FormattedBody({
           <p
             key={i}
             style={{
-              fontSize: '.82rem',
-              lineHeight: 1.7,
+              fontSize: '.92rem',
+              lineHeight: 1.88,
               color: bodyCol,
               marginBottom: '.85rem',
               maxWidth: 660,
