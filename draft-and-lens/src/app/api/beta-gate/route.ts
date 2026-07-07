@@ -17,13 +17,13 @@ export async function POST(req: NextRequest) {
     url.search = '';
     url.searchParams.set('next', nextParam);
     url.searchParams.set('error', '1');
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(url, 303);
   }
 
   const url = req.nextUrl.clone();
   url.pathname = nextParam.startsWith('/') ? nextParam : '/';
   url.search = '';
-  const res = NextResponse.redirect(url);
+  const res = NextResponse.redirect(url, 303);
   res.cookies.set('dl_beta', await sha256Hex(expected), {
     httpOnly: true,
     secure: true,
