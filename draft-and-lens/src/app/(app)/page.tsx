@@ -701,17 +701,18 @@ export default function AppHomePage() {
                     Stop
                   </button>
                 </div>
-                {/* Progress track — fills as stages advance, breathes within a stage */}
+                {/* Progress track — fills as stages advance, sweeps continuously within a stage */}
                 <div style={{
                   position: 'absolute', left: 0, right: 0, bottom: 0,
-                  height: 2, background: 'var(--border-dark)',
+                  height: 3, background: 'var(--border-dark)',
                 }}>
                   <div style={{
                     height: '100%',
                     width: `${((stageIndex + 1) / stageKeys.length) * 100}%`,
-                    background: 'var(--amber)',
+                    background: 'linear-gradient(90deg, var(--amber) 0%, var(--amber-l) 50%, var(--amber) 100%)',
+                    backgroundSize: '200% 100%',
                     transition: 'width 1s ease',
-                    animation: 'breathe 2.8s ease-in-out infinite',
+                    animation: 'progressSweep 1.1s linear infinite',
                   }} />
                 </div>
               </>
