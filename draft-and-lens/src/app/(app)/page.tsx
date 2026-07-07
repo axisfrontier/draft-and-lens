@@ -62,6 +62,7 @@ export default function AppHomePage() {
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
+  const [streamed, setStreamed] = useState('');
   const [report, setReport] = useState('');
   const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
   const [coverage, setCoverage] = useState<Coverage | null>(null);
@@ -121,6 +122,7 @@ export default function AppHomePage() {
     if (mode === null) return;
     setRunning(true);
     setError('');
+    setStreamed('');
     setReport('');
     setStage('Reading your work');
     setCoverage(null);
@@ -169,6 +171,7 @@ export default function AppHomePage() {
             continue;
           }
           if (evt.type === 'stage') setStage(evt.title);
+          else if (evt.type === 'text') setStreamed((prev) => prev + evt.delta);
           else if (evt.type === 'done') {
             setReport(evt.report);
             setDiagnostic(evt.diagnostic);
@@ -724,7 +727,7 @@ export default function AppHomePage() {
       {/* ── ANALYSIS SKELETON ── */}
       {running && report === '' && (
         <div style={{ paddingTop: 'calc(var(--nav-h) + 4rem)' }}>
-          <ReportSkeleton mode={mode} wordCount={wordCount} />
+          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} />
         </div>
       )}
 

@@ -212,7 +212,7 @@ export function ReportView({
     fontSize: '.6rem',
     letterSpacing: '.1em',
     textTransform: 'uppercase' as const,
-    color: 'var(--ink-faint)',
+    color: 'var(--ink-soft)',
     textDecoration: 'none',
     borderLeft: '2px solid transparent',
     lineHeight: 1.4,

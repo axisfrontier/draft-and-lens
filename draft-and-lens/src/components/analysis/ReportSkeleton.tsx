@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { parseReport } from './report';
 import { SKELETON_SECTIONS } from './reportSkeletonSections';
 import type { Mode } from './types';
 
@@ -7,7 +8,10 @@ import type { Mode } from './types';
  * Pre-stream placeholder — mirrors ReportView's grid, sidebar, and section
  * layout exactly, so nothing jumps or restyles when the real ReportView
  * mounts on completion. Shown from the moment analysis starts until the
- * `done` SSE event arrives; see page.tsx.
+ * `done` SSE event arrives; see page.tsx. Section bodies fill in with the
+ * real streamed text as each ## HEADING arrives (parsed live via
+ * parseReport), so the page visibly populates during generation instead of
+ * sitting frozen on placeholders until the whole response lands.
  */
 
 function Bar({ width, height = '.9rem' }: { width: string; height?: string }) {
@@ -27,10 +31,10 @@ const sidebarLinkMuted: CSSProperties = {
   fontSize: '.6rem',
   letterSpacing: '.1em',
   textTransform: 'uppercase',
-  color: 'var(--ink-faint)',
+  color: 'var(--ink-soft)',
   borderLeft: '2px solid transparent',
   lineHeight: 1.4,
-  opacity: 0.5,
+  opacity: 0.6,
 };
 
 const sidebarGroup: CSSProperties = {
@@ -52,10 +56,22 @@ const sectionHeading: CSSProperties = {
   marginBottom: '.9rem',
 };
 
-export function ReportSkeleton({ mode, wordCount }: { mode: Mode | null; wordCount: number }) {
+export function ReportSkeleton({
+  mode, wordCount, streamedText,
+}: {
+  mode: Mode | null;
+  wordCount: number;
+  streamedText?: string;
+}) {
   const sections = SKELETON_SECTIONS[mode ?? 'story'];
   const pages = Math.max(1, Math.round(wordCount / 250));
   const modeLabel = mode === 'script' ? 'Film Script' : mode === 'treatment' ? 'Treatment' : mode === 'play' ? 'Stage Play' : 'Story';
+
+  const streamedSections = streamedText ? parseReport(streamedText).sections : [];
+  const findBody = (label: string): string | null => {
+    const match = streamedSections.find((s) => s.heading.trim().toUpperCase() === label.toUpperCase());
+    return match && match.body.trim() ? match.body.trim() : null;
+  };
 
   return (
     <div className="report-grid" style={{ display: 'grid', gridTemplateColumns: '1fr var(--sidebar-w)', minHeight: '100vh', background: 'var(--paper)' }}>
@@ -227,23 +243,35 @@ export function ReportSkeleton({ mode, wordCount }: { mode: Mode | null; wordCou
             }}>Section by section breakdown</div>
           </div>
 
-          {/* Section placeholders — real headings, shimmering bodies */}
-          {sections.map((label, i) => (
-            <div key={label} style={{
-              padding: '1.5rem 0', borderTop: i > 0 ? '1px solid var(--rule-l)' : 'none',
-              background: i % 2 === 1 ? 'var(--cream)' : 'transparent',
-              margin: i % 2 === 1 ? '0 -1.5rem' : undefined,
-              paddingLeft: i % 2 === 1 ? '1.5rem' : undefined,
-              paddingRight: i % 2 === 1 ? '1.5rem' : undefined,
-            }}>
-              <div style={sectionHeading}>{label}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
-                <Bar width="100%" />
-                <Bar width="95%" />
-                <Bar width="60%" />
+          {/* Section placeholders — real headings; bodies fill in live as they stream */}
+          {sections.map((label, i) => {
+            const body = findBody(label);
+            return (
+              <div key={label} style={{
+                padding: '1.5rem 0', borderTop: i > 0 ? '1px solid var(--rule-l)' : 'none',
+                background: i % 2 === 1 ? 'var(--cream)' : 'transparent',
+                margin: i % 2 === 1 ? '0 -1.5rem' : undefined,
+                paddingLeft: i % 2 === 1 ? '1.5rem' : undefined,
+                paddingRight: i % 2 === 1 ? '1.5rem' : undefined,
+              }}>
+                <div style={sectionHeading}>{label}</div>
+                {body ? (
+                  <div style={{
+                    fontFamily: 'var(--font-serif)', fontSize: '.92rem',
+                    lineHeight: 1.85, color: 'var(--ink-soft)', whiteSpace: 'pre-wrap',
+                  }}>
+                    {body}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+                    <Bar width="100%" />
+                    <Bar width="95%" />
+                    <Bar width="60%" />
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         </div>
       </div>
