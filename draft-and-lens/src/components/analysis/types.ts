@@ -47,6 +47,8 @@ export interface Market {
   }>;
 }
 
+export type Mode = 'script' | 'story' | 'play' | 'treatment';
+
 /** The final `done` event from /api/analyse (NDJSON stream). */
 export interface DonePayload {
   type: 'done';

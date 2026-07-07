@@ -3,16 +3,16 @@
 import { useAuth } from '@clerk/nextjs';
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 
+import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
 import type {
   Coverage,
   Diagnostic,
   Market,
+  Mode,
   Scores,
 } from '@/components/analysis/types';
 import { TESTER_WORD_CAP, countWords } from '@/lib/limits';
-
-type Mode = 'script' | 'story' | 'play' | 'treatment';
 
 const TYPES: ReadonlyArray<{ value: Mode; label: string }> = [
   { value: 'script', label: 'Film Script' },
@@ -45,12 +45,6 @@ type StreamEvent =
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged';
 
-const ANCHOR_OPEN = String.fromCharCode(0x27e6);
-const ANCHOR_CLOSE = String.fromCharCode(0x27e7);
-function stripAnchors(s: string): string {
-  return s.split(ANCHOR_OPEN).join('').split(ANCHOR_CLOSE).join('');
-}
-
 async function readFileAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -68,7 +62,6 @@ export default function AppHomePage() {
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
-  const [streamed, setStreamed] = useState('');
   const [report, setReport] = useState('');
   const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
   const [coverage, setCoverage] = useState<Coverage | null>(null);
@@ -128,7 +121,6 @@ export default function AppHomePage() {
     if (mode === null) return;
     setRunning(true);
     setError('');
-    setStreamed('');
     setReport('');
     setStage('Reading your work');
     setCoverage(null);
@@ -177,7 +169,6 @@ export default function AppHomePage() {
             continue;
           }
           if (evt.type === 'stage') setStage(evt.title);
-          else if (evt.type === 'text') setStreamed((prev) => prev + evt.delta);
           else if (evt.type === 'done') {
             setReport(evt.report);
             setDiagnostic(evt.diagnostic);
@@ -202,14 +193,6 @@ export default function AppHomePage() {
   function stop(): void {
     abortRef.current?.abort();
   }
-
-  const streamingPreview = report === ''
-    ? stripAnchors(streamed)
-        .replace(/^#{1,3} /gm, '')
-        .replace(/\*\*(.+?)\*\*/g, '$1')
-        .replace(/\*(.+?)\*/g, '$1')
-        .replace(/^---+$/gm, '')
-    : '';
 
   const kicker: CSSProperties = {
     fontFamily: 'var(--font-mono)',
@@ -737,18 +720,10 @@ export default function AppHomePage() {
         </div>
       )}
 
-      {/* ── STREAMING PREVIEW ── */}
-      {streamingPreview !== '' && (
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 3rem' }}>
-          <article style={{
-            marginTop: running ? 'calc(var(--nav-h) + 4rem)' : '2rem',
-            whiteSpace: 'pre-wrap',
-            fontFamily: 'var(--font-serif)',
-            fontSize: '.92rem', lineHeight: 1.88,
-            color: 'var(--ink-soft)',
-          }}>
-            {streamingPreview}
-          </article>
+      {/* ── ANALYSIS SKELETON ── */}
+      {running && report === '' && (
+        <div style={{ paddingTop: 'calc(var(--nav-h) + 4rem)' }}>
+          <ReportSkeleton mode={mode} wordCount={wordCount} />
         </div>
       )}
 
