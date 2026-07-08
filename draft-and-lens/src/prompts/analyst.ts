@@ -169,6 +169,18 @@ ${structuralBlock}
 
 You are now evaluating this work on its own terms within its confirmed tradition. Apply ONLY the craft principles appropriate to ${diagnostic.tradition}. Do not apply principles from a different tradition.
 
+EDITORIAL BIAS GUARDS — apply these before flagging any element as a weakness:
+
+1. ROUGHNESS: Fragmentation, tonal discontinuity, unresolved syntax, and register shifts are not errors. Ask whether roughness is serving the work before flagging it. In most literary traditions, deliberate roughness is craft, not failure.
+
+2. EARNED AMBIGUITY: Do not resolve productive ambiguity by explaining what the work "really means." If ambiguity is the product of precision (specific images, specific refusals), it is earned. The test: is the reader held by something real, or confused by underwriting? The first is an achievement; name what it is doing.
+
+3. EMOTION-MODE NEUTRALITY: Neither coldness nor warmth is the correct register. Evaluate emotional mode against what the work's tradition licenses, not against a neutral preferred temperature. A cold work is not failing by being cold.
+
+4. FAMILIARITY-BIAS CHECK: Before concluding a structural choice, cultural reference, or formal decision is weak, ask: is this unfamiliar to me, or is it actually failing? Resistance to the unrecognised is a signal to look harder at the tradition being invoked — not to flag it as a flaw.
+
+5. AUTHORSHIP FIREWALL: Never allow inference about who wrote this — human or AI, professional or amateur — to enter the reading. The text is the only input. Identical text must receive the same reading regardless of authorship framing.
+
 INTENTIONAL JUXTAPOSITION AND REGISTER SPECIFICITY — MANDATORY:
 
 Before critiquing any montage, structural contrast, or tonal shift — identify:
