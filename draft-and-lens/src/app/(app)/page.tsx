@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, SignedOut, useAuth } from '@clerk/nextjs';
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 
 import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
@@ -274,7 +274,59 @@ export default function AppHomePage() {
             <div style={{ width: 1, background: 'var(--border-deeper)', alignSelf: 'stretch', flexShrink: 0 }} />
 
             {/* RIGHT: upload form */}
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
+
+              <SignedOut>
+                <div style={{
+                  position: 'absolute', inset: 0, zIndex: 10,
+                  background: 'rgba(245, 241, 232, 0.92)',
+                  backdropFilter: 'blur(2px)',
+                  WebkitBackdropFilter: 'blur(2px)',
+                  borderRadius: 18,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  textAlign: 'center', padding: '2rem',
+                  gap: '.85rem',
+                }}>
+                  <p style={{
+                    fontFamily: 'var(--font-serif)', fontSize: '1.15rem',
+                    fontWeight: 700, color: 'var(--ink)',
+                    maxWidth: 340, lineHeight: 1.4,
+                  }}>
+                    Create a free account to start your reading
+                  </p>
+                  <p style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '.8rem',
+                    color: 'var(--ink-faint)', maxWidth: 320, lineHeight: 1.6,
+                  }}>
+                    Your work stays private and is never used to train AI.
+                  </p>
+                  <div style={{ display: 'flex', gap: '.6rem', marginTop: '.4rem' }}>
+                    <SignUpButton mode="modal">
+                      <button type="button" style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.65rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase',
+                        padding: '.7rem 1.4rem', background: 'var(--amber)',
+                        border: '1px solid var(--amber)', color: 'var(--black-band)',
+                        cursor: 'pointer', fontWeight: 500, borderRadius: 12,
+                      }}>
+                        Create account
+                      </button>
+                    </SignUpButton>
+                    <SignInButton mode="modal">
+                      <button type="button" style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.65rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase',
+                        padding: '.7rem 1.4rem', background: 'transparent',
+                        border: '1px solid var(--ink-mid)', color: 'var(--ink-soft)',
+                        cursor: 'pointer', fontWeight: 500, borderRadius: 12,
+                      }}>
+                        Sign in
+                      </button>
+                    </SignInButton>
+                  </div>
+                </div>
+              </SignedOut>
 
               <div style={{ marginBottom: '.25rem' }}>
                 <div style={kicker}>New analysis</div>
@@ -558,15 +610,6 @@ export default function AppHomePage() {
               }}>
                 Your work is yours. We never train AI on it — it&apos;s sent only to generate your reading.
               </p>
-
-              {!running && isSignedIn !== true && (
-                <p style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-                  letterSpacing: '.1em', color: 'var(--ink-soft)', textAlign: 'center',
-                }}>
-                  Sign in (top right) to analyse your work.
-                </p>
-              )}
 
               <p style={{
                 fontFamily: 'var(--font-mono)', fontSize: '.68rem',
