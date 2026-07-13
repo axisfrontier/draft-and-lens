@@ -59,6 +59,7 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.txt', '.fountain', '.fdx', '.docx'];
 export default function AppHomePage() {
   const { isSignedIn } = useAuth();
   const [mode, setMode] = useState<Mode | null>(null);
+  const [submissionType, setSubmissionType] = useState<'complete' | 'excerpt'>('complete');
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
@@ -142,6 +143,7 @@ export default function AppHomePage() {
         body: JSON.stringify({
           mode,
           text: effectiveText,
+          submissionType,
           ...(bibleSkip ? { skipBible: true } : bibleInput.trim() ? { bible: bibleInput.trim() } : {}),
         }),
         signal: ctrl.signal,
@@ -580,6 +582,42 @@ export default function AppHomePage() {
                   color: 'var(--error)',
                 }}>{uploadError}</div>
               )}
+
+              {/* Complete piece vs excerpt */}
+              <div style={{ borderRadius: 14, padding: '.5rem 1rem 0', margin: '0 -1rem' }}>
+                <div style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+                  letterSpacing: '.14em', textTransform: 'uppercase',
+                  color: 'var(--paper)', fontWeight: 500, marginBottom: '.7rem',
+                }}>Complete piece or excerpt?</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.4rem' }}>
+                  {(
+                    [
+                      { value: 'complete', label: 'Complete piece' },
+                      { value: 'excerpt', label: 'Excerpt' },
+                    ] as const
+                  ).map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setSubmissionType(t.value)}
+                      disabled={running}
+                      style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                        letterSpacing: '.1em', textTransform: 'uppercase',
+                        padding: '.65rem .3rem',
+                        background: submissionType === t.value ? 'var(--amber)' : 'transparent',
+                        color: submissionType === t.value ? 'var(--black-band)' : 'var(--paper)',
+                        border: `1px solid ${submissionType === t.value ? 'var(--amber)' : 'var(--amber-l)'}`,
+                        cursor: 'pointer', borderRadius: 10,
+                        transition: 'all .15s',
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Step 3 — Analyse */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginTop: '.5rem' }}>
