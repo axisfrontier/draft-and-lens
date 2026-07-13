@@ -131,14 +131,40 @@ function buildStructuralMapBlock(diagnostic: DiagnosticResult): string {
   return lines.join('\n');
 }
 
+const EXCERPT_READING_MODE = `
+
+EXCERPT READING MODE — MANDATORY WHEN THE SUBMISSION IS AN EXCERPT:
+
+WHAT TO READ FOR:
+- Voice and register — is it consistent and distinctive?
+- Momentum — does the excerpt pull the reader forward?
+- Scene construction — are individual scenes doing their work?
+- The promise of the page — does this make you want to read what comes next?
+- Craft at the sentence and paragraph level
+
+WHAT NOT TO PENALISE:
+- Missing setup or backstory — the writer may not have submitted earlier pages
+- Unresolved plot threads — resolution belongs to a later chapter
+- Absence of a complete arc — this is a fragment, not a failure
+- An ending that doesn't resolve — the excerpt ends where the writer chose to cut it
+
+WHAT TO FLAG DIFFERENTLY:
+- If something feels like missing information rather than intentional withholding, note it as: "If this is mid-novel, the reader may already know X — if this is the opening of the work, consider establishing X earlier."
+- Do not use the word "incomplete" to describe the submission. It is not incomplete — it is an excerpt.
+
+OPENING NOTE IN THE READING:
+Begin the reading with a single line: "This is a reading of an excerpt. The analysis focuses on what the pages offer, not on what a complete work would require."`;
+
 /** Port of buildSystemPromptWithDiagnostic() — Brain 2 must not re-identify tradition. */
 export function buildAnalystSystemPrompt(
   mode: AnalysisMode,
   genre: string,
-  diagnostic: DiagnosticResult
+  diagnostic: DiagnosticResult,
+  submissionType?: 'complete' | 'excerpt'
 ): string {
   const base = buildSystemPrompt(mode, genre);
-  if (!diagnostic.tradition) return base;
+  const excerptBlock = submissionType === 'excerpt' ? EXCERPT_READING_MODE : '';
+  if (!diagnostic.tradition) return base + excerptBlock;
 
   const strengths = (diagnostic.strengths ?? []).map((s, i) => `${i + 1}. ${s}`).join('\n');
   const craftQuestions = (diagnostic.craftQuestions ?? []).map((q, i) => `${i + 1}. ${q}`).join('\n');
@@ -212,7 +238,7 @@ NOTE PRECISION RULES — MANDATORY:
 
 3. ACKNOWLEDGE DUAL READINGS BEFORE DECLARING A FAULT — MANDATORY BEFORE FLAGGING ANY LINE AS A WEAKNESS: Before flagging any line as a weakness, check whether it is doing more than one thing simultaneously — a line can be warm AND ambiguous, earned AND static, funny AND expository. State what the line is doing correctly first. If the line has a dual reading, where one reading is a strength and another reveals a fault, acknowledge both explicitly before recommending a fix. Never write a prosecution without first establishing the defence.`;
 
-  return base + diagnosticBlock;
+  return base + diagnosticBlock + excerptBlock;
 }
 
 export interface AnalystUserPromptInput {

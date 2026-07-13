@@ -58,11 +58,12 @@ export async function runAnalyst(
     diagnostic,
     coverage,
     revisionNote,
+    submissionType,
   } = input;
 
   // System: cache the constant mode+genre base; append the per-work diagnostic
   // block as a second (uncached) block so the large prefix is reused (§14b).
-  const fullSystem = buildAnalystSystemPrompt(mode, genre, diagnostic);
+  const fullSystem = buildAnalystSystemPrompt(mode, genre, diagnostic, submissionType);
   const baseSystem = buildSystemPrompt(mode, genre);
   const dynamicSystem = fullSystem.startsWith(baseSystem)
     ? fullSystem.slice(baseSystem.length)
