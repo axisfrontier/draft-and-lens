@@ -769,9 +769,7 @@ export default function AppHomePage() {
 
       {/* ── ANALYSIS SKELETON ── */}
       {running && report === '' && (
-        <div style={{ paddingTop: 'calc(var(--nav-h) + 4rem)' }}>
-          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} />
-        </div>
+        <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} />
       )}
 
       {/* ── ERROR ── */}
