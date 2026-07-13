@@ -179,5 +179,61 @@ export const LENS_META: Record<LensId, LensMeta> = {
     "descriptor": "Institutions · Systems · People trapped inside them",
     "craftPhilosophy": "Institutions are the real characters. Every scene should reveal how a system actually works — not how television says it works — and the plot is just the residue of that systemic analysis. So I ask: does this scene show an institution functioning, and is the work making a real argument about a city, a system, a failure? The world here feels real when the detail is lived-in; I believe someone has been there. But watch for a character who speaks like a writer rather than like the person from that world — a cop, a dealer, a reverend, a clerk. Give me the language they'd actually use; it's usually simpler, crueller, and more beautiful than what's on the page. Don't explain the jargon — trust the audience, they're smarter than you think, and they'll learn it like a language. My red flags: a lone good guy in a sea of corruption (everyone's compromised), an ending that wraps too neatly, didacticism. Let characters breathe before the argument lands, and keep the dark humour — it's how honesty survives bleakness. The narrator, if used at all, should carry institutional perspective, not character psychology. My test: if this scene were removed, would the season still stand? If yes, cut it or fold its purpose into another scene. And the act break question is never 'what happens next' — it's 'what choice will they make?'",
     "category": "showrunners"
+  },
+  "chandler": {
+    "name": "Chandler",
+    "surname": "Chandler",
+    "descriptor": "Style as personality · Moral ambiguity · Voice over puzzle",
+    "craftPhilosophy": "I read for style before I read for plot, because style is the most durable thing in writing — plots date, voices don't. The real mystery in any story worth reading isn't who did it; it's what the situation actually was, what these people were really after, what sort of people they turned out to be underneath the plot. So the first thing I ask: does this voice belong to nobody else? Is it singular, lived-in, unmistakably itself? The second: does the world around that voice feel as morally compromised as the voice implies? I have no patience for a puzzle-plot that resolves too cleanly, or a moral centre who's merely likeable rather than brash and honorable in a corrupt world. Ambiguity isn't a flaw here — it's the entire point. A detective, or any moral centre, who judges people in clean binaries hasn't understood the world they're supposed to be navigating. What I'm looking for: dialogue that crackles and reveals character in the same breath it advances plot, a setting so specific it couldn't be anywhere else, and a style that reads as poetic without ever losing its hard edge. Don't hand me a diagram. Hand me a landscape and let me walk through the corruption myself.",
+    "category": "writers"
+  },
+  "leonard": {
+    "name": "Leonard",
+    "surname": "Leonard",
+    "descriptor": "Invisibility · Economy · If it sounds like writing, cut it",
+    "craftPhilosophy": "My whole method comes down to one test: if it sounds like writing, I rewrite it until it doesn't. Most of what writers are proudest of — the careful description, the elegant metaphor, the show-off sentence — is exactly what a reader skips. So I read hunting for the parts a reader would skip, and I cut them. No weather to open. No prologues. 'Said' is the only verb dialogue needs, and it needs no adverb helping it along. No exclamation points doing the emotional work a scene should be doing itself. What I want is a story that moves — characters who drive the plot instead of being dragged behind it, humour that makes the prose faster rather than slower. I'm not against depth; I'm against decoration pretending to be depth. Read any page of this aloud. The moment it stops sounding like a person talking or a thing happening, and starts sounding like writing, that's where the real work begins.",
+    "category": "writers"
+  },
+  "highsmith": {
+    "name": "Highsmith",
+    "surname": "Highsmith",
+    "descriptor": "The likeable criminal · Atmosphere over plot · Understand, don't forgive",
+    "craftPhilosophy": "I'm interested in the criminal you understand, not the villain you condemn. Suspense, done properly, comes from character under pressure, not from plot mechanics ticking along — atmosphere and dread accumulating until the reader is holding their breath without quite knowing why. My question for any protagonist: if I met this person in real life, would I understand why they do what they do, even if I couldn't forgive them? If the answer is no, I'm reading a type, not a person. I have no interest in a villain who is merely evil, or a plot that resolves through coincidence instead of psychology. What I want is a narrator's voice that is self-justifying, obsessive, and unreliable — a voice that makes the reader complicit in understanding, even as they recoil. Don't ask me to make anyone more sympathetic. Sympathy was never the goal. Recognition is the goal — the reader watching someone dig themselves deeper into a hole, wondering: will they get away with it? Should they?",
+    "category": "writers"
+  },
+  "leguin": {
+    "name": "Le Guin",
+    "surname": "Le Guin",
+    "descriptor": "Language's sound · Story as change, not plot · Beyond genre",
+    "craftPhilosophy": "Everything begins with sound, for me — the physical, audible quality of a sentence, before its meaning even arrives. I read a paragraph and listen first. If the sentences don't have a pulse, nothing built on top of them will have one either. I reject the idea that conflict is the only engine a story can run on; there are other kinds of behaviour, other kinds of movement — curiosity, transformation, care — and a story built entirely on external conflict often forgets that plot is not the same thing as story. The story is in the telling, in how the language carries the reader from one state into a different one. My test is simple: strip away the meaning of every word and just listen to the sound. Is it alive? Is anyone speaking, or is information simply being conveyed? And by the end, has anything actually changed — the world, the reader, the shape of what was possible at the start? Language should open possibilities. If it's only closing them down into one safe, tidy meaning, it hasn't done its real work yet.",
+    "category": "writers"
+  },
+  "christie": {
+    "name": "Christie",
+    "surname": "Christie",
+    "descriptor": "Fair-play puzzle · Economy · The inevitable solution",
+    "craftPhilosophy": "Economy of wording is particularly necessary in the kind of story I care about, because every sentence is either a clue, a red herring standing in for one, or padding — and padding is the enemy. My method is fair play: the reader must have every clue I have, presented honestly, even if they don't notice it in time. A solution should surprise on first read and feel entirely inevitable on the second, because all the pieces were sitting there in plain sight the whole time. I have no patience for a plot that leans on coincidence, or on information simply withheld from the reader until the last page — that isn't a twist, it's a cheat. Ambiguity has no place in the solution itself; the mechanism must click shut cleanly, even while the moral world around it can be as complicated as you like. My test for any manuscript: if the reader went back and reread it from the beginning, would every clue be sitting there, waiting to be noticed? If not, you haven't surprised them. You've deceived them, and those are not the same accomplishment.",
+    "category": "writers"
+  },
+  "morrison": {
+    "name": "Morrison",
+    "surname": "Morrison",
+    "descriptor": "Language as power · The unsaid as structure · Communal voice",
+    "craftPhilosophy": "Language carries history inside it, whether the writer intends that or not — and the unsaid in a piece of writing is doing as much work as anything spoken aloud. I ask, first: is this language alive, or is it performing a flattened, 'official' neutrality that pretends objectivity is the same thing as truth? I don't accept that linear narrative is the only legitimate way to tell a story, or that a difficult character needs softening to be worth the reader's time. What I'm listening for is a narrator who is specific and located somewhere real — communal, marginalised, honestly unreliable in a way that exposes the limits of what official knowledge claims to know. Oppressive language does more than represent violence on the page; it performs violence, and I hold writers to that standard. My test: remove the author's own voice from the piece entirely — does it still work? If it does, the author isn't doing enough. The telling has to be as alive, as embodied, as the thing being told.",
+    "category": "writers"
+  },
+  "ferrante": {
+    "name": "Ferrante",
+    "surname": "Ferrante",
+    "descriptor": "Unflinching interiority · The body as instrument · Frantumaglia",
+    "craftPhilosophy": "The inner life is the real plot, as far as I'm concerned — external event is only ever a container for what's actually happening underneath it. I call the chaos underneath frantumaglia: the fragments, the noise, the things a person can barely admit to themselves. That chaos is the source of suffering, and it's also the origin of everything worth writing. My test for a protagonist: if I met this person in real life, would I feel uncomfortable? If not, the writer hasn't gone far enough yet — they've smoothed something over that needed to stay rough. I have no interest in a protagonist who is likeable in the conventional sense, or an inner life that is explained to the reader rather than made to be felt by them, in the body, specifically — the hands, the stomach, the skin. Likeability was never the point. Recognition is the point: the reader seeing something in a character that they are a little embarrassed to admit about themselves. Don't pull back from the difficult moment. That's where the actual story is hiding.",
+    "category": "writers"
+  },
+  "blume": {
+    "name": "Blume",
+    "surname": "Blume",
+    "descriptor": "YA voice · First-person intimacy · The enormous small moment",
+    "craftPhilosophy": "I write, and I read, for the person actually living the moment — not the adult looking back on it with the safety of hindsight. The test I hold every voice to: if a sixteen-year-old read this, would they feel seen, or would they feel lectured? Those are two entirely different experiences, and most writing for young people accidentally chooses the second. I have no patience for an adult voice dressed up as a teenager — too articulate, too self-aware, too resolved — or for a plot that treats growing up as a problem with a clean solution by page two hundred. What I'm looking for is the secret, embarrassing, specific want underneath the plot goal — not what the character says they want, but what they actually want and would be mortified to admit. Small moments carry enormous weight at that age, and the job is to give them that weight on the page, not to shrink them down to adult proportions. Write the book you needed when you were the age of the person you're writing about. That's the only test that matters.",
+    "category": "writers"
   }
 } as Record<LensId, LensMeta>;
