@@ -25,7 +25,8 @@ const FALLBACK: DiagnosticResult = {
 
 export async function runDiagnostician(
   text: string,
-  modeLabel: string
+  modeLabel: string,
+  submissionType?: 'complete' | 'excerpt'
 ): Promise<DiagnosticResult> {
   // Opening + closing only — fast, cheap, forms the view that guides everything.
   const maxChars = 3000;

@@ -68,12 +68,16 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: 'Please sign in to analyse your work.' }, { status: 401 });
   }
 
-  const { text, mode, genre, intent, bible, skipBible } = body;
+  const { text, mode, genre, intent, bible, skipBible, submissionType } = body;
 
   // mode required + validated — the server never infers the submission type (§15).
   if (typeof mode !== 'string' || !MODES.has(mode)) {
     return badRequest('Submission type required: "script", "story", "play", or "treatment".');
   }
+
+  // Excerpt vs complete piece — defaults to 'complete', never trust the client blindly.
+  const cleanSubmissionType: 'complete' | 'excerpt' =
+    submissionType === 'excerpt' ? 'excerpt' : 'complete';
 
   const clean = sanitise(typeof text === 'string' ? text : '');
   if (!clean) return badRequest('No text submitted.');
@@ -142,6 +146,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             intent: typeof intent === 'string' ? intent : undefined,
             bible: typeof bible === 'string' ? bible : undefined,
             skipBible: skipBible === true,
+            submissionType: cleanSubmissionType,
             // Word-limit enforcement happens BEFORE any API call inside the
             // pipeline (computeCoverage runs before Brain 1). Law upheld.
             wordLimit: FREE_WORD_LIMIT,

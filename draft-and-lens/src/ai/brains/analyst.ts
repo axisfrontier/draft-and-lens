@@ -38,6 +38,8 @@ export interface AnalystInput {
   coverage: CoverageSignal;
   /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
   revisionNote?: string;
+  /** Excerpt vs complete piece — a fragment is read on different terms (§Excerpt Mode). */
+  submissionType?: 'complete' | 'excerpt';
 }
 
 export async function runAnalyst(

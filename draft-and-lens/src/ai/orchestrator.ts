@@ -50,6 +50,8 @@ export interface PipelineInput {
   wordLimit?: number;
   /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
   revisionNote?: string;
+  /** Excerpt vs complete piece — a fragment is read on different terms (§Excerpt Mode). */
+  submissionType?: 'complete' | 'excerpt';
 }
 
 export interface PipelineCallbacks {
@@ -104,7 +106,7 @@ export async function runAnalysisPipeline(
 
   // ── Brain 1 — Diagnostician (always first) ─────────────────────────────
   cb.onStage?.('read', 'Reading your work');
-  let diagnostic = await runDiagnostician(text, modeLabel);
+  let diagnostic = await runDiagnostician(text, modeLabel, input.submissionType);
 
   // ── Brain 1b + narrator verify — only on works ≥ 5,000 words ────────────
   if (wordCount >= STRUCTURAL_READER_MIN_WORDS) {
@@ -141,6 +143,7 @@ export async function runAnalysisPipeline(
         diagnostic,
         coverage,
         revisionNote: input.revisionNote,
+        submissionType: input.submissionType,
       },
       cb.onAnalystText,
       cb.signal
