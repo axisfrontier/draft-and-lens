@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { PASS1_SYSTEM } from '../../prompts/diagnostic';
+import { buildPass1System } from '../../prompts/diagnostic';
 import type { DiagnosticResult } from '../../prompts/types';
 import { MODELS, TOKEN_LIMITS } from '../config';
 import { callJsonBrain } from './_shared';
@@ -39,7 +39,7 @@ export async function runDiagnostician(
   const result = await callJsonBrain<DiagnosticResult>({
     model: MODELS.diagnostician,
     maxTokens: TOKEN_LIMITS.diagnostician,
-    system: PASS1_SYSTEM,
+    system: buildPass1System(submissionType),
     user: `This is a ${modeLabel}. Read carefully and return the diagnostic JSON.\n\n${excerpt}`,
   });
   return result ?? FALLBACK;
