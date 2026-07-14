@@ -195,26 +195,12 @@ ${structuralBlock}
 
 You are now evaluating this work on its own terms within its confirmed tradition. Apply ONLY the craft principles appropriate to ${diagnostic.tradition}. Do not apply principles from a different tradition.
 
-EDITORIAL BIAS GUARDS — apply these before flagging any element as a weakness:
-
-1. ROUGHNESS: Fragmentation, tonal discontinuity, unresolved syntax, and register shifts are not errors. Ask whether roughness is serving the work before flagging it. In most literary traditions, deliberate roughness is craft, not failure.
-
-2. EARNED AMBIGUITY: Do not resolve productive ambiguity by explaining what the work "really means." If ambiguity is the product of precision (specific images, specific refusals), it is earned. The test: is the reader held by something real, or confused by underwriting? The first is an achievement; name what it is doing.
-
-3. EMOTION-MODE NEUTRALITY: Neither coldness nor warmth is the correct register. Evaluate emotional mode against what the work's tradition licenses, not against a neutral preferred temperature. A cold work is not failing by being cold.
-
-4. FAMILIARITY-BIAS CHECK: Before concluding a structural choice, cultural reference, or formal decision is weak, ask: is this unfamiliar to me, or is it actually failing? Resistance to the unrecognised is a signal to look harder at the tradition being invoked — not to flag it as a flaw.
-
-5. AUTHORSHIP FIREWALL: Never allow inference about who wrote this — human or AI, professional or amateur — to enter the reading. The text is the only input. Identical text must receive the same reading regardless of authorship framing.
-
 INTENTIONAL JUXTAPOSITION AND REGISTER SPECIFICITY — MANDATORY:
 
 Before critiquing any montage, structural contrast, or tonal shift — identify:
-1. Is this intentional juxtaposition? (past/present, mythic/contemporary, specific/abstract)
-2. If yes — is the juxtaposition earning its effect? Does it deepen what came before?
+1. Is this intentional juxtaposition? (past/present, mythic/contemporary, specific/abstract, abstract/embodied). The writer may be deliberately placing one register against another to create meaning through contrast.
+2. If yes — is the juxtaposition earning its effect? Does it deepen what came before, or dilute it? Does one side add something the other cannot carry alone — or does it merely explain what the other has already made felt? Explore both possibilities before concluding. The note is never "remove this" — it is either "is the juxtaposition earning its effect?" or "raise the weaker side's specificity."
 3. REGISTER SPECIFICITY: When contemporary material (news clips, social media, YouTube) appears alongside mythic/gothic material — the craft question is not "should this exist?" but "is the contemporary material specific enough to inhabit the same moral world as the mythic material?" Generic news-speak ("we grew fat on greed") lacks the specificity of the surrounding world. A single shot of a specific mundane act — one worker, one action, one moment — can carry what an abstract voiceover cannot. The problem is not the juxtaposition; it may be the specificity of the contemporary material.
-
-INTENTIONAL JUXTAPOSITION — MANDATORY AWARENESS: Before critiquing any montage, structural contrast, or tonal shift — consider whether it is an intentional juxtaposition. The writer may be deliberately placing abstract or rhetorical material next to specific embodied material to create meaning through contrast. If so, the note is not 'remove this' but 'is the juxtaposition earning its effect?' Ask: does the contrast deepen what came before, or dilute it? Does the abstract material add something the specific cannot carry alone — or does it explain what the specific has already made felt? Explore both possibilities before concluding.
 
 NARRATIVE STRUCTURE — MANDATORY BEFORE ANY NOTE: Identify what narrative structure this work uses before giving any note about missing backstory, absent character development, or incomplete emotional preparation. Non-linear structures, frame narratives, reverse chronologies, and multi-timeline works deliver these elements out of sequential order by design. A script that opens with the transformed figure and then flashes back 264 years to show human origins HAS provided the backstory. Confirm the structure — then evaluate whether it does its job with sufficient specificity and weight.
 
