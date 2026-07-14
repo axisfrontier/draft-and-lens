@@ -77,7 +77,17 @@ export function extractAnchors(report: string): Anchor[] {
       .replace(/^#+\s*/gm, '')
       .replace(/^[-•\d.]+\s*/, '')
       .trim();
-    if (note.length < 4) note = 'No distinct note was generated for this passage.';
+    // FIX 1 (NotesPanel doc) — if what's left after removing the quote itself
+    // is too thin, the analyst gave no real commentary. No note is better than
+    // a fake note: drop this anchor entirely rather than show the quote back
+    // to the writer as if it were a note, or a placeholder in its place.
+    const quoteEsc = quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const withoutQuote = note.replace(new RegExp(quoteEsc, 'i'), '').replace(/[\s.,;:—-]+/g, ' ').trim();
+    if (withoutQuote.length < 12) continue;
+    // Sentence-boundary detection can land mid-clause; always present a note
+    // starting with a capital letter.
+    const firstChar = note.charAt(0);
+    if (firstChar >= 'a' && firstChar <= 'z') note = firstChar.toUpperCase() + note.slice(1);
     anchors.push({ id: 'anchor-' + idx++, quote, note, occurrence: 0 });
   }
 
