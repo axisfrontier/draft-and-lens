@@ -503,8 +503,8 @@ export default function AppHomePage() {
                       onClick={() => setMode(t.value)}
                       disabled={running}
                       style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-                        letterSpacing: '.1em', textTransform: 'uppercase',
+                        fontFamily: 'var(--font-mono)', fontSize: '.65rem',
+                        letterSpacing: '.22em', textTransform: 'uppercase',
                         padding: '.65rem .3rem',
                         background: mode === t.value ? 'var(--amber)' : 'transparent',
                         color: mode === t.value ? 'var(--black-band)' : 'var(--paper)',
@@ -539,8 +539,8 @@ export default function AppHomePage() {
                       onClick={() => setSubmissionType(t.value)}
                       disabled={running}
                       style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-                        letterSpacing: '.1em', textTransform: 'uppercase',
+                        fontFamily: 'var(--font-mono)', fontSize: '.65rem',
+                        letterSpacing: '.22em', textTransform: 'uppercase',
                         padding: '.65rem .3rem',
                         background: submissionType === t.value ? 'var(--amber)' : 'transparent',
                         color: submissionType === t.value ? 'var(--black-band)' : 'var(--paper)',

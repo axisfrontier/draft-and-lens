@@ -97,13 +97,13 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
                 fontSize: '.72rem',
                 letterSpacing: '.1em',
                 textTransform: 'uppercase',
-                color: '#c8b898',
+                color: 'var(--ink-soft)',
                 cursor: 'pointer',
                 userSelect: 'none',
                 opacity: hidden[l.key] ? 0.4 : 1,
               }}
             >
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: l.colour }} />
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.colour }} />
               {l.label}
             </div>
           ))}
