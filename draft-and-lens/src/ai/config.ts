@@ -47,13 +47,16 @@ export function adaptiveAnalystConfig(wordCount: number): {
   return { model: 'claude-opus-4-8', maxTokens: 16000, effort: ANALYST_EFFORT, useThinking: true };
 }
 
+// NOTE: the analyst's token ceiling is NOT here — it is set per-tier by
+// adaptiveAnalystConfig() above (16000 at every tier). Do not add an
+// `analyst` entry to this map; a stray ceiling here would silently
+// contradict the real one and risk truncating reports.
 export const TOKEN_LIMITS = {
   moderation: 200,
   diagnostician: 800,
   structuralReader: 2500,
   narratorVerifier: 1000,
   narratorCorrector: 6000,
-  analyst: 8000,
   scorer: 800,
   market: 1200,
   bible: 1200,

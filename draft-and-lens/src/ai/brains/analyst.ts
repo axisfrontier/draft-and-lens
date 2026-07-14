@@ -16,7 +16,7 @@ import type {
   DiagnosticResult,
 } from '../../prompts/types';
 import { cachedSystemBlock, getAnthropicClient } from '../client';
-import { adaptiveAnalystConfig, MODELS, TOKEN_LIMITS } from '../config';
+import { adaptiveAnalystConfig } from '../config';
 
 /**
  * Brain 2 — Analyst (streaming, adaptive thinking, effort tunable). Receives the
