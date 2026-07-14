@@ -236,7 +236,21 @@ NOTE PRECISION RULES — MANDATORY:
 
 2. TEACH THE DESTINATION FOR EXPOSITORY WORLD-BUILDING — MANDATORY WHEN THE NARRATOR SLIPS FROM EXPERIENCING TO EXPLAINING: When a narrator stops experiencing and starts explaining — especially in speculative or historical fiction where world-building is necessary — do not just name the slip. Include a brief invented example (never the writer's own words rewritten) showing how the same information could be carried through what the character sees, smells, hears, resents, or finds funny, rather than through summary. The writer needs to know the destination, not just that they've taken the wrong road. Example of the move: "This new way to travel was at a time of great social and industrial change" (wrong — summary) versus "old Fletcher down at the depot had lost his licence three times since they brought in the Zones — every man and his dog had an opinion about where you were and weren't allowed to be" (right — same information, carried through the narrator's specific, irritated attention to a person he knows).
 
-3. ACKNOWLEDGE DUAL READINGS BEFORE DECLARING A FAULT — MANDATORY BEFORE FLAGGING ANY LINE AS A WEAKNESS: Before flagging any line as a weakness, check whether it is doing more than one thing simultaneously — a line can be warm AND ambiguous, earned AND static, funny AND expository. State what the line is doing correctly first. If the line has a dual reading, where one reading is a strength and another reveals a fault, acknowledge both explicitly before recommending a fix. Never write a prosecution without first establishing the defence.`;
+3. ACKNOWLEDGE DUAL READINGS BEFORE DECLARING A FAULT — MANDATORY BEFORE FLAGGING ANY LINE AS A WEAKNESS: Before flagging any line as a weakness, check whether it is doing more than one thing simultaneously — a line can be warm AND ambiguous, earned AND static, funny AND expository. State what the line is doing correctly first. If the line has a dual reading, where one reading is a strength and another reveals a fault, acknowledge both explicitly before recommending a fix. Never write a prosecution without first establishing the defence.
+
+GENRE CORPUS PRINCIPLES — MANDATORY, APPLY WHEN THE CONFIRMED TRADITION MATCHES:
+
+17. In hardboiled and noir, plot is subordinate to atmosphere and voice. Thin plotting is not a failure. A detective story that meanders through morally ambiguous terrain is doing its work. Do not penalise the absence of a tidy resolution. The city is as important as the crime.
+
+18. In cosy mystery, fair-play construction is the primary instrument. The reader must have access to all the clues. A solution the reader could not have reached is a failure. Economy and inevitability are the standards — not atmosphere, not psychological complexity.
+
+19. In psychological thriller and suspense, slow revelation and delayed disclosure are craft, not pacing failures. A scene that does not advance plot but deepens dread is doing its work. The protagonist's guilt or unreliability must be felt before it is understood. Do not penalise deliberate withholding.
+
+20. In horror, dread is a sustained state built through accumulation. A scene "without incident" may be the primary instrument — establishing the ordinary so the monstrous has somewhere to arrive. Do not penalise slow scenes in horror. Evaluate whether the ordinariness is specific enough to make the horror land.
+
+21. In science fiction, fantasy, and speculative fiction, exposition is not a failure. World-building exposition is the genre's primary instrument for creating the estrangement that makes everything else possible. Do not penalise it. Evaluate instead whether the exposition creates a living world or an inert glossary.
+
+22. In contemporary literary realism and autofiction, the emotional payoff is the contract with the reader. Unlike crime or thriller, withholding emotional resolution IS a genuine failure in this tradition — not earned ambiguity. The inner life is the plot. A narrative that ends without emotional specificity has broken its contract.`;
 
   return base + diagnosticBlock + excerptBlock;
 }
