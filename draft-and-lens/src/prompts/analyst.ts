@@ -11,9 +11,9 @@ import { PLAY_SYSTEM } from './modes/play';
 import { SCRIPT_SYSTEM } from './modes/script';
 import { STORY_SYSTEM } from './modes/story';
 import { TREATMENT_SYSTEM } from './modes/treatment';
-import { SCRIPT_REPORT_STRUCTURE } from './report/script-structure';
-import { STORY_REPORT_STRUCTURE } from './report/story-structure';
-import { TREATMENT_REPORT_STRUCTURE } from './report/treatment-structure';
+import { buildScriptReportStructure } from './report/script-structure';
+import { buildStoryReportStructure } from './report/story-structure';
+import { buildTreatmentReportStructure } from './report/treatment-structure';
 import type { AnalysisMode, DiagnosticResult } from './types';
 
 /**
@@ -51,18 +51,18 @@ function modeSystem(mode: AnalysisMode): string {
   }
 }
 
-function reportStructure(mode: AnalysisMode): string {
+function reportStructure(mode: AnalysisMode, wordCount: number): string {
   switch (mode) {
     case 'script':
-      return SCRIPT_REPORT_STRUCTURE;
+      return buildScriptReportStructure(wordCount);
     case 'story':
-      return STORY_REPORT_STRUCTURE;
+      return buildStoryReportStructure(wordCount);
     case 'treatment':
-      return TREATMENT_REPORT_STRUCTURE;
+      return buildTreatmentReportStructure(wordCount);
     case 'play':
-      return SCRIPT_REPORT_STRUCTURE;
+      return buildScriptReportStructure(wordCount);
     default:
-      return SCRIPT_REPORT_STRUCTURE;
+      return buildScriptReportStructure(wordCount);
   }
 }
 
@@ -270,7 +270,7 @@ export function buildAnalystUserPrompt(input: AnalystUserPromptInput): string {
           ? `TREATMENT | ${wordCount} words | Est. ${pageEst} pages | Form: ${genre}`
           : `STAGE PLAY | ${wordCount} words | Form: ${genre}`;
 
-  const struct = reportStructure(mode);
+  const struct = reportStructure(mode, wordCount);
   // Read window for Brain 2. Sized to cover the whole tester-cap piece
   // (TESTER_WORD_CAP words ≈ up to ~28k chars) so nothing is silently under-read;
   // trivially within Opus's context. Raise alongside any future length support.

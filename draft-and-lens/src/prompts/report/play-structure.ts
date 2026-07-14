@@ -6,7 +6,7 @@ import 'server-only';
  */
 
 /**
- * Prototype routes play mode to SCRIPT_REPORT_STRUCTURE (buildUserPrompt).
+ * Prototype routes play mode to buildScriptReportStructure (buildUserPrompt).
  * Re-export avoids duplicating identical structure text.
  */
-export { SCRIPT_REPORT_STRUCTURE as PLAY_REPORT_STRUCTURE } from './script-structure';
+export { buildScriptReportStructure as buildPlayReportStructure } from './script-structure';

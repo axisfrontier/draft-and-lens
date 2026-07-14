@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { parseReport } from './report';
-import { SKELETON_SECTIONS } from './reportSkeletonSections';
+import { getSkeletonSections } from './reportSkeletonSections';
 import type { Mode } from './types';
 
 /**
@@ -67,7 +67,7 @@ export function ReportSkeleton({
    *  it sticks underneath the banner once scrolled. */
   extraTopOffset?: number;
 }) {
-  const sections = SKELETON_SECTIONS[mode ?? 'story'];
+  const sections = getSkeletonSections(mode ?? 'story', wordCount);
   const pages = Math.max(1, Math.round(wordCount / 250));
   const modeLabel = mode === 'script' ? 'Film Script' : mode === 'treatment' ? 'Treatment' : mode === 'play' ? 'Stage Play' : 'Story';
 
