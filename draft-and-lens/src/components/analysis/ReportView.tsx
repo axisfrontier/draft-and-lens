@@ -21,29 +21,38 @@ import type { Coverage, Diagnostic, Market, Scores } from './types';
 interface LensEntry { name: string; id: string | null }
 
 const LENS_GROUPS: ReadonlyArray<{ label: string; entries: LensEntry[] }> = [
-  { label: 'Directors', entries: [
-    { name: 'Spielberg', id: 'spielberg' }, { name: 'Coppola', id: 'coppola' },
-    { name: 'Coen Brothers', id: 'coens' }, { name: 'Villeneuve', id: 'villeneuve' },
-    { name: 'Ridley Scott', id: 'scott' }, { name: 'Welles', id: 'welles' },
-    { name: 'Jeunet', id: 'jeunet' }, { name: 'Wenders', id: 'wenders' },
-    { name: 'Tarantino', id: 'tarantino' }, { name: 'Wachowskis', id: 'wachowski' },
-    { name: 'Lucas', id: 'lucas' }, { name: 'Miyazaki', id: 'miyazaki' },
-  ]},
-  { label: 'Novelists & Short Story Writers', entries: [
+  { label: 'Literary Fiction', entries: [
     { name: 'Hemingway', id: 'hemingway' }, { name: 'Carver', id: 'carver' },
-    { name: "O'Connor", id: 'oconnor' }, { name: 'Chekhov', id: 'chekhov' },
-    { name: 'Nabokov', id: 'nabokov' }, { name: 'Bukowski', id: 'bukowski' },
-    { name: 'King', id: 'king' },
+    { name: "O'Connor", id: 'oconnor' }, { name: 'Bukowski', id: 'bukowski' },
+    { name: 'Nabokov', id: 'nabokov' }, { name: 'Chekhov', id: 'chekhov' },
+    { name: 'Morrison', id: 'morrison' }, { name: 'Ferrante', id: 'ferrante' },
   ]},
-  { label: 'Screenwriters', entries: [
+  { label: 'Crime, Thriller & Suspense', entries: [
+    { name: 'Chandler', id: 'chandler' }, { name: 'Leonard', id: 'leonard' },
+    { name: 'Highsmith', id: 'highsmith' }, { name: 'Christie', id: 'christie' },
+    { name: 'Puzo', id: 'puzo' },
+  ]},
+  { label: 'Horror & Speculative', entries: [
+    { name: 'King', id: 'king' }, { name: 'Le Guin', id: 'leguin' },
+  ]},
+  { label: 'Art Cinema', entries: [
+    { name: 'Welles', id: 'welles' }, { name: 'Wenders', id: 'wenders' },
+    { name: 'Jeunet', id: 'jeunet' }, { name: 'Miyazaki', id: 'miyazaki' },
+    { name: 'Coppola', id: 'coppola' }, { name: 'Villeneuve', id: 'villeneuve' },
+    { name: 'Kaufman', id: 'kaufman' }, { name: 'Wachowskis', id: 'wachowski' },
+    { name: 'Coen Brothers', id: 'coens' },
+  ]},
+  { label: 'Popular Cinema', entries: [
+    { name: 'Spielberg', id: 'spielberg' }, { name: 'Tarantino', id: 'tarantino' },
+    { name: 'Ridley Scott', id: 'scott' }, { name: 'Bruckheimer', id: 'bruckheimer' },
+    { name: 'Feige', id: 'feige' }, { name: 'Lucas', id: 'lucas' },
+  ]},
+  { label: 'Screenplay & Television', entries: [
     { name: 'Sorkin', id: 'sorkin' }, { name: 'Roth', id: 'roth' },
-    { name: 'Kaufman', id: 'kaufman' }, { name: 'Puzo', id: 'puzo' },
+    { name: 'Fey', id: 'fey' }, { name: 'Simon', id: 'simon' },
   ]},
-  { label: 'Showrunners', entries: [
-    { name: 'Simon', id: 'simon' }, { name: 'Fey', id: 'fey' },
-  ]},
-  { label: 'Producers', entries: [
-    { name: 'Bruckheimer', id: 'bruckheimer' }, { name: 'Feige', id: 'feige' },
+  { label: 'Young Adult', entries: [
+    { name: 'Blume', id: 'blume' },
   ]},
 ];
 
