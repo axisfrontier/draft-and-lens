@@ -5,7 +5,7 @@ import 'server-only';
  * Last reviewed: 2026-06-07 (verbatim migration from DraftAndLens.html)
  */
 
-export { LENS_IDS, LENS_CATEGORIES, type LensId, type LensMeta, type LensCategory } from './types';
+export { LENS_IDS, type LensId, type LensMeta, type LensCategory } from './types';
 export { LENS_META } from './meta';
 export { LENS_SYSTEM_PROMPTS } from './prompts';
 

@@ -17,12 +17,3 @@ export interface LensMeta {
   craftPhilosophy: string;
   category: LensCategory;
 }
-
-/** UI grouping mirrors prototype lens strips (§16). */
-export const LENS_CATEGORIES: Record<LensCategory, LensId[]> = {
-  directors: ['spielberg', 'coppola', 'coens', 'villeneuve', 'scott', 'welles', 'jeunet', 'tarantino', 'wachowski', 'lucas', 'miyazaki'],
-  writers: ['hemingway', 'carver', 'chekhov', 'oconnor', 'bukowski', 'nabokov', 'king', 'chandler', 'leonard', 'highsmith', 'leguin', 'christie', 'morrison', 'ferrante', 'blume'],
-  screenwriters: ['sorkin', 'roth', 'kaufman', 'puzo'],
-  showrunners: ['simon', 'fey'],
-  producers: ['bruckheimer', 'feige'],
-};
