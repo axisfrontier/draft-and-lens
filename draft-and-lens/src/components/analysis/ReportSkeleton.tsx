@@ -57,11 +57,15 @@ const sectionHeading: CSSProperties = {
 };
 
 export function ReportSkeleton({
-  mode, wordCount, streamedText,
+  mode, wordCount, streamedText, extraTopOffset = 0,
 }: {
   mode: Mode | null;
   wordCount: number;
   streamedText?: string;
+  /** Extra px to clear a fixed banner sitting above this component (e.g. the
+   *  in-progress status bar) — the sidebar's sticky offset must match it or
+   *  it sticks underneath the banner once scrolled. */
+  extraTopOffset?: number;
 }) {
   const sections = SKELETON_SECTIONS[mode ?? 'story'];
   const pages = Math.max(1, Math.round(wordCount / 250));
@@ -73,14 +77,21 @@ export function ReportSkeleton({
     return match && match.body.trim() ? match.body.trim() : null;
   };
 
+  const stickyTop = extraTopOffset
+    ? `calc(var(--nav-h) + ${extraTopOffset}px)`
+    : 'var(--nav-h)';
+  const sidebarHeight = extraTopOffset
+    ? `calc(100vh - var(--nav-h) - ${extraTopOffset}px)`
+    : 'calc(100vh - var(--nav-h))';
+
   return (
     <div className="report-grid" style={{ display: 'grid', gridTemplateColumns: '1fr var(--sidebar-w)', minHeight: '100vh', background: 'var(--paper)' }}>
 
       {/* ── SIDEBAR SHELL (muted) ── */}
       <aside className="report-sidebar" style={{
-        position: 'sticky', top: 'var(--nav-h)',
+        position: 'sticky', top: stickyTop,
         gridColumn: 2, gridRow: 1,
-        height: 'calc(100vh - var(--nav-h))',
+        height: sidebarHeight,
         overflowY: 'auto', background: 'var(--cream)',
         borderLeft: '1px solid var(--rule-l)',
         padding: '0', alignSelf: 'start',

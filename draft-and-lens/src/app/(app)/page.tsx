@@ -825,7 +825,7 @@ export default function AppHomePage() {
       {/* ── ANALYSIS SKELETON ── */}
       {running && report === '' && (
         <div style={{ paddingTop: progressBannerHeight }}>
-          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} />
+          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} extraTopOffset={progressBannerHeight} />
         </div>
       )}
 
