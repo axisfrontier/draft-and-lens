@@ -1,7 +1,7 @@
 'use client';
 
 import { SignInButton, SignUpButton, SignedOut, useAuth } from '@clerk/nextjs';
-import { useCallback, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 
 import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
@@ -81,6 +81,18 @@ export default function AppHomePage() {
   const [bibleSkip, setBibleSkip] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressBannerRef = useRef<HTMLDivElement>(null);
+  const [progressBannerHeight, setProgressBannerHeight] = useState(0);
+
+  // The progress banner is `position: fixed` (overlays rather than pushes content),
+  // so the skeleton below it needs matching top padding to avoid being covered.
+  // Measured directly rather than guessed, since its content (and thus height)
+  // varies with word count and stage label length.
+  useEffect(() => {
+    if (running && progressBannerRef.current) {
+      setProgressBannerHeight(progressBannerRef.current.offsetHeight);
+    }
+  }, [running, stage]);
 
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
@@ -724,7 +736,7 @@ export default function AppHomePage() {
 
       {/* ── RUNNING STATE ── */}
       {running && (
-        <div style={{
+        <div ref={progressBannerRef} style={{
           position: 'fixed', top: 'var(--nav-h)', left: 0, right: 0, zIndex: 68,
           background: 'var(--black-band)',
           padding: '.7rem 2.5rem',
@@ -812,7 +824,9 @@ export default function AppHomePage() {
 
       {/* ── ANALYSIS SKELETON ── */}
       {running && report === '' && (
-        <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} />
+        <div style={{ paddingTop: progressBannerHeight }}>
+          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} />
+        </div>
       )}
 
       {/* ── ERROR ── */}
