@@ -44,6 +44,7 @@ interface ReadingRow {
   work_id: string;
   source_text: string;
   reading_json: ReadingPayload;
+  submission_type: string | null;
 }
 
 // ── Text comparison (deterministic, no model call) ───────────────────────────
@@ -136,12 +137,12 @@ async function findBestMatch(
   userId: string,
   mode: string,
   text: string
-): Promise<{ workId: string; sourceText: string; reading: ReadingPayload } | null> {
+): Promise<{ workId: string; sourceText: string; reading: ReadingPayload; submissionType: string | null } | null> {
   if (!isSupabaseConfigured()) return null;
   const supabase = getServiceClient();
   const { data, error } = await supabase
     .from(TABLE)
-    .select('work_id, source_text, reading_json, created_at')
+    .select('work_id, source_text, reading_json, submission_type, created_at')
     .eq('user_id', userId)
     .eq('work_format', mode)
     .is('deleted_at', null)
@@ -163,6 +164,7 @@ async function findBestMatch(
     workId: best.row.work_id,
     sourceText: best.row.source_text,
     reading: best.row.reading_json,
+    submissionType: best.row.submission_type,
   };
 }
 
@@ -175,14 +177,26 @@ export type RevisionDecision =
 export async function resolveRevision(
   userId: string,
   mode: string,
-  text: string
+  text: string,
+  submissionType: 'complete' | 'excerpt'
 ): Promise<RevisionDecision> {
   try {
     const match = await findBestMatch(userId, mode, text);
     if (!match) return { kind: 'new' };
     const comparison = compareTexts(match.sourceText, text);
     if (comparison.similarity >= UNCHANGED_SIMILARITY) {
-      return { kind: 'unchanged', reading: match.reading };
+      // Same text — but if it's now being read as an excerpt vs complete piece
+      // (or vice versa), that is NOT "unchanged": the correct reading differs.
+      // Force a fresh pipeline run rather than serving the stale cached reading.
+      if (match.submissionType === submissionType) {
+        return { kind: 'unchanged', reading: match.reading };
+      }
+      const label = (t: string | null) => (t === 'excerpt' ? 'an excerpt' : 'a complete piece');
+      return {
+        kind: 'revised',
+        workId: match.workId,
+        note: `Re-read as ${label(submissionType)} (previously read as ${label(match.submissionType)}); the text itself is unchanged.`,
+      };
     }
     return { kind: 'revised', workId: match.workId, note: summarizeChange(comparison) };
   } catch {
@@ -198,6 +212,7 @@ export async function storeReading(args: {
   title: string;
   sourceText: string;
   reading: ReadingPayload;
+  submissionType: 'complete' | 'excerpt';
 }): Promise<void> {
   if (!isSupabaseConfigured()) return;
   try {
@@ -209,6 +224,7 @@ export async function storeReading(args: {
       work_format: args.mode,
       source_text: args.sourceText,
       reading_json: args.reading,
+      submission_type: args.submissionType,
     });
     await pruneVersions(supabase, args.userId, args.workId);
   } catch {

@@ -130,7 +130,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         // Unchanged resubmission → return the stored reading verbatim (no model
         // call, no drift). A genuine revision → a fresh reading that names it.
         // Any storage problem degrades to an ordinary fresh reading.
-        const decision = await resolveRevision(userId, mode, clean);
+        const decision = await resolveRevision(userId, mode, clean, cleanSubmissionType);
         if (decision.kind === 'unchanged') {
           send({ type: 'done', ...decision.reading, revision: { status: 'unchanged' } });
           return;
@@ -183,6 +183,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           title: result.diagnostic.title,
           sourceText: clean,
           reading: payload,
+          submissionType: cleanSubmissionType,
         });
       } catch (err) {
         // A client disconnect / Stop surfaces as an AbortError — stay quiet,
