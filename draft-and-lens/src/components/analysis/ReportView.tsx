@@ -784,7 +784,7 @@ export function ReportView({
           }}>
             <div style={{ fontWeight: 500, marginBottom: '.5rem', textTransform: 'uppercase', letterSpacing: '.12em' }}>Disclaimer</div>
             <p style={{ marginBottom: '.5rem' }}>Your work is yours. Draft &amp; Lens does not claim any rights over the scripts or stories you submit, and submissions are not used to train models.</p>
-            <p>Editorial lenses are AI-generated analytical perspectives inspired by the documented craft principles of the named figures. They are not affiliated with, endorsed by, or representative of those individuals.</p>
+            <p>Interpretive lenses inspired by each writer&apos;s published work — not the actual people, not affiliated or endorsed by them or their estates. 35 voices are currently available, including 8 newer additions: Chandler, Leonard, Highsmith, Le Guin, Christie, Morrison, Ferrante, and Blume.</p>
           </div>
 
           {/* Footer */}
