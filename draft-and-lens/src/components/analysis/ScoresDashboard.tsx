@@ -40,7 +40,7 @@ const captionStyle = {
   letterSpacing: '.06em',
   color: 'var(--ink-faint)',
   fontStyle: 'italic' as const,
-  marginBottom: '.5rem',
+  marginBottom: '2.25rem',
 };
 
 export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; tradition?: string }) {
@@ -108,7 +108,6 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
               display: 'grid',
               gridTemplateColumns: '1fr',
               gap: '.85rem',
-              marginTop: '.5rem',
             }}
           >
             {ALIGN_DIMS.map((d) => {
