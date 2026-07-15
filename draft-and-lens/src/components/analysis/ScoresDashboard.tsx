@@ -81,7 +81,7 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '240px 1fr',
+          gridTemplateColumns: '280px 1fr',
           gap: '3rem',
           alignItems: 'start',
           marginTop: '.5rem',
