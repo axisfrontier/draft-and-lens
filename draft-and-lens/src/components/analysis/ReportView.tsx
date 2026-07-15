@@ -520,7 +520,9 @@ export function ReportView({
                   ) : null
                 )}
               </div>
-              <CraftDirectives parsed={parsed} />
+              <div id="sec-three" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
+                <CraftDirectives parsed={parsed} />
+              </div>
             </>
           )}
 
