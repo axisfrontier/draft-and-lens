@@ -39,6 +39,7 @@ export async function runNarratorVerifier(
   return callJsonBrain<NarratorVerdicts>({
     model: MODELS.narratorVerifier,
     maxTokens: TOKEN_LIMITS.narratorVerifier,
+    brain: 'narratorVerify',
     system: NARRATOR_VERIFIER_SYSTEM,
     user: 'Classify these narrator lines:\n\n' + linesText,
   });
@@ -74,6 +75,7 @@ export async function runNarratorCorrection(
     const corrected = await callTextBrain({
       model: narratorModel,
       maxTokens: narratorTokens,
+      brain: 'narratorCorrect',
       system: buildNarratorCorrectorSystem(protectedList),
       // Corrector system is per-request (embeds the protected list) — not cached.
       cacheSystem: false,

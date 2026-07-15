@@ -39,6 +39,7 @@ export async function runDiagnostician(
   const result = await callJsonBrain<DiagnosticResult>({
     model: MODELS.diagnostician,
     maxTokens: TOKEN_LIMITS.diagnostician,
+    brain: 'diagnostician',
     system: buildPass1System(submissionType),
     user: `This is a ${modeLabel}. Read carefully and return the diagnostic JSON.\n\n${excerpt}`,
   });

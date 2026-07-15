@@ -14,6 +14,7 @@ import { runMarket } from './brains/market';
 import { runNarratorCorrection, runNarratorVerifier } from './brains/narrator';
 import { runScorer } from './brains/scorer';
 import { runStructuralReader } from './brains/structural-reader';
+import { withCostTracking, type CostEntry } from './cost-tracker';
 
 /**
  * Brain orchestration (Architecture §03). Sequence:
@@ -67,6 +68,8 @@ export interface PipelineResult {
   scores: ScoreResult | null;
   market: MarketResult | null;
   bible: string;
+  /** Per-brain token usage collected during this run, for cost logging. */
+  costEntries: CostEntry[];
 }
 
 /** Compute the read boundary — truncates to the tier limit on a word boundary (§13). */
@@ -93,6 +96,14 @@ export async function runAnalysisPipeline(
   input: PipelineInput,
   cb: PipelineCallbacks = {}
 ): Promise<PipelineResult> {
+  const { result, entries } = await withCostTracking(() => runPipelineBody(input, cb));
+  return { ...result, costEntries: entries };
+}
+
+async function runPipelineBody(
+  input: PipelineInput,
+  cb: PipelineCallbacks
+): Promise<Omit<PipelineResult, 'costEntries'>> {
   const genre = input.genre || 'Auto-detect';
   const wordLimit = input.wordLimit ?? FREE_WORD_LIMIT;
   const coverage = computeCoverage(input.text, wordLimit);

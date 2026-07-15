@@ -20,6 +20,7 @@ export async function runScorer(
   return callJsonBrain<ScoreResult>({
     model: MODELS.scorer,
     maxTokens: TOKEN_LIMITS.scorer,
+    brain: 'scorer',
     system: SCORER_SYSTEM,
     user: buildScorerPrompt(mode, tradition, excerpt),
   });

@@ -17,6 +17,7 @@ import type {
 } from '../../prompts/types';
 import { cachedSystemBlock, getAnthropicClient } from '../client';
 import { adaptiveAnalystConfig } from '../config';
+import { recordBrainUsage } from '../cost-tracker';
 
 /**
  * Brain 2 — Analyst (streaming, adaptive thinking, effort tunable). Receives the
@@ -113,6 +114,7 @@ export async function runAnalyst(
     report += delta;
     onText?.(delta);
   });
-  await stream.finalMessage();
+  const finalMsg = await stream.finalMessage();
+  recordBrainUsage('analyst', model, finalMsg.usage);
   return report;
 }

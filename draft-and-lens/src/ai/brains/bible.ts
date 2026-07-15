@@ -16,6 +16,7 @@ export async function runBible(text: string, modeLabel: string): Promise<string>
     return await callTextBrain({
       model: MODELS.bible,
       maxTokens: TOKEN_LIMITS.bible,
+      brain: 'bible',
       system: BIBLE_SYSTEM,
       user: buildBiblePrompt(modeLabel, excerpt),
     });

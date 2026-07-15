@@ -59,6 +59,7 @@ export async function moderateSubmission(text: string): Promise<ModerationResult
     verdict = await callJsonBrain<ModerationVerdict>({
       model: MODELS.moderation,
       maxTokens: TOKEN_LIMITS.moderation,
+      brain: 'moderation',
       system: MODERATION_SYSTEM,
       user: 'SUBMISSION TO CLASSIFY:\n\n' + excerpt,
     });

@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
+import { logSubmissionCost } from '../../../lib/cost-log';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
 import type { AnalysisMode } from '../../../prompts/types';
@@ -184,6 +185,16 @@ export async function POST(req: NextRequest): Promise<Response> {
           sourceText: clean,
           reading: payload,
           submissionType: cleanSubmissionType,
+        });
+
+        // Cost log (financial model data collection) — metadata + token counts
+        // only, never the text. Best-effort, never blocks the reading.
+        await logSubmissionCost({
+          submissionId: workId,
+          wordCount: result.coverage.wordsRead,
+          mode,
+          submissionType: cleanSubmissionType,
+          entries: result.costEntries,
         });
       } catch (err) {
         // A client disconnect / Stop surfaces as an AbortError — stay quiet,

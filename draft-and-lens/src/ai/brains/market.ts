@@ -18,6 +18,7 @@ export async function runMarket(
   return callJsonBrain<MarketResult>({
     model: MODELS.market,
     maxTokens: TOKEN_LIMITS.market,
+    brain: 'market',
     system: MARKET_SYSTEM,
     user: buildMarketPrompt(modeLabel, excerpt),
   });

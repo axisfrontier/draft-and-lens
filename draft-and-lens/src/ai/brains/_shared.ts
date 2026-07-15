@@ -3,6 +3,7 @@ import 'server-only';
 import type Anthropic from '@anthropic-ai/sdk';
 
 import { cachedSystemBlock, getAnthropicClient } from '../client';
+import { recordBrainUsage } from '../cost-tracker';
 
 /**
  * Shared brain helpers — the single place the Anthropic SDK is called for the
@@ -40,6 +41,8 @@ export function parseJsonLoose<T>(raw: string): T | null {
 interface BrainCall {
   model: string;
   maxTokens: number;
+  /** Short label identifying which brain this call belongs to, for cost logging. */
+  brain: string;
   /** Static (cacheable) system text. */
   system: string;
   /** User message content. */
@@ -76,6 +79,7 @@ export async function callTextBrain(call: BrainCall): Promise<string> {
     system: systemParam(call),
     messages: [{ role: 'user', content: call.user }],
   });
+  recordBrainUsage(call.brain, call.model, msg.usage);
   return extractText(msg);
 }
 

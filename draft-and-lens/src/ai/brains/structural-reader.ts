@@ -53,6 +53,7 @@ export async function runStructuralReader(
   return callJsonBrain<StructuralMap>({
     model: MODELS.structuralReader,
     maxTokens: TOKEN_LIMITS.structuralReader,
+    brain: 'structuralReader',
     system: STRUCTURAL_READER_SYSTEM,
     user: `${traditionLine}${treatmentLine}This is a ${modeLabel}. Map it and return the JSON.\n\n${excerpt}`,
   });

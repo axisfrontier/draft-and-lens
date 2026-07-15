@@ -45,6 +45,7 @@ export async function runLens(
   return callTextBrain({
     model: MODELS.lens,
     maxTokens: TOKEN_LIMITS.lens,
+    brain: 'lens',
     system: baseSystem,
     systemDynamic: traditionTail,
     user,
