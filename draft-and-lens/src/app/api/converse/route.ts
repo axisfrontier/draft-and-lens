@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getAnthropicClient } from '../../../ai/client';
+import { MODELS, TOKEN_LIMITS } from '../../../ai/config';
 import { buildConversationEditorialSystem, buildConversationLensSystem } from '../../../prompts/conversation';
 import { LENS_META } from '../../../prompts/lenses/meta';
 import { LENS_IDS } from '../../../prompts/lenses/types';
@@ -72,8 +73,8 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       try {
         const anthropicStream = await client.messages.stream({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 800,
+          model: MODELS.conversation,
+          max_tokens: TOKEN_LIMITS.conversation,
           system: systemPrompt,
           messages,
         });
