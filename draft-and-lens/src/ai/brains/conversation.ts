@@ -28,6 +28,8 @@ export interface ConversationInput {
   target: ConversationTarget;
   diagnostic: DiagnosticResult | null;
   reportText: string;
+  /** The writer's original submitted work — required for a lens target to ground its answer. */
+  submittedText: string;
   /** Full chat history, including the new writer message as the last entry. */
   messages: ConversationMessage[];
 }
@@ -38,7 +40,8 @@ export async function runConversation(input: ConversationInput): Promise<string>
     ? buildConversationLensSystem(
         input.target as LensId,
         LENS_META[input.target as LensId].name,
-        input.diagnostic?.tradition ?? 'unknown'
+        input.diagnostic?.tradition ?? 'unknown',
+        input.submittedText
       )
     : buildConversationEditorialSystem({
         diagnostic: input.diagnostic,

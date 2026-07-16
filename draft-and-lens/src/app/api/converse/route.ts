@@ -29,7 +29,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 });
   }
 
-  const { message, target, reportText, diagnostic, history } = body;
+  const { message, target, reportText, diagnostic, history, submittedText } = body;
 
   if (typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'No message provided.' }, { status: 400 });
@@ -41,7 +41,12 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   if (isLensId(target)) {
     const meta = LENS_META[target];
-    systemPrompt = buildConversationLensSystem(target, meta.name, tradition);
+    systemPrompt = buildConversationLensSystem(
+      target,
+      meta.name,
+      tradition,
+      typeof submittedText === 'string' ? submittedText : ''
+    );
   } else {
     // default: editorial voice
       systemPrompt = buildConversationEditorialSystem({

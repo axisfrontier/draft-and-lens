@@ -116,10 +116,20 @@ YOUR ROLE IN THIS CONVERSATION:
 /** Port of buildConvLensSystem() — sourced from LENS_SYSTEM_PROMPTS, the same
  *  prompt that generates the full reading (one voice, one source of truth,
  *  used everywhere that voice appears — no separate thinner summary). */
-export function buildConversationLensSystem(lensId: LensId, lensName: string, tradition: string): string {
+export function buildConversationLensSystem(
+  lensId: LensId,
+  lensName: string,
+  tradition: string,
+  submittedText: string
+): string {
   const voicePrompt = LENS_SYSTEM_PROMPTS[lensId];
 
   return `${voicePrompt}
+
+---
+
+THE SUBMITTED WORK — this is the actual text the writer submitted. Answer only from what is here:
+${submittedText}
 
 ---
 

@@ -29,7 +29,7 @@ type ConvMsg = { role: 'user' | 'assistant'; content: string };
  * caller can point it at its own piece of state.
  */
 async function streamConversationReply(
-  body: { message: string; target: string; reportText: string; diagnostic: unknown; history: ConvMsg[] },
+  body: { message: string; target: string; reportText: string; diagnostic: unknown; submittedText: string; history: ConvMsg[] },
   setMessages: Dispatch<SetStateAction<ConvMsg[]>>
 ): Promise<void> {
   const res = await fetch('/api/converse', {
@@ -200,7 +200,7 @@ export function ReportView({
     setConvLoading(true);
     try {
       await streamConversationReply(
-        { message: msg, target: targetToUse, reportText: report, diagnostic, history },
+        { message: msg, target: targetToUse, reportText: report, diagnostic, submittedText, history },
         setConvMessages
       );
     } catch { /* ignore */ }
@@ -227,7 +227,7 @@ export function ReportView({
     };
     try {
       await streamConversationReply(
-        { message: msg, target: lensId, reportText: report, diagnostic, history },
+        { message: msg, target: lensId, reportText: report, diagnostic, submittedText, history },
         setLensMessages
       );
     } catch { /* ignore */ }
@@ -896,10 +896,6 @@ export function ReportView({
                 }}
               >Send</button>
             </div>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.52rem',
-              color: 'var(--ink-faint)', marginTop: '.4rem', letterSpacing: '.06em',
-            }}>Press Enter to send</div>
           </div>
 
           {/* Disclaimer */}
