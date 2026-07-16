@@ -139,10 +139,12 @@ export function ReportView({
     setLensLoading(null);
   };
 
-  const sendConvMessage = async () => {
+  const sendConvMessage = async (overrideTarget?: string) => {
     const msg = convInput.trim();
     if (!msg || convLoading) return;
+    const targetToUse = overrideTarget ?? convTarget;
     setConvInput('');
+    setConvTarget(targetToUse);
     const newMsg = { role: 'user' as const, content: msg };
     setConvMessages((prev) => [...prev, newMsg]);
     setConvLoading(true);
@@ -152,7 +154,7 @@ export function ReportView({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: msg,
-          target: convTarget,
+          target: targetToUse,
           reportText: report,
           diagnostic,
           history: convMessages,
@@ -265,7 +267,7 @@ export function ReportView({
         <a href="#sec-dashboard" style={sidebarLink}>Dimension map</a>
         <a href="#sec-arc" style={sidebarLink}>Story arc</a>
 
-        <div style={sidebarGroup}>Analysis</div>
+        <div style={sidebarGroup}>Editorial analysis</div>
         {sidebarSections.map((s) => (
           <a key={s.id} href={`#${s.id}`} style={sidebarLink}>{s.label}</a>
         ))}
@@ -648,6 +650,52 @@ export function ReportView({
                           <span style={{ opacity: 0.5 }}>Reading your work through this lens…</span>
                         )}
                       </div>
+
+                      {/* Ask-this-lens shortcut — same conversation engine as "Speak with your editor";
+                          this just pre-selects the lens as target and jumps to the reply. */}
+                      {lensReadings[activeLensId] && (
+                        <div style={{
+                          display: 'flex', gap: '.5rem', marginTop: '1.25rem',
+                          paddingTop: '1rem', borderTop: '1px solid var(--border-dark)',
+                        }}>
+                          <input
+                            type="text"
+                            placeholder={`Ask ${group.entries.find(e => e.id === activeLensId)?.name ?? 'this lens'} a question…`}
+                            value={convInput}
+                            onChange={(e) => setConvInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !convLoading && convInput.trim()) {
+                                void sendConvMessage(activeLensId);
+                                document.getElementById('sec-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }
+                            }}
+                            style={{
+                              flex: 1, minWidth: 0, background: 'var(--surface-input)',
+                              border: '1px solid var(--amber-d)', borderRadius: 18,
+                              padding: '.6rem 1rem', fontSize: '.85rem', fontStyle: 'italic',
+                              color: '#fff', outline: 'none',
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!convInput.trim() || convLoading) return;
+                              void sendConvMessage(activeLensId);
+                              document.getElementById('sec-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                            disabled={convLoading || !convInput.trim()}
+                            style={{
+                              fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+                              letterSpacing: '.14em', textTransform: 'uppercase',
+                              padding: '.6rem 1.2rem', flexShrink: 0,
+                              background: (convLoading || !convInput.trim()) ? 'var(--border-dark)' : 'var(--amber-l)',
+                              color: (convLoading || !convInput.trim()) ? '#fff' : 'var(--black-band)',
+                              border: 'none', cursor: (convLoading || !convInput.trim()) ? 'not-allowed' : 'pointer',
+                              fontWeight: 500, borderRadius: 14,
+                            }}
+                          >Ask</button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
