@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, type Dispatch, type SetStateAction } from 'react';
 
 import { hasAnchors } from '@/lib/anchor';
 import { countWords } from '@/lib/limits';
@@ -19,6 +19,52 @@ import { extractVerdict, parseReport } from './report';
 import type { Coverage, Diagnostic, Market, Scores } from './types';
 
 interface LensEntry { name: string; id: string | null }
+
+type ConvMsg = { role: 'user' | 'assistant'; content: string };
+
+/**
+ * Shared SSE-stream reader for /api/converse — used by both "Speak with your
+ * editor" (single shared thread) and each lens's own inline ask box (one
+ * thread per lens id). Takes the message-array setter as a parameter so each
+ * caller can point it at its own piece of state.
+ */
+async function streamConversationReply(
+  body: { message: string; target: string; reportText: string; diagnostic: unknown; history: ConvMsg[] },
+  setMessages: Dispatch<SetStateAction<ConvMsg[]>>
+): Promise<void> {
+  const res = await fetch('/api/converse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.body) throw new Error('No stream');
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let reply = '';
+  let buf = '';
+  setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() ?? '';
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const ev = JSON.parse(line) as { type: string; delta?: string };
+        if (ev.type === 'text' && ev.delta) {
+          reply += ev.delta;
+          setMessages((prev) => {
+            const next = [...prev];
+            next[next.length - 1] = { role: 'assistant', content: reply };
+            return next;
+          });
+        }
+      } catch { /* ignore */ }
+    }
+  }
+}
 
 const LENS_GROUPS: ReadonlyArray<{ label: string; entries: LensEntry[] }> = [
   { label: 'Literary Fiction', entries: [
@@ -88,10 +134,14 @@ export function ReportView({
   const [lensLoading, setLensLoading] = useState<string | null>(null);
 
   // Personal editor
-  const [convMessages, setConvMessages] = useState<Array<{role: 'user'|'assistant', content: string}>>([]);
+  const [convMessages, setConvMessages] = useState<ConvMsg[]>([]);
   const [convInput, setConvInput] = useState('');
   const [convTarget, setConvTarget] = useState<string>('editorial');
   const [convLoading, setConvLoading] = useState(false);
+
+  // Ask-this-lens — separate per-lens threads, displayed inline in that lens's own panel
+  // (independent of "Speak with your editor" above, which keeps its own single thread).
+  const [lensAsk, setLensAsk] = useState<Record<string, { messages: ConvMsg[]; input: string; loading: boolean }>>({});
 
   const callLens = async (lensId: string) => {
     if (lensLoading || (lensReadings[lensId] && activeLensId === lensId)) {
@@ -145,50 +195,46 @@ export function ReportView({
     const targetToUse = overrideTarget ?? convTarget;
     setConvInput('');
     setConvTarget(targetToUse);
-    const newMsg = { role: 'user' as const, content: msg };
-    setConvMessages((prev) => [...prev, newMsg]);
+    const history = convMessages;
+    setConvMessages((prev) => [...prev, { role: 'user', content: msg }]);
     setConvLoading(true);
     try {
-      const res = await fetch('/api/converse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: msg,
-          target: targetToUse,
-          reportText: report,
-          diagnostic,
-          history: convMessages,
-        }),
-      });
-      if (!res.body) throw new Error('No stream');
-      const reader = res.body.getReader();
-      const dec = new TextDecoder();
-      let reply = '';
-      let buf = '';
-      setConvMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        const lines = buf.split('\n');
-        buf = lines.pop() ?? '';
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const ev = JSON.parse(line) as {type: string; delta?: string};
-            if (ev.type === 'text' && ev.delta) {
-              reply += ev.delta;
-              setConvMessages((prev) => {
-                const next = [...prev];
-                next[next.length - 1] = { role: 'assistant', content: reply };
-                return next;
-              });
-            }
-          } catch { /* ignore */ }
-        }
-      }
+      await streamConversationReply(
+        { message: msg, target: targetToUse, reportText: report, diagnostic, history },
+        setConvMessages
+      );
     } catch { /* ignore */ }
     setConvLoading(false);
+  };
+
+  const sendLensAsk = async (lensId: string) => {
+    const entry = lensAsk[lensId] ?? { messages: [], input: '', loading: false };
+    const msg = entry.input.trim();
+    if (!msg || entry.loading) return;
+    const history = entry.messages;
+    setLensAsk((prev) => ({
+      ...prev,
+      [lensId]: { messages: [...history, { role: 'user', content: msg }], input: '', loading: true },
+    }));
+    const setLensMessages: Dispatch<SetStateAction<ConvMsg[]>> = (action) => {
+      setLensAsk((prev) => {
+        const current = prev[lensId] ?? { messages: [], input: '', loading: true };
+        const nextMessages = typeof action === 'function'
+          ? (action as (prev: ConvMsg[]) => ConvMsg[])(current.messages)
+          : action;
+        return { ...prev, [lensId]: { ...current, messages: nextMessages } };
+      });
+    };
+    try {
+      await streamConversationReply(
+        { message: msg, target: lensId, reportText: report, diagnostic, history },
+        setLensMessages
+      );
+    } catch { /* ignore */ }
+    setLensAsk((prev) => {
+      const current = prev[lensId] ?? { messages: [], input: '', loading: false };
+      return { ...prev, [lensId]: { ...current, loading: false } };
+    });
   };
 
   const rawTitle = diagnostic && diagnostic.title && diagnostic.title !== 'Untitled' ? diagnostic.title : '';
@@ -651,51 +697,85 @@ export function ReportView({
                         )}
                       </div>
 
-                      {/* Ask-this-lens shortcut — same conversation engine as "Speak with your editor";
-                          this just pre-selects the lens as target and jumps to the reply. */}
-                      {lensReadings[activeLensId] && (
-                        <div style={{
-                          display: 'flex', gap: '.5rem', marginTop: '1.25rem',
-                          paddingTop: '1rem', borderTop: '1px solid var(--border-dark)',
-                        }}>
-                          <input
-                            type="text"
-                            placeholder={`Ask ${group.entries.find(e => e.id === activeLensId)?.name ?? 'this lens'} a question…`}
-                            value={convInput}
-                            onChange={(e) => setConvInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !convLoading && convInput.trim()) {
-                                void sendConvMessage(activeLensId);
-                                document.getElementById('sec-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }
-                            }}
-                            style={{
-                              flex: 1, minWidth: 0, background: 'var(--surface-input)',
-                              border: '1px solid var(--amber-d)', borderRadius: 18,
-                              padding: '.6rem 1rem', fontSize: '.85rem', fontStyle: 'italic',
-                              color: '#fff', outline: 'none',
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!convInput.trim() || convLoading) return;
-                              void sendConvMessage(activeLensId);
-                              document.getElementById('sec-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }}
-                            disabled={convLoading || !convInput.trim()}
-                            style={{
-                              fontFamily: 'var(--font-mono)', fontSize: '.62rem',
-                              letterSpacing: '.14em', textTransform: 'uppercase',
-                              padding: '.6rem 1.2rem', flexShrink: 0,
-                              background: (convLoading || !convInput.trim()) ? 'var(--border-dark)' : 'var(--amber-l)',
-                              color: (convLoading || !convInput.trim()) ? '#fff' : 'var(--black-band)',
-                              border: 'none', cursor: (convLoading || !convInput.trim()) ? 'not-allowed' : 'pointer',
-                              fontWeight: 500, borderRadius: 14,
-                            }}
-                          >Ask</button>
-                        </div>
-                      )}
+                      {/* Ask-this-lens — its own thread, independent of "Speak with your editor".
+                          Shares the streaming logic (streamConversationReply) but keeps the
+                          question, loading state, and reply entirely within this lens's panel. */}
+                      {lensReadings[activeLensId] && (() => {
+                        const lensName = group.entries.find(e => e.id === activeLensId)?.name ?? activeLensId;
+                        const ask = lensAsk[activeLensId] ?? { messages: [], input: '', loading: false };
+                        return (
+                          <div style={{
+                            marginTop: '1.25rem', paddingTop: '1rem',
+                            borderTop: '1px solid var(--border-dark)',
+                          }}>
+                            {ask.messages.length > 0 && (
+                              <div style={{ marginBottom: '1rem' }}>
+                                {ask.messages.map((msg, i) => (
+                                  <div key={i} style={{
+                                    marginBottom: '1rem',
+                                    paddingLeft: msg.role === 'user' ? '0' : '1rem',
+                                    borderLeft: msg.role === 'assistant' ? '2px solid var(--amber-d)' : 'none',
+                                  }}>
+                                    <div style={{
+                                      fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+                                      letterSpacing: '.1em', textTransform: 'uppercase',
+                                      color: msg.role === 'user' ? '#8a8070' : 'var(--amber-d)',
+                                      marginBottom: '.3rem',
+                                    }}>{msg.role === 'user' ? 'You' : lensName}</div>
+                                    <div style={{
+                                      fontSize: '.88rem', lineHeight: 1.8,
+                                      color: msg.role === 'user' ? '#a0988a' : 'var(--paper-dark)',
+                                      whiteSpace: 'pre-wrap', fontStyle: msg.role === 'assistant' ? 'italic' : 'normal',
+                                    }}>{msg.content}</div>
+                                  </div>
+                                ))}
+                                {ask.loading && (
+                                  <div style={{
+                                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                                    color: 'var(--amber-d)', letterSpacing: '.08em',
+                                  }}>writing…</div>
+                                )}
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', gap: '.5rem' }}>
+                              <input
+                                type="text"
+                                placeholder={`Ask ${lensName} a question…`}
+                                value={ask.input}
+                                onChange={(e) => setLensAsk((prev) => ({
+                                  ...prev,
+                                  [activeLensId]: { ...ask, input: e.target.value },
+                                }))}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !ask.loading && ask.input.trim()) {
+                                    void sendLensAsk(activeLensId);
+                                  }
+                                }}
+                                style={{
+                                  flex: 1, minWidth: 0, background: 'var(--surface-input)',
+                                  border: '1px solid var(--amber-d)', borderRadius: 18,
+                                  padding: '.6rem 1rem', fontSize: '.85rem', fontStyle: 'italic',
+                                  color: '#fff', outline: 'none',
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => { if (ask.input.trim() && !ask.loading) void sendLensAsk(activeLensId); }}
+                                disabled={ask.loading || !ask.input.trim()}
+                                style={{
+                                  fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+                                  letterSpacing: '.14em', textTransform: 'uppercase',
+                                  padding: '.6rem 1.2rem', flexShrink: 0,
+                                  background: (ask.loading || !ask.input.trim()) ? 'var(--border-dark)' : 'var(--amber-l)',
+                                  color: (ask.loading || !ask.input.trim()) ? '#fff' : 'var(--black-band)',
+                                  border: 'none', cursor: (ask.loading || !ask.input.trim()) ? 'not-allowed' : 'pointer',
+                                  fontWeight: 500, borderRadius: 14,
+                                }}
+                              >Ask</button>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
