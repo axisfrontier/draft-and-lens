@@ -36,7 +36,8 @@ export async function runConversation(input: ConversationInput): Promise<string>
   const isLens = input.target !== 'editorial';
   const system = isLens
     ? buildConversationLensSystem(
-        LENS_META[input.target as LensId],
+        input.target as LensId,
+        LENS_META[input.target as LensId].name,
         input.diagnostic?.tradition ?? 'unknown'
       )
     : buildConversationEditorialSystem({

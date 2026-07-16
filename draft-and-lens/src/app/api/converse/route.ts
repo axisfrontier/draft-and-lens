@@ -41,7 +41,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   if (isLensId(target)) {
     const meta = LENS_META[target];
-    systemPrompt = buildConversationLensSystem(meta, tradition);
+    systemPrompt = buildConversationLensSystem(target, meta.name, tradition);
   } else {
     // default: editorial voice
       systemPrompt = buildConversationEditorialSystem({
