@@ -99,6 +99,7 @@ export async function runAnalyst(
   const params = {
     model,
     max_tokens: maxTokens,
+    speed: 'fast',
     ...(useThinking ? { thinking: { type: 'adaptive' }, output_config: { effort } } : {}),
     system: systemBlocks,
     messages: [{ role: 'user', content: userPrompt }],
@@ -106,10 +107,10 @@ export async function runAnalyst(
 
   const client = getAnthropicClient();
   let report = '';
-  const stream = client.messages.stream(
-    params,
-    signal ? { signal } : undefined
-  );
+  const stream = client.messages.stream(params, {
+    headers: { 'anthropic-beta': 'fast-mode-2026-02-01' },
+    ...(signal ? { signal } : {}),
+  });
   stream.on('text', (delta) => {
     report += delta;
     onText?.(delta);
