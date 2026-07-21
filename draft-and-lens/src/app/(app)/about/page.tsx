@@ -2,7 +2,7 @@
 export default function AboutPage() {
   return (
     <main style={{ maxWidth: 760, margin: '4rem auto', padding: '0 2rem 6rem' }}>
-      <a href="/" onClick={(e) => { e.preventDefault(); window.close(); }} style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-faint)', textDecoration: 'none', display: 'inline-block', marginBottom: '2rem' }}>← Close</a>
+      <button type="button" onClick={() => window.close()} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-faint)', textDecoration: 'none', display: 'inline-block', marginBottom: '2rem' }}>← Close</button>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--amber-d)', marginBottom: '.4rem' }}>
         About
       </div>

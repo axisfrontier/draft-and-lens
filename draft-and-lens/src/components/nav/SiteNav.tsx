@@ -80,7 +80,7 @@ export function SiteNav() {
           </SignUpButton>
         </SignedOut>
         <SignedIn>
-          <a href="/account" style={{
+          <a href="/account" target="_blank" rel="noopener noreferrer" style={{
             fontFamily: 'var(--font-mono)', fontSize: '.5rem',
             letterSpacing: '.12em', textTransform: 'uppercase',
             color: pathname === '/account' ? 'var(--amber-l)' : 'var(--ink-faint)',
