@@ -106,6 +106,7 @@ export async function runAnalyst(
 
   const client = getAnthropicClient();
   let report = '';
+  const startedAtMs = Date.now();
   const stream = client.messages.stream(
     params,
     signal ? { signal } : undefined
@@ -115,6 +116,7 @@ export async function runAnalyst(
     onText?.(delta);
   });
   const finalMsg = await stream.finalMessage();
-  recordBrainUsage('analyst', model, finalMsg.usage);
+  const endedAtMs = Date.now();
+  recordBrainUsage('analyst', model, finalMsg.usage, { startedAtMs, endedAtMs });
   return report;
 }

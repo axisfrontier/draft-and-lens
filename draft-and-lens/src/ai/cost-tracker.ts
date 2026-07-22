@@ -15,15 +15,32 @@ export interface CostEntry {
   model: string;
   inputTokens: number;
   outputTokens: number;
+  /**
+   * Phase 1 latency telemetry — epoch ms. Optional so any caller that records
+   * usage without timing still type-checks; every in-tree call site supplies
+   * them. Duration is stored rather than derived so a consumer never has to
+   * recompute it from two nullable fields.
+   */
+  startedAtMs?: number;
+  endedAtMs?: number;
+  durationMs?: number;
+}
+
+/** Timing pair for a completed stage. */
+export interface StageTiming {
+  startedAtMs: number;
+  endedAtMs: number;
 }
 
 const storage = new AsyncLocalStorage<CostEntry[]>();
 
-/** Record token usage for a brain call. No-op if cost tracking isn't active for this request — never throws. */
+/** Record token usage (and, when supplied, wall-clock timing) for a brain call.
+ *  No-op if cost tracking isn't active for this request — never throws. */
 export function recordBrainUsage(
   brain: string,
   model: string,
-  usage: { input_tokens?: number; output_tokens?: number } | null | undefined
+  usage: { input_tokens?: number; output_tokens?: number } | null | undefined,
+  timing?: StageTiming
 ): void {
   const store = storage.getStore();
   if (!store || !usage) return;
@@ -32,6 +49,37 @@ export function recordBrainUsage(
     model,
     inputTokens: usage.input_tokens ?? 0,
     outputTokens: usage.output_tokens ?? 0,
+    ...(timing
+      ? {
+          startedAtMs: timing.startedAtMs,
+          endedAtMs: timing.endedAtMs,
+          durationMs: timing.endedAtMs - timing.startedAtMs,
+        }
+      : {}),
+  });
+}
+
+/**
+ * Record a non-LLM stage that still gates the pipeline — e.g. the
+ * resolveRevision Supabase round-trip. Token counts are zero by definition;
+ * the point is that its latency appears in the Phase 4 breakdown rather than
+ * hiding inside "unaccounted" time. No-op outside a tracked context.
+ */
+export function recordStageTiming(
+  stage: string,
+  timing: StageTiming,
+  model = 'n/a'
+): void {
+  const store = storage.getStore();
+  if (!store) return;
+  store.push({
+    brain: stage,
+    model,
+    inputTokens: 0,
+    outputTokens: 0,
+    startedAtMs: timing.startedAtMs,
+    endedAtMs: timing.endedAtMs,
+    durationMs: timing.endedAtMs - timing.startedAtMs,
   });
 }
 

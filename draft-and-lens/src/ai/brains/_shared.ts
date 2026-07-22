@@ -70,16 +70,19 @@ function systemParam(
   return cache ? cachedSystemBlock(call.system) : call.system;
 }
 
-/** Call a brain and return raw text. */
+/** Call a brain and return raw text. Wall-clock timing is captured here so every
+ *  non-streaming brain is measured at a single choke point (Phase 1 telemetry). */
 export async function callTextBrain(call: BrainCall): Promise<string> {
   const client = getAnthropicClient();
+  const startedAtMs = Date.now();
   const msg = await client.messages.create({
     model: call.model,
     max_tokens: call.maxTokens,
     system: systemParam(call),
     messages: [{ role: 'user', content: call.user }],
   });
-  recordBrainUsage(call.brain, call.model, msg.usage);
+  const endedAtMs = Date.now();
+  recordBrainUsage(call.brain, call.model, msg.usage, { startedAtMs, endedAtMs });
   return extractText(msg);
 }
 

@@ -1,12 +1,14 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { recordStageTiming, withCostTracking, type CostEntry } from '../../../ai/cost-tracker';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
+import { logSubmissionTelemetry, type TraditionSource } from '../../../lib/telemetry-log';
 import type { AnalysisMode } from '../../../prompts/types';
 
 /**
@@ -55,6 +57,11 @@ function sanitise(text: string): string {
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
+  // Phase 1 telemetry: the clock starts at request receipt, so every downstream
+  // measurement is relative to the same origin the user experiences as "submit".
+  const runStartedAtMs = Date.now();
+  const runId = newWorkId();
+
   let body: Record<string, unknown>;
   try {
     body = (await req.json()) as Record<string, unknown>;
@@ -83,8 +90,15 @@ export async function POST(req: NextRequest): Promise<Response> {
   const clean = sanitise(typeof text === 'string' ? text : '');
   if (!clean) return badRequest('No text submitted.');
 
+  const submittedWordCount = countWords(clean);
+  // Whether the tradition reaching the analyst came from the writer or from
+  // Brain 1's auto-detection. Recorded so the Phase 3 A/B ladder can measure
+  // whether supplying it saves any time at all.
+  const traditionSource: TraditionSource =
+    typeof genre === 'string' && genre.trim() !== '' ? 'user_selected' : 'auto';
+
   // Tester-phase cap — defence-in-depth behind the client block (CHANGE: input cap).
-  if (countWords(clean) > TESTER_WORD_CAP) {
+  if (submittedWordCount > TESTER_WORD_CAP) {
     return NextResponse.json(
       {
         error: `Draft & Lens reads best in focused pieces right now — please paste up to about ${TESTER_WORD_CAP.toLocaleString()} words (a chapter, a short story, or an excerpt). Full-length novels and scripts are coming soon.`,
@@ -96,10 +110,29 @@ export async function POST(req: NextRequest): Promise<Response> {
   // ── Moderation gate (CHANGE 2) — runs BEFORE any storage or pipeline call.
   // Blocked content is never persisted or processed; only a minimal, non-content
   // event is logged. Tuned for literature: serious dark fiction passes.
-  const verdict = await moderateSubmission(clean);
+  // Wrapped in a cost-tracking context so the gate's tokens AND latency are
+  // captured. Previously moderateSubmission ran outside any tracked context, so
+  // recordBrainUsage found no store and silently dropped it — which is exactly
+  // how a full LLM call gating every submission stayed invisible in the numbers.
+  const { result: verdict, entries: gateEntries } = await withCostTracking(() =>
+    moderateSubmission(clean)
+  );
   if (verdict.status === 'block') {
     // Minimal log — category only, NEVER the submitted text (breach hook).
     logSecurityEvent('moderation_blocked', { category: verdict.category });
+    await logSubmissionTelemetry({
+      runId,
+      wordCount: submittedWordCount,
+      mode,
+      submissionType: cleanSubmissionType,
+      traditionValue: null,
+      traditionSource,
+      totalWallClockMs: Date.now() - runStartedAtMs,
+      timeToFirstVisibleContentMs: null,
+      timeToFirstStageMs: null,
+      outcome: 'blocked',
+      entries: gateEntries,
+    });
     return NextResponse.json(
       {
         error:
@@ -112,6 +145,19 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
   if (verdict.status === 'error') {
+    await logSubmissionTelemetry({
+      runId,
+      wordCount: submittedWordCount,
+      mode,
+      submissionType: cleanSubmissionType,
+      traditionValue: null,
+      traditionSource,
+      totalWallClockMs: Date.now() - runStartedAtMs,
+      timeToFirstVisibleContentMs: null,
+      timeToFirstStageMs: null,
+      outcome: 'error',
+      entries: gateEntries,
+    });
     return NextResponse.json(
       { error: 'We couldn’t check your submission just now. Please try again in a moment.' },
       { status: 503 }
@@ -126,14 +172,51 @@ export async function POST(req: NextRequest): Promise<Response> {
         controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
       };
 
+      // First-content markers. `firstStage` is when the progress pills first
+      // move; `firstText` is when the first non-placeholder content reaches the
+      // client. Until Phase 5A surfaces the tradition mid-stream, firstText is
+      // the true "first meaningful thing the user sees".
+      let firstStageAtMs: number | null = null;
+      let firstTextAtMs: number | null = null;
+      // Accumulated outside the try so a failed run still reports the stages it
+      // did complete — a slow run that errors is exactly the case worth seeing.
+      let collectedEntries: CostEntry[] = [...gateEntries];
+
       try {
         // ── Revision awareness (CHANGE 3) — decide before running anything.
         // Unchanged resubmission → return the stored reading verbatim (no model
         // call, no drift). A genuine revision → a fresh reading that names it.
         // Any storage problem degrades to an ordinary fresh reading.
-        const decision = await resolveRevision(userId, mode, clean, cleanSubmissionType);
+        // Timed as a first-class stage: it is a Supabase round-trip on the
+        // critical path of every submission, including first-time ones.
+        const { result: decision, entries: revisionEntries } = await withCostTracking(
+          async () => {
+            const startedAtMs = Date.now();
+            const d = await resolveRevision(userId, mode, clean, cleanSubmissionType);
+            recordStageTiming('resolveRevision', { startedAtMs, endedAtMs: Date.now() }, 'supabase');
+            return d;
+          }
+        );
+        collectedEntries = [...collectedEntries, ...revisionEntries];
+
         if (decision.kind === 'unchanged') {
           send({ type: 'done', ...decision.reading, revision: { status: 'unchanged' } });
+          const now = Date.now();
+          await logSubmissionTelemetry({
+            runId,
+            wordCount: submittedWordCount,
+            mode,
+            submissionType: cleanSubmissionType,
+            traditionValue: null,
+            traditionSource,
+            totalWallClockMs: now - runStartedAtMs,
+            // The stored reading renders immediately on arrival, so first
+            // visible content and completion are the same instant here.
+            timeToFirstVisibleContentMs: now - runStartedAtMs,
+            timeToFirstStageMs: null,
+            outcome: 'unchanged',
+            entries: collectedEntries,
+          });
           return;
         }
         const revisionNote = decision.kind === 'revised' ? decision.note : undefined;
@@ -154,8 +237,14 @@ export async function POST(req: NextRequest): Promise<Response> {
             revisionNote,
           },
           {
-            onStage: (stage, title) => send({ type: 'stage', stage, title }),
-            onAnalystText: (delta) => send({ type: 'text', delta }),
+            onStage: (stage, title) => {
+              if (firstStageAtMs === null) firstStageAtMs = Date.now();
+              send({ type: 'stage', stage, title });
+            },
+            onAnalystText: (delta) => {
+              if (firstTextAtMs === null) firstTextAtMs = Date.now();
+              send({ type: 'text', delta });
+            },
             signal: req.signal,
           }
         );
@@ -173,6 +262,10 @@ export async function POST(req: NextRequest): Promise<Response> {
           bible: result.bible,
         };
         send({ type: 'done', ...payload, revision: { status } });
+        // Wall clock stops when the user has everything, not after the
+        // best-effort persistence below — that work is invisible to them.
+        const totalWallClockMs = Date.now() - runStartedAtMs;
+        collectedEntries = [...collectedEntries, ...result.costEntries];
 
         // Persist the reading (best-effort) — stores the submitted text for
         // future diffing and the exact payload the client just received.
@@ -189,6 +282,12 @@ export async function POST(req: NextRequest): Promise<Response> {
 
         // Cost log (financial model data collection) — metadata + token counts
         // only, never the text. Best-effort, never blocks the reading.
+        // NOTE: deliberately still only `result.costEntries`. submission_costs
+        // has one column pair per known brain, so passing the new moderation /
+        // resolveRevision entries would generate columns that table does not
+        // have and fail the insert — silently losing the cost row. Bringing
+        // moderation into cost accounting needs its own migration; flagged as a
+        // recommendation, not actioned here.
         await logSubmissionCost({
           submissionId: workId,
           wordCount: result.coverage.wordsRead,
@@ -196,12 +295,43 @@ export async function POST(req: NextRequest): Promise<Response> {
           submissionType: cleanSubmissionType,
           entries: result.costEntries,
         });
+
+        await logSubmissionTelemetry({
+          runId,
+          wordCount: result.coverage.wordsRead,
+          mode,
+          submissionType: cleanSubmissionType,
+          traditionValue: result.diagnostic.tradition || null,
+          traditionSource,
+          totalWallClockMs,
+          timeToFirstVisibleContentMs:
+            firstTextAtMs === null ? null : firstTextAtMs - runStartedAtMs,
+          timeToFirstStageMs:
+            firstStageAtMs === null ? null : firstStageAtMs - runStartedAtMs,
+          outcome: 'completed',
+          entries: collectedEntries,
+        });
       } catch (err) {
         // A client disconnect / Stop surfaces as an AbortError — stay quiet,
         // the pipeline has already been aborted via req.signal.
         if ((err as Error)?.name !== 'AbortError') {
           send({ type: 'error', message: (err as Error)?.message ?? 'Analysis failed.' });
         }
+        await logSubmissionTelemetry({
+          runId,
+          wordCount: submittedWordCount,
+          mode,
+          submissionType: cleanSubmissionType,
+          traditionValue: null,
+          traditionSource,
+          totalWallClockMs: Date.now() - runStartedAtMs,
+          timeToFirstVisibleContentMs:
+            firstTextAtMs === null ? null : firstTextAtMs - runStartedAtMs,
+          timeToFirstStageMs:
+            firstStageAtMs === null ? null : firstStageAtMs - runStartedAtMs,
+          outcome: 'error',
+          entries: collectedEntries,
+        });
       } finally {
         controller.close();
       }
