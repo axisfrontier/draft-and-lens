@@ -107,16 +107,34 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
 
-  // ── Moderation gate (CHANGE 2) — runs BEFORE any storage or pipeline call.
+  // ── Moderation gate (CHANGE 2) + revision awareness (CHANGE 3) — run
+  // CONCURRENTLY rather than sequentially. They are independent: one checks
+  // content safety, the other checks for a matching prior submission — neither
+  // needs the other's result. Previously they ran one after another, paying
+  // both latencies in series for every submission (measured: ~2.4s + ~1.2s).
+  // Running them together costs only whichever is slower. The only tradeoff:
+  // on a blocked submission, the revision lookup ran for nothing — acceptable,
+  // since blocks are rare and the saving applies to the overwhelming majority
+  // of (allowed) submissions.
+  //
   // Blocked content is never persisted or processed; only a minimal, non-content
   // event is logged. Tuned for literature: serious dark fiction passes.
   // Wrapped in a cost-tracking context so the gate's tokens AND latency are
   // captured. Previously moderateSubmission ran outside any tracked context, so
   // recordBrainUsage found no store and silently dropped it — which is exactly
   // how a full LLM call gating every submission stayed invisible in the numbers.
-  const { result: verdict, entries: gateEntries } = await withCostTracking(() =>
-    moderateSubmission(clean)
-  );
+  const [
+    { result: verdict, entries: gateEntries },
+    { result: decision, entries: revisionEntries },
+  ] = await Promise.all([
+    withCostTracking(() => moderateSubmission(clean)),
+    withCostTracking(async () => {
+      const startedAtMs = Date.now();
+      const d = await resolveRevision(userId, mode, clean, cleanSubmissionType);
+      recordStageTiming('resolveRevision', { startedAtMs, endedAtMs: Date.now() }, 'supabase');
+      return d;
+    }),
+  ]);
   if (verdict.status === 'block') {
     // Minimal log — category only, NEVER the submitted text (breach hook).
     logSecurityEvent('moderation_blocked', { category: verdict.category });
@@ -180,25 +198,14 @@ export async function POST(req: NextRequest): Promise<Response> {
       let firstTextAtMs: number | null = null;
       // Accumulated outside the try so a failed run still reports the stages it
       // did complete — a slow run that errors is exactly the case worth seeing.
-      let collectedEntries: CostEntry[] = [...gateEntries];
+      let collectedEntries: CostEntry[] = [...gateEntries, ...revisionEntries];
 
       try {
-        // ── Revision awareness (CHANGE 3) — decide before running anything.
-        // Unchanged resubmission → return the stored reading verbatim (no model
-        // call, no drift). A genuine revision → a fresh reading that names it.
-        // Any storage problem degrades to an ordinary fresh reading.
-        // Timed as a first-class stage: it is a Supabase round-trip on the
-        // critical path of every submission, including first-time ones.
-        const { result: decision, entries: revisionEntries } = await withCostTracking(
-          async () => {
-            const startedAtMs = Date.now();
-            const d = await resolveRevision(userId, mode, clean, cleanSubmissionType);
-            recordStageTiming('resolveRevision', { startedAtMs, endedAtMs: Date.now() }, 'supabase');
-            return d;
-          }
-        );
-        collectedEntries = [...collectedEntries, ...revisionEntries];
-
+        // Revision awareness (CHANGE 3) already resolved above, concurrently
+        // with moderation. Unchanged resubmission → return the stored reading
+        // verbatim (no model call, no drift). A genuine revision → a fresh
+        // reading that names it. Any storage problem degrades to an ordinary
+        // fresh reading (see resolveRevision's own fail-open contract).
         if (decision.kind === 'unchanged') {
           send({ type: 'done', ...decision.reading, revision: { status: 'unchanged' } });
           const now = Date.now();
