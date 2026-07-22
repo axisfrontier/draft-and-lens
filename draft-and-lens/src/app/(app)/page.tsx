@@ -30,6 +30,7 @@ const LENSES = [
 
 type StreamEvent =
   | { type: 'stage'; stage: string; title: string }
+  | { type: 'diagnostic'; tradition: string; register: string; title: string }
   | { type: 'text'; delta: string }
   | {
       type: 'done';
@@ -63,6 +64,10 @@ export default function AppHomePage() {
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
+  // 5A — arrives ~15-20s in, well before the first analyst token; lets the
+  // progress banner say "Reading this as <tradition>" instead of sitting on a
+  // generic stage label for the entire writing wait.
+  const [earlyDiagnostic, setEarlyDiagnostic] = useState<{ tradition: string; register: string } | null>(null);
   const [streamed, setStreamed] = useState('');
   const [report, setReport] = useState('');
   const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
@@ -143,6 +148,7 @@ export default function AppHomePage() {
     setStreamed('');
     setReport('');
     setStage('Reading your work');
+    setEarlyDiagnostic(null);
     setCoverage(null);
     setDiagnostic(null);
     setScores(null);
@@ -190,6 +196,7 @@ export default function AppHomePage() {
             continue;
           }
           if (evt.type === 'stage') setStage(evt.title);
+          else if (evt.type === 'diagnostic') setEarlyDiagnostic({ tradition: evt.tradition, register: evt.register });
           else if (evt.type === 'text') setStreamed((prev) => prev + evt.delta);
           else if (evt.type === 'done') {
             setReport(evt.report);
@@ -757,6 +764,19 @@ export default function AppHomePage() {
                       fontFamily: 'var(--font-serif)', fontSize: '.95rem',
                       color: 'var(--paper)', marginBottom: '.4rem',
                     }}>{stage || 'Reading your work'}</div>
+                    {/* 5A — the single most reassuring signal available: the
+                        tradition is known ~15-20s in, long before the analyst's
+                        first token, but was previously withheld until `done`. */}
+                    {earlyDiagnostic && (
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                        letterSpacing: '.03em', color: 'var(--amber-l)',
+                        marginBottom: '.4rem', fontStyle: 'italic',
+                      }}>
+                        Reading this as {earlyDiagnostic.tradition.toLowerCase()}
+                        {earlyDiagnostic.register ? ` — ${earlyDiagnostic.register.toLowerCase()}` : ''}
+                      </div>
+                    )}
                     <div style={{
                       fontFamily: 'var(--font-mono)', fontSize: '.62rem',
                       color: 'var(--paper-dark)', marginBottom: '.5rem',

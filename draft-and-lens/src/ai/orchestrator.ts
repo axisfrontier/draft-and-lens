@@ -58,6 +58,14 @@ export interface PipelineInput {
 export interface PipelineCallbacks {
   onStage?: (stage: string, title: string) => void;
   onAnalystText?: (delta: string) => void;
+  /**
+   * Fires the instant Brain 1 resolves the tradition — well before the analyst
+   * emits any text (5A). Lets the client show "Reading this as <tradition>"
+   * during the long writing wait instead of a blank placeholder screen. Carries
+   * only fields already surfaced in the final `done` payload, so no new client
+   * exposure.
+   */
+  onDiagnostic?: (diagnostic: DiagnosticResult) => void;
   signal?: AbortSignal;
 }
 
@@ -118,6 +126,10 @@ async function runPipelineBody(
   // ── Brain 1 — Diagnostician (always first) ─────────────────────────────
   cb.onStage?.('read', 'Reading your work');
   let diagnostic = await runDiagnostician(text, modeLabel, input.submissionType);
+  // 5A: surface the tradition the moment it's known — this is well before the
+  // analyst emits its first token, and is the single biggest lever against the
+  // blank-screen perception of slowness (Latency Diagnostic Brief, Q4/5A).
+  cb.onDiagnostic?.(diagnostic);
 
   // ── Brain 1b + narrator verify — only on works ≥ 5,000 words ────────────
   if (wordCount >= STRUCTURAL_READER_MIN_WORDS) {

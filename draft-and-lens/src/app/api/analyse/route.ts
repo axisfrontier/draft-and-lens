@@ -241,6 +241,17 @@ export async function POST(req: NextRequest): Promise<Response> {
               if (firstStageAtMs === null) firstStageAtMs = Date.now();
               send({ type: 'stage', stage, title });
             },
+            // 5A — sent the instant Brain 1 resolves, well before the analyst's
+            // first token. Only the fields the final `done` payload already
+            // exposes to the client (nothing new leaves the server).
+            onDiagnostic: (diagnostic) => {
+              send({
+                type: 'diagnostic',
+                tradition: diagnostic.tradition,
+                register: diagnostic.register,
+                title: diagnostic.title,
+              });
+            },
             onAnalystText: (delta) => {
               if (firstTextAtMs === null) firstTextAtMs = Date.now();
               send({ type: 'text', delta });
