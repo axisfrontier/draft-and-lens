@@ -66,6 +66,19 @@ export interface PipelineCallbacks {
    * exposure.
    */
   onDiagnostic?: (diagnostic: DiagnosticResult) => void;
+  /**
+   * Progressive reveal (5C) — each fires the instant its own brain resolves,
+   * independent of the other two and independent of the analyst. Measured
+   * fact (Phase 3 ladder): scorer/market/bible finish 60-150s before the
+   * analyst in every tested run, but previously sat unused in memory until
+   * the final `done` payload. Firing them individually turns the wait into a
+   * sequence of arrivals instead of one long hold — same total time, more to
+   * read sooner. Fires with the SAME null-safety the final payload already
+   * has (each brain degrades to null/'' internally on its own failure).
+   */
+  onScores?: (scores: ScoreResult | null) => void;
+  onMarket?: (market: MarketResult | null) => void;
+  onBible?: (bible: string) => void;
   signal?: AbortSignal;
 }
 
@@ -179,11 +192,34 @@ async function runPipelineBody(
     return raw;
   })();
 
+  // Progressive reveal (5C): each .then() fires the instant ITS OWN promise
+  // settles — independent of the other two and of the analyst. Promise.all
+  // below still awaits all four for the return value the final payload uses;
+  // this changes nothing about total time, only when each result is first
+  // made available to the caller.
+  const scoresPromise = runScorer(text, input.mode, diagnostic.tradition || 'unknown')
+    .catch(() => null)
+    .then((result) => {
+      cb.onScores?.(result);
+      return result;
+    });
+  const marketPromise = runMarket(text, modeLabel)
+    .catch(() => null)
+    .then((result) => {
+      cb.onMarket?.(result);
+      return result;
+    });
+  const biblePromise = (input.skipBible ? Promise.resolve('') : runBible(text, modeLabel).catch(() => ''))
+    .then((result) => {
+      cb.onBible?.(result);
+      return result;
+    });
+
   const [report, scores, market, bible] = await Promise.all([
     analystThenCorrect,
-    runScorer(text, input.mode, diagnostic.tradition || 'unknown').catch(() => null),
-    runMarket(text, modeLabel).catch(() => null),
-    input.skipBible ? Promise.resolve('') : runBible(text, modeLabel).catch(() => ''),
+    scoresPromise,
+    marketPromise,
+    biblePromise,
   ]);
 
   void title; // title is surfaced via diagnostic; market uses its own recognition.

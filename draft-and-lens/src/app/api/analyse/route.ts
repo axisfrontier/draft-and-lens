@@ -263,6 +263,13 @@ export async function POST(req: NextRequest): Promise<Response> {
               if (firstTextAtMs === null) firstTextAtMs = Date.now();
               send({ type: 'text', delta });
             },
+            // 5C — progressive reveal. Fires the instant EACH brain resolves,
+            // independent of the others and well before the analyst finishes
+            // (measured: 60-150s earlier in the Phase 3 ladder). Same fields
+            // the final `done` payload already carries — nothing new exposed.
+            onScores: (scores) => send({ type: 'scores', scores }),
+            onMarket: (market) => send({ type: 'market', market }),
+            onBible: (bible) => send({ type: 'bible', bible }),
             signal: req.signal,
           }
         );

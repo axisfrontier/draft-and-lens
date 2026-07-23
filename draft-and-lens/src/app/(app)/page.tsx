@@ -32,6 +32,9 @@ type StreamEvent =
   | { type: 'stage'; stage: string; title: string }
   | { type: 'diagnostic'; tradition: string; register: string; title: string }
   | { type: 'text'; delta: string }
+  | { type: 'scores'; scores: Scores | null }
+  | { type: 'market'; market: Market | null }
+  | { type: 'bible'; bible: string }
   | {
       type: 'done';
       report: string;
@@ -198,6 +201,13 @@ export default function AppHomePage() {
           if (evt.type === 'stage') setStage(evt.title);
           else if (evt.type === 'diagnostic') setEarlyDiagnostic({ tradition: evt.tradition, register: evt.register });
           else if (evt.type === 'text') setStreamed((prev) => prev + evt.delta);
+          // 5C — progressive reveal. Sets state the instant each brain's
+          // result arrives rather than waiting for `done`; `done` still sets
+          // the same fields again as the authoritative final value, which is
+          // a harmless no-op re-render when it matches what arrived early.
+          else if (evt.type === 'scores') setScores(evt.scores);
+          else if (evt.type === 'market') setMarket(evt.market);
+          else if (evt.type === 'bible') setBible(evt.bible);
           else if (evt.type === 'done') {
             setReport(evt.report);
             setDiagnostic(evt.diagnostic);
@@ -845,7 +855,7 @@ export default function AppHomePage() {
       {/* ── ANALYSIS SKELETON ── */}
       {running && report === '' && (
         <div style={{ paddingTop: progressBannerHeight }}>
-          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} extraTopOffset={progressBannerHeight} />
+          <ReportSkeleton mode={mode} wordCount={wordCount} streamedText={streamed} extraTopOffset={progressBannerHeight} scores={scores} />
         </div>
       )}
 

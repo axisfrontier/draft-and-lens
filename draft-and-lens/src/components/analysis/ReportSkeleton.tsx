@@ -2,7 +2,9 @@ import type { CSSProperties } from 'react';
 
 import { parseReport } from './report';
 import { getSkeletonSections } from './reportSkeletonSections';
-import type { Mode } from './types';
+import { ScoresDashboard } from './ScoresDashboard';
+import { StoryArc } from './StoryArc';
+import type { Mode, Scores } from './types';
 
 /**
  * Pre-stream placeholder — mirrors ReportView's grid, sidebar, and section
@@ -12,6 +14,15 @@ import type { Mode } from './types';
  * real streamed text as each ## HEADING arrives (parsed live via
  * parseReport), so the page visibly populates during generation instead of
  * sitting frozen on placeholders until the whole response lands.
+ *
+ * 5C (progressive reveal): the scorer brain typically finishes 60-150s before
+ * the analyst (measured, Phase 3 ladder), so its result is usually sitting in
+ * state well before `done` fires. When `scores` is supplied, the Dashboard and
+ * Story Arc placeholders below are replaced with the real components instead
+ * of continuing to breathe emptily — the wait becomes a sequence of arrivals
+ * rather than one long hold. Falls back to the placeholder when scores is
+ * still null (not yet arrived, or the scorer failed) so nothing ever
+ * renders broken mid-stream.
  */
 
 function Bar({ width, height = '.9rem' }: { width: string; height?: string }) {
@@ -57,7 +68,7 @@ const sectionHeading: CSSProperties = {
 };
 
 export function ReportSkeleton({
-  mode, wordCount, streamedText, extraTopOffset = 0,
+  mode, wordCount, streamedText, extraTopOffset = 0, scores,
 }: {
   mode: Mode | null;
   wordCount: number;
@@ -66,6 +77,9 @@ export function ReportSkeleton({
    *  in-progress status bar) — the sidebar's sticky offset must match it or
    *  it sticks underneath the banner once scrolled. */
   extraTopOffset?: number;
+  /** 5C — when available (typically well before the analyst finishes), swaps
+   *  the Dashboard/Story Arc placeholders for the real components. */
+  scores?: Scores | null;
 }) {
   const sections = getSkeletonSections(mode ?? 'story', wordCount);
   const pages = Math.max(1, Math.round(wordCount / 250));
@@ -206,40 +220,48 @@ export function ReportSkeleton({
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.7rem', color: 'var(--rule)' }}>▼</span>
           </div>
 
-          {/* Dashboard placeholder */}
-          <div style={{ padding: '1.5rem 0' }}>
-            <div style={{
-              fontFamily: 'var(--font-serif)', fontSize: '1.3rem', fontWeight: 700,
-              color: 'var(--ink)', marginBottom: '1.25rem',
-            }}>Craft balance</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'center' }}>
+          {/* Dashboard — 5C: real component once scores has arrived, otherwise the placeholder */}
+          {scores ? (
+            <ScoresDashboard scores={scores} />
+          ) : (
+            <div style={{ padding: '1.5rem 0' }}>
               <div style={{
-                width: '100%', aspectRatio: '1 / 1', maxWidth: 280,
-                borderRadius: '50%', border: '1px solid var(--rule-l)',
-                background: 'var(--cream)', animation: 'breathe 2.4s ease-in-out infinite',
-              }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-                    <Bar width="40%" height=".6rem" />
-                    <Bar width="80px" height=".6rem" />
-                  </div>
-                ))}
+                fontFamily: 'var(--font-serif)', fontSize: '1.3rem', fontWeight: 700,
+                color: 'var(--ink)', marginBottom: '1.25rem',
+              }}>Craft balance</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'center' }}>
+                <div style={{
+                  width: '100%', aspectRatio: '1 / 1', maxWidth: 280,
+                  borderRadius: '50%', border: '1px solid var(--rule-l)',
+                  background: 'var(--cream)', animation: 'breathe 2.4s ease-in-out infinite',
+                }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                      <Bar width="40%" height=".6rem" />
+                      <Bar width="80px" height=".6rem" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Story arc placeholder */}
-          <div style={{ padding: '1.5rem 0' }}>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.14em',
-              textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: '1rem',
-            }}>Story arc · interpreted</div>
-            <div style={{
-              height: 220, background: 'var(--cream)', border: '1px solid var(--rule-l)',
-              animation: 'breathe 2.4s ease-in-out infinite',
-            }} />
-          </div>
+          {/* Story arc — 5C: real component once scores.beats has arrived, otherwise the placeholder */}
+          {scores?.beats?.length ? (
+            <StoryArc beats={scores.beats} />
+          ) : (
+            <div style={{ padding: '1.5rem 0' }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.14em',
+                textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: '1rem',
+              }}>Story arc · interpreted</div>
+              <div style={{
+                height: 220, background: 'var(--cream)', border: '1px solid var(--rule-l)',
+                animation: 'breathe 2.4s ease-in-out infinite',
+              }} />
+            </div>
+          )}
 
           {/* Editorial Analysis header */}
           <div style={{ padding: '1.5rem 0 1rem' }}>
