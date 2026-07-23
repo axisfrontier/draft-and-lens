@@ -791,16 +791,6 @@ export default function AppHomePage() {
                         {earlyDiagnostic.register ? ` — ${earlyDiagnostic.register.toLowerCase()}` : ''}
                       </div>
                     )}
-                    <div style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '.62rem',
-                      color: 'var(--paper-dark)', marginBottom: '.5rem',
-                    }}>
-                      {wordCount < 800
-                        ? 'Your reading will be ready in about 20 seconds'
-                        : wordCount < 3000
-                        ? 'Your reading will be ready in about 1 minute'
-                        : 'Your reading will be ready in 2–3 minutes'}
-                    </div>
                     <div style={{ display: 'flex', gap: '.5rem' }}>
                       {stageKeys.map((s, i) => {
                         const labels = ['Reading', 'Structure', 'Writing the reading', 'Market & bible'];
