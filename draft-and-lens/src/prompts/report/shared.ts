@@ -9,6 +9,8 @@ export const EVIDENCE_GATING = `EVIDENCE-GATED SECTIONS — MANDATORY. The headi
 
 ALWAYS INCLUDE, regardless of length: OVERVIEW, WHAT IS WORKING, WHAT TO REVISE, and the VERDICT. Every other heading earns its place by evidence.
 
+NEVER CROSS-REFERENCE ANOTHER SECTION — MANDATORY. Do not direct the reader elsewhere in the report ("discussed further under IMAGERY", "see REVISION NOTES", "as noted above"). Because section inclusion is evidence-gated, a section named in one of these references may not exist in the finished report — a reader sent to a section that was never written is a broken reading. Every section must be self-contained: if a point belongs in two places, make it in full where it matters most and let every other section stand on its own, with no pointer back or forward.
+
 COMPLETE WHAT YOU INCLUDE. Any section you include must be finished in full — never end a section mid-sentence or mid-list; if a numbered list begins, it must end.
 
 Restating one observation under a second heading — the same note reworded as "voice", then "theme", then "revision" — is the failure this instruction exists to prevent (see the DEDUPLICATION rule and Principle 2). One observation, one home.`;
