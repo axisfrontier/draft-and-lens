@@ -39,7 +39,15 @@ export function adaptiveAnalystConfig(wordCount: number): {
   useThinking: boolean;
 } {
   if (wordCount < 800) {
-    return { model: 'claude-sonnet-4-6', maxTokens: 16000, effort: 'low', useThinking: false };
+    // useThinking was false until 23 Jul 2026. Tested (A/B, real analyst prompt,
+    // two separate sub-800/short-tier pieces): thinking ON was 31-47% FASTER at
+    // this tier, not slower - the ladder's own data showed the <800 rung as the
+    // single slowest of all four tested sizes, which this setting fully
+    // explains. Quality read side-by-side both times: same tradition/craft
+    // catches, same verdict, no degradation - if anything a tighter report
+    // (fewer output tokens for the same substance). Do not revert without a
+    // fresh A/B showing a regression.
+    return { model: 'claude-sonnet-4-6', maxTokens: 16000, effort: 'low', useThinking: true };
   }
   if (wordCount < 3000) {
     return { model: 'claude-sonnet-4-6', maxTokens: 16000, effort: 'low', useThinking: true };
