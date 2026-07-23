@@ -51,18 +51,18 @@ function modeSystem(mode: AnalysisMode): string {
   }
 }
 
-function reportStructure(mode: AnalysisMode, wordCount: number): string {
+function reportStructure(mode: AnalysisMode): string {
   switch (mode) {
     case 'script':
-      return buildScriptReportStructure(wordCount);
+      return buildScriptReportStructure();
     case 'story':
-      return buildStoryReportStructure(wordCount);
+      return buildStoryReportStructure();
     case 'treatment':
-      return buildTreatmentReportStructure(wordCount);
+      return buildTreatmentReportStructure();
     case 'play':
-      return buildScriptReportStructure(wordCount);
+      return buildScriptReportStructure();
     default:
-      return buildScriptReportStructure(wordCount);
+      return buildScriptReportStructure();
   }
 }
 
@@ -270,7 +270,7 @@ export function buildAnalystUserPrompt(input: AnalystUserPromptInput): string {
           ? `TREATMENT | ${wordCount} words | Est. ${pageEst} pages | Form: ${genre}`
           : `STAGE PLAY | ${wordCount} words | Form: ${genre}`;
 
-  const struct = reportStructure(mode, wordCount);
+  const struct = reportStructure(mode);
   // Read window for Brain 2. Sized to cover the whole tester-cap piece
   // (TESTER_WORD_CAP words ≈ up to ~28k chars) so nothing is silently under-read;
   // trivially within Opus's context. Raise alongside any future length support.
@@ -280,7 +280,7 @@ export function buildAnalystUserPrompt(input: AnalystUserPromptInput): string {
       ? `${text.slice(0, limit)}\n\n[Text truncated at ${limit.toLocaleString()} characters — analyse what is present]`
       : text;
 
-  return `${intentBlock}${bibleBlock}${meta}\n\nProduce the full analysis report using the exact section structure below. Every section must be specific, direct, and quote from the submitted text where possible. Do not fabricate page numbers or scenes that are not present.${ANCHOR_DIRECTIVE}\n\n${struct}\n\n---\nSUBMITTED TEXT:\n${truncatedText}`;
+  return `${intentBlock}${bibleBlock}${meta}\n\nProduce the analysis report using the section menu below. Include a section only where the submitted text earns it (see the evidence-gating rule at the top of the structure) — omit the rest. Every section you include must be specific, direct, and quote from the submitted text where possible. Do not fabricate page numbers or scenes that are not present.${ANCHOR_DIRECTIVE}\n\n${struct}\n\n---\nSUBMITTED TEXT:\n${truncatedText}`;
 }
 
 /** Prepend narrator verdict block to user prompt (Brain 2c). */

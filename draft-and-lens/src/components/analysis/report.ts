@@ -54,6 +54,9 @@ export interface ReportSectionData {
 export interface ParsedReport {
   /** Numbered, collapsible sections in document order. */
   sections: ReportSectionData[];
+  /** New unified revision list (WHAT TO REVISE, Corpus P26). Null on legacy
+   *  stored reports, which still populate the three fields below instead. */
+  revisionList: ReportSectionData | null;
   /** Pulled out and rendered as distinct callouts (not numbered sections). */
   craftDirectives: ReportSectionData | null;
   whereToBegin: ReportSectionData | null;
@@ -69,13 +72,16 @@ export function parseReport(reportRaw: string): ParsedReport {
   const text = stripAnchors(reportRaw);
 
   const sections: ReportSectionData[] = [];
+  let revisionList: ReportSectionData | null = null;
   let craftDirectives: ReportSectionData | null = null;
   let whereToBegin: ReportSectionData | null = null;
   let actionPlan: ReportSectionData | null = null;
 
   const place = (sec: ReportSectionData): void => {
     const h = sec.heading.toUpperCase();
-    if (h.includes('CRAFT DIRECTIVE') || h.includes('WHAT TO FIX')) {
+    if (h.includes('WHAT TO REVISE') || h.includes('REVISION PRIORITIES')) {
+      revisionList = sec;
+    } else if (h.includes('CRAFT DIRECTIVE') || h.includes('WHAT TO FIX')) {
       craftDirectives = sec;
     } else if (h.includes('WHERE TO BEGIN') || h.includes('NEXT STEP') || h.includes('WHERE TO START')) {
       whereToBegin = sec;
@@ -100,5 +106,5 @@ export function parseReport(reportRaw: string): ParsedReport {
   }
   if (cur) place(cur);
 
-  return { sections, craftDirectives, whereToBegin, actionPlan };
+  return { sections, revisionList, craftDirectives, whereToBegin, actionPlan };
 }

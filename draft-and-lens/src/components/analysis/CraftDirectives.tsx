@@ -44,7 +44,7 @@ function DarkBox({
 }
 
 export function CraftDirectives({ parsed }: { parsed: ParsedReport }) {
-  const { whereToBegin, actionPlan, craftDirectives } = parsed;
+  const { revisionList, whereToBegin, actionPlan, craftDirectives } = parsed;
 
   const dirLines = craftDirectives
     ? craftDirectives.body
@@ -53,13 +53,22 @@ export function CraftDirectives({ parsed }: { parsed: ParsedReport }) {
         .filter((l) => /^\d+\./.test(l))
     : [];
 
+  const hasRevision = revisionList !== null && revisionList.body.trim() !== '';
   const hasWhere = whereToBegin !== null && whereToBegin.body.trim() !== '';
   const hasAction = actionPlan !== null && actionPlan.body.trim() !== '';
 
-  if (!hasWhere && !hasAction && dirLines.length === 0) return null;
+  if (!hasRevision && !hasWhere && !hasAction && dirLines.length === 0) return null;
 
   return (
     <>
+      {hasRevision && revisionList && (
+        <DarkBox title="What To Revise" borderColour="var(--amber)">
+          <div style={{ color: '#f0ead8' }}>
+            <FormattedBody text={revisionList.body.trim()} onDark />
+          </div>
+        </DarkBox>
+      )}
+
       {hasWhere && whereToBegin && (
         <DarkBox title="Where To Begin" borderColour="var(--teal)">
           <div style={{ color: '#f0ead8' }}>

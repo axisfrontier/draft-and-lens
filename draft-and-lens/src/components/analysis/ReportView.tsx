@@ -319,7 +319,7 @@ export function ReportView({
         ))}
 
         <div style={sidebarGroup}>Action</div>
-        <a href="#sec-three" style={sidebarLink}>Three things</a>
+        <a href="#sec-three" style={sidebarLink}>What to revise</a>
         <a href="#sec-lenses" style={sidebarLink}>Editorial lenses</a>
         <a href="#sec-studios" style={sidebarLink}>Studio match</a>
 
