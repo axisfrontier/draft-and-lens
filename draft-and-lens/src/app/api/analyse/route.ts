@@ -76,7 +76,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: 'Please sign in to analyse your work.' }, { status: 401 });
   }
 
-  const { text, mode, genre, intent, bible, skipBible, submissionType } = body;
+  const { text, mode, genre, intent, bible, skipBible, submissionType, forceRefresh } = body;
 
   // mode required + validated — the server never infers the submission type (§15).
   if (typeof mode !== 'string' || !MODES.has(mode)) {
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     withCostTracking(() => moderateSubmission(clean)),
     withCostTracking(async () => {
       const startedAtMs = Date.now();
-      const d = await resolveRevision(userId, mode, clean, cleanSubmissionType);
+      const d = await resolveRevision(userId, mode, clean, cleanSubmissionType, forceRefresh === true);
       recordStageTiming('resolveRevision', { startedAtMs, endedAtMs: Date.now() }, 'supabase');
       return d;
     }),
@@ -207,7 +207,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         // reading that names it. Any storage problem degrades to an ordinary
         // fresh reading (see resolveRevision's own fail-open contract).
         if (decision.kind === 'unchanged') {
-          send({ type: 'done', ...decision.reading, revision: { status: 'unchanged' } });
+          send({ type: 'done', ...decision.reading, revision: { status: 'unchanged', readAt: decision.readAt } });
           const now = Date.now();
           await logSubmissionTelemetry({
             runId,
@@ -227,7 +227,9 @@ export async function POST(req: NextRequest): Promise<Response> {
           return;
         }
         const revisionNote = decision.kind === 'revised' ? decision.note : undefined;
-        const status = decision.kind === 'revised' ? 'revised' : 'new';
+        const status =
+          decision.kind === 'revised' ? 'revised' :
+          decision.kind === 'refreshed' ? 'refreshed' : 'new';
 
         const result = await runAnalysisPipeline(
           {
@@ -294,7 +296,8 @@ export async function POST(req: NextRequest): Promise<Response> {
 
         // Persist the reading (best-effort) — stores the submitted text for
         // future diffing and the exact payload the client just received.
-        const workId = decision.kind === 'revised' ? decision.workId : newWorkId();
+        const workId =
+          decision.kind === 'revised' || decision.kind === 'refreshed' ? decision.workId : newWorkId();
         await storeReading({
           userId,
           workId,

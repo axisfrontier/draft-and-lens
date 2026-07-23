@@ -45,6 +45,7 @@ interface ReadingRow {
   source_text: string;
   reading_json: ReadingPayload;
   submission_type: string | null;
+  created_at: string;
 }
 
 // ── Text comparison (deterministic, no model call) ───────────────────────────
@@ -137,7 +138,7 @@ async function findBestMatch(
   userId: string,
   mode: string,
   text: string
-): Promise<{ workId: string; sourceText: string; reading: ReadingPayload; submissionType: string | null } | null> {
+): Promise<{ workId: string; sourceText: string; reading: ReadingPayload; submissionType: string | null; createdAt: string } | null> {
   if (!isSupabaseConfigured()) return null;
   const supabase = getServiceClient();
   const { data, error } = await supabase
@@ -165,12 +166,14 @@ async function findBestMatch(
     sourceText: best.row.source_text,
     reading: best.row.reading_json,
     submissionType: best.row.submission_type,
+    createdAt: best.row.created_at,
   };
 }
 
 export type RevisionDecision =
-  | { kind: 'unchanged'; reading: ReadingPayload }
+  | { kind: 'unchanged'; reading: ReadingPayload; readAt: string }
   | { kind: 'revised'; workId: string; note: string }
+  | { kind: 'refreshed'; workId: string }
   | { kind: 'new' };
 
 /** Decide how to handle a submission relative to the writer's stored work. */
@@ -178,18 +181,25 @@ export async function resolveRevision(
   userId: string,
   mode: string,
   text: string,
-  submissionType: 'complete' | 'excerpt'
+  submissionType: 'complete' | 'excerpt',
+  forceRefresh = false
 ): Promise<RevisionDecision> {
   try {
     const match = await findBestMatch(userId, mode, text);
     if (!match) return { kind: 'new' };
     const comparison = compareTexts(match.sourceText, text);
     if (comparison.similarity >= UNCHANGED_SIMILARITY) {
+      // Writer explicitly asked to re-run despite unchanged text (the "Get a
+      // fresh reading" button) — skip the cached return and run the full
+      // pipeline, versioned under the same work rather than a duplicate.
+      if (forceRefresh) {
+        return { kind: 'refreshed', workId: match.workId };
+      }
       // Same text — but if it's now being read as an excerpt vs complete piece
       // (or vice versa), that is NOT "unchanged": the correct reading differs.
       // Force a fresh pipeline run rather than serving the stale cached reading.
       if (match.submissionType === submissionType) {
-        return { kind: 'unchanged', reading: match.reading };
+        return { kind: 'unchanged', reading: match.reading, readAt: match.createdAt };
       }
       const label = (t: string | null) => (t === 'excerpt' ? 'an excerpt' : 'a complete piece');
       return {

@@ -43,11 +43,11 @@ type StreamEvent =
       scores: Scores | null;
       market: Market | null;
       bible: string;
-      revision?: { status: RevisionStatus };
+      revision?: { status: RevisionStatus; readAt?: string };
     }
   | { type: 'error'; message: string };
 
-type RevisionStatus = 'new' | 'revised' | 'unchanged';
+type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
 
 async function readFileAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -79,6 +79,7 @@ export default function AppHomePage() {
   const [market, setMarket] = useState<Market | null>(null);
   const [bible, setBible] = useState('');
   const [revisionStatus, setRevisionStatus] = useState<RevisionStatus | null>(null);
+  const [readAt, setReadAt] = useState<string | null>(null);
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
 
@@ -144,7 +145,7 @@ export default function AppHomePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
-  async function analyse(): Promise<void> {
+  async function analyse(forceRefresh = false): Promise<void> {
     if (mode === null) return;
     setRunning(true);
     setError('');
@@ -158,6 +159,7 @@ export default function AppHomePage() {
     setMarket(null);
     setBible('');
     setRevisionStatus(null);
+    setReadAt(null);
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -170,6 +172,7 @@ export default function AppHomePage() {
           mode,
           text: effectiveText,
           submissionType,
+          ...(forceRefresh ? { forceRefresh: true } : {}),
           ...(bibleSkip ? { skipBible: true } : bibleInput.trim() ? { bible: bibleInput.trim() } : {}),
         }),
         signal: ctrl.signal,
@@ -216,6 +219,7 @@ export default function AppHomePage() {
             setMarket(evt.market);
             setBible(evt.bible);
             setRevisionStatus(evt.revision?.status ?? 'new');
+            setReadAt(evt.revision?.readAt ?? null);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -658,7 +662,7 @@ export default function AppHomePage() {
                 <span style={badge(3, canAnalyse)}>3</span>
                 <button
                   type="button"
-                  onClick={analyse}
+                  onClick={() => analyse()}
                   disabled={!canAnalyse}
                   style={{
                     flex: 1, fontFamily: 'var(--font-mono)',
@@ -885,6 +889,8 @@ export default function AppHomePage() {
           coverage={coverage}
           mode={mode ?? undefined}
           revisionStatus={revisionStatus ?? undefined}
+          readAt={readAt ?? undefined}
+          onFreshReadingRequest={() => analyse(true)}
         />
       )}
     </main>

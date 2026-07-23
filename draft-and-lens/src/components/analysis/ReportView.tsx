@@ -102,6 +102,11 @@ const LENS_GROUPS: ReadonlyArray<{ label: string; entries: LensEntry[] }> = [
   ]},
 ];
 
+function formatReadAt(iso?: string): string {
+  if (!iso) return 'an earlier date';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 export function ReportView({
   report,
   diagnostic,
@@ -112,6 +117,8 @@ export function ReportView({
   coverage,
   mode,
   revisionStatus,
+  readAt,
+  onFreshReadingRequest,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -122,6 +129,8 @@ export function ReportView({
   coverage: Coverage | null;
   mode?: string;
   revisionStatus?: string;
+  readAt?: string;
+  onFreshReadingRequest?: () => void;
 }) {
   const verdict = extractVerdict(report);
   const parsed = parseReport(report);
@@ -341,13 +350,33 @@ export function ReportView({
           <PartialReadBanner coverage={coverage} />
 
           {revisionStatus === 'unchanged' && (
-            <p style={{
-              marginTop: '2rem', marginBottom: '1rem', padding: '.85rem 1.25rem',
-              fontSize: '.82rem', color: 'var(--teal)',
+            <div style={{
+              marginTop: '2rem', marginBottom: '1rem', padding: '1rem 1.25rem',
+              fontSize: '.82rem', color: 'var(--ink)',
               borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
             }}>
-              No changes detected since your last reading — showing your previous reading.
-            </p>
+              <p style={{ margin: 0, lineHeight: 1.7 }}>
+                This is your saved reading from {formatReadAt(readAt)}. Your draft hasn&rsquo;t changed
+                since then, so we&rsquo;ve brought this one straight back. If you&rsquo;d like a fresh pass
+                on the same text, the button below will run it again.
+              </p>
+              <button
+                type="button"
+                onClick={onFreshReadingRequest}
+                style={{
+                  marginTop: '.85rem', fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+                  letterSpacing: '.14em', textTransform: 'uppercase', padding: '.55rem 1.1rem',
+                  background: 'var(--teal)', border: '1px solid var(--teal)',
+                  color: 'var(--black-band)', cursor: 'pointer', fontWeight: 500,
+                }}
+              >
+                Get a fresh reading
+              </button>
+              <p style={{ margin: '.6rem 0 0', fontSize: '.72rem', fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+                Draft &amp; Lens is still being refined during beta, so a fresh reading may notice
+                things the saved one didn&rsquo;t, even though your text is the same.
+              </p>
+            </div>
           )}
           {revisionStatus === 'revised' && (
             <p style={{

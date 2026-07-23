@@ -14,6 +14,7 @@ import { TREATMENT_SYSTEM } from './modes/treatment';
 import { buildScriptReportStructure } from './report/script-structure';
 import { buildStoryReportStructure } from './report/story-structure';
 import { buildTreatmentReportStructure } from './report/treatment-structure';
+import { REGISTER } from './register';
 import type { AnalysisMode, DiagnosticResult } from './types';
 
 /**
@@ -68,7 +69,7 @@ function reportStructure(mode: AnalysisMode): string {
 
 /** Port of buildSystemPrompt() */
 export function buildSystemPrompt(mode: AnalysisMode, genre: string): string {
-  return `${modeSystem(mode)}\n\nGENRE / FORM CONTEXT:\n${genreNote(mode, genre)}`;
+  return `${modeSystem(mode)}\n\nGENRE / FORM CONTEXT:\n${genreNote(mode, genre)}\n\n${REGISTER}`;
 }
 
 function buildStructuralMapBlock(diagnostic: DiagnosticResult): string {
@@ -211,8 +212,6 @@ ABSTRACTION IS NOT AUTOMATICALLY A FAULT — MANDATORY BEFORE FAULTING ANY ABSTR
 DEDUPLICATION — MANDATORY: If multiple passages share the same craft problem, write ONE note that names all the relevant passages — never write the same note text more than once. A single note may say "this applies across three moments: [name them]" or quote one and list the others. If you find yourself writing a note that makes the same point as a note you have already written, do not write it again — add the new passage reference to the earlier note instead. Duplicate notes that repeat the same point waste the writer's time and dilute the reading.
 
 COMPLETE THE SET — MANDATORY WHEN A NOTE NAMES MULTIPLE INSTANCES: When a note identifies a problem across several instances (e.g. "adjective density is high across: burnt yellow, inky dark, solitary figure, corridor of light"), it must account for the whole set — not name five and silently resolve one. Two correct approaches: (a) demonstrate the move on ONE instance and explicitly state that the same move applies to the others ("run the same test across the remaining four"); (b) briefly sort the set — which are load-bearing and must stay, which are cuttable. Never leave the writer holding a list of five problems with guidance for only one. A note that names the set must serve the set.
-
-CRAFT TERM LEGIBILITY — MANDATORY: Never use a technical craft term (adjective density, filter word, editorialising, telling-not-showing, free indirect discourse, etc.) without immediately defining it in plain language in the same note. Do not assume the writer knows the term. Define it in one sentence — what it is, in plain words — before or as you use it. The goal: a writer who has never heard the term should understand both what it means and what to do about it from the note alone, without needing to look it up. Link the glossary term where one exists.
 
 TEACH THE MOVE, NEVER FIX THE WORK — MANDATORY FOR LINE-LEVEL CRAFT NOTES: Where a note names a line-level craft problem with a repeatable technique — adjective density, editorialising, telling-not-showing, generic image, filter words, etc. — offer a taster that demonstrates the TECHNIQUE on one instance. Rules: (1) Teach the TEST, not the result of applying it. E.g., for adjective density: "remove the adjective and ask whether the image survives without it — 'a figure steps out' may already be solitary." The writer learns the move and runs it themselves. (2) Make the craft term plain-language legible IN the note — do not assume the writer knows what "adjective density" or "filter word" means; define it in one sentence. (3) Name that the same move applies to the other instances — never silently fix the set. (4) NEVER hand back the writer's sentence rewritten, or a corrected version of their paragraph — that is ghostwriting. Frame the taster as "one direction" or "one way in," never as "the fix." (5) Structural notes — e.g. "the second act sags," "the ending is over-prepared" — do not require a taster unless there is a specific repeatable technique. Use judgment: if there is a teachable move, teach it; if the note is structural or observational, leave it without. The standard: the writer leaves knowing what to DO — not what you would write in their place.
 
