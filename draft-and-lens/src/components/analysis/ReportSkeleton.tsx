@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { FormattedBody } from './FormattedBody';
 import { parseReport } from './report';
 import { getSkeletonSections } from './reportSkeletonSections';
 import { ScoresDashboard } from './ScoresDashboard';
@@ -291,9 +292,9 @@ export function ReportSkeleton({
                 {body ? (
                   <div style={{
                     fontFamily: 'var(--font-serif)', fontSize: '.92rem',
-                    lineHeight: 1.85, color: 'var(--ink-soft)', whiteSpace: 'pre-wrap',
+                    lineHeight: 1.85, color: 'var(--ink-soft)',
                   }}>
-                    {body}
+                    <FormattedBody text={body} />
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
