@@ -21,6 +21,12 @@ function getApiKey(): string {
   if (!key) {
     throw new Error('ANTHROPIC_API_KEY is not configured on the server');
   }
+  // TEMP DIAGNOSTIC (2026-07-25) — remove after key-rotation issue is confirmed
+  // fixed. Never logs the key itself, only shape/length, to isolate whether
+  // production is running a stale/placeholder/malformed value.
+  console.log(
+    `[diag] ANTHROPIC_API_KEY length=${key.length} prefix=${key.slice(0, 12)} suffix=${key.slice(-4)}`
+  );
   return key;
 }
 
