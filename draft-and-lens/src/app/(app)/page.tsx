@@ -93,6 +93,23 @@ export default function AppHomePage() {
   const progressBannerRef = useRef<HTMLDivElement>(null);
   const [progressBannerHeight, setProgressBannerHeight] = useState(0);
 
+  // 3C — the analyst thinks silently before emitting its first token: ~2s at the
+  // Sonnet tiers but 15-26s at the Opus tier (measured, Long-Tier brief Phase 2).
+  // That gap is the last genuinely blank window in the wait — every other stage
+  // now streams as it resolves (5A, 5C). Revealed on a delay rather than gated on
+  // word count, so the short tiers never flash it and no server-side tier
+  // threshold has to be mirrored here.
+  const hasStreamedText = streamed.length > 0;
+  const [analystThinking, setAnalystThinking] = useState(false);
+  useEffect(() => {
+    if (stage !== 'Writing the reading' || hasStreamedText) {
+      setAnalystThinking(false);
+      return;
+    }
+    const timer = setTimeout(() => setAnalystThinking(true), 4000);
+    return () => clearTimeout(timer);
+  }, [stage, hasStreamedText]);
+
   // The progress banner is `position: fixed` (overlays rather than pushes content),
   // so the skeleton below it needs matching top padding to avoid being covered.
   // Measured directly rather than guessed, since its content (and thus height)
@@ -101,7 +118,7 @@ export default function AppHomePage() {
     if (running && progressBannerRef.current) {
       setProgressBannerHeight(progressBannerRef.current.offsetHeight);
     }
-  }, [running, stage]);
+  }, [running, stage, analystThinking]);
 
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
@@ -789,6 +806,17 @@ export default function AppHomePage() {
                       }}>
                         Reading this as {earlyDiagnostic.tradition.toLowerCase()}
                         {earlyDiagnostic.register ? ` — ${earlyDiagnostic.register.toLowerCase()}` : ''}
+                      </div>
+                    )}
+                    {/* 3C — fills the silent pre-emission window on longer work.
+                        Clears the moment the first token streams. */}
+                    {analystThinking && (
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                        letterSpacing: '.03em', color: 'var(--paper-dark)',
+                        marginBottom: '.4rem', fontStyle: 'italic',
+                      }}>
+                        Thinking it through before writing.
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: '.5rem' }}>
