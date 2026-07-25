@@ -82,7 +82,7 @@ export function ReportSkeleton({
    *  the Dashboard/Story Arc placeholders for the real components. */
   scores?: Scores | null;
 }) {
-  const sections = getSkeletonSections(mode ?? 'story', wordCount);
+  const sections = getSkeletonSections(mode ?? 'story');
   const pages = Math.max(1, Math.round(wordCount / 250));
   const modeLabel = mode === 'script' ? 'Film Script' : mode === 'treatment' ? 'Treatment' : mode === 'play' ? 'Stage Play' : 'Story';
 

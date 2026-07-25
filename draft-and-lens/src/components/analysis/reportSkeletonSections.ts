@@ -3,94 +3,93 @@
  *
  * Mirrors exactly what report.ts:parseReport() produces from a completed
  * response for each mode — i.e. the ## headings in src/prompts/report/*-structure.ts
- * with the ones parseReport lifts into callouts (Action Plan, Craft Directives,
- * Where To Begin) removed. If those structure files or parseReport's lifting
- * rules change, update this list to match or the skeleton will drift from the
- * real report. Play mode reuses the script structure (see analyst.ts:reportStructure).
+ * with the ones parseReport lifts into callouts (Craft Directives / Development
+ * Directives, Where To Begin — pre-P26) removed. If those structure files or
+ * parseReport's lifting rules change, update this list to match or the skeleton
+ * will drift from the real report. Play mode reuses the script structure (see
+ * analyst.ts:reportStructure).
  *
  * DUPLICATED, NOT IMPORTED: src/prompts/report/*-structure.ts are `server-only`
  * (they hold the analyst prompt IP); this file backs a client component, so the
- * tier lists below must be hand-kept in sync rather than imported. If you change
- * a section's tier in a *-structure.ts file, mirror the change here too.
+ * heading lists below must be hand-kept in sync rather than imported. If you
+ * change a section's heading in a *-structure.ts file, mirror the change here.
  *
- * Tiers (2026-07-13, Excerpt/Speed proposal): <800 words → 1 (micro), <3000 → 2
- * (short), else → 3 (full) — matches adaptiveAnalystConfig's thresholds.
+ * 2026-07-25: word-count tiers removed. Corpus P26 (evidence-gating, shipped
+ * 2026-07-23) replaced the word-count-tiered section lists with a single set
+ * of headings per mode whose inclusion the model decides against the text, not
+ * against length — so a skeleton keyed on word count necessarily drifts from
+ * what evidence-gating actually renders. This file had not been updated for
+ * that change: it still showed a since-removed "Revision Notes" heading (the
+ * four-headed prescriptive tail collapsed into one WHAT TO REVISE section) and
+ * gated "Character Consistency" behind a tier that no longer governs whether
+ * the section appears. Both read as permanently blank placeholders to the
+ * writer, alongside sections that populated normally. The skeleton can't know
+ * in advance which evidence-gated sections a given piece will earn, so it
+ * simply lists every heading the mode can produce; a section the model omits
+ * for lack of evidence never appears in the streamed report; its placeholder
+ * is what streams past.
  */
 
 import type { Mode } from './types';
 
-interface SkeletonSection {
-  label: string;
-  tiers: Array<1 | 2 | 3>;
-}
-
-const SCRIPT_SECTIONS: SkeletonSection[] = [
-  { label: 'Overview', tiers: [1, 2, 3] },
-  { label: 'First Impression', tiers: [1, 2, 3] },
-  { label: 'Structure', tiers: [2, 3] },
-  { label: 'Character', tiers: [1, 2, 3] },
-  { label: 'Dialogue', tiers: [1, 2, 3] },
-  { label: 'Theme', tiers: [1, 2, 3] },
-  { label: 'Visual Writing', tiers: [1, 2, 3] },
-  { label: 'Tone', tiers: [1, 2, 3] },
-  { label: 'Protagonist', tiers: [2, 3] },
-  { label: 'Antagonist', tiers: [2, 3] },
-  { label: 'Pace', tiers: [2, 3] },
-  { label: 'Commercial', tiers: [2, 3] },
-  { label: 'What Is Working', tiers: [1, 2, 3] },
-  { label: 'Character Consistency', tiers: [2, 3] },
-  { label: 'Genre Alignment', tiers: [3] },
+const SCRIPT_SECTIONS: string[] = [
+  'Overview',
+  'First Impression',
+  'Structure',
+  'Character',
+  'Dialogue',
+  'Theme',
+  'Visual Writing',
+  'Tone',
+  'Protagonist',
+  'Antagonist',
+  'Pace',
+  'Commercial',
+  'What Is Working',
+  'Character Consistency',
+  'Genre Alignment',
+  'What To Revise',
 ];
 
-const STORY_SECTIONS: SkeletonSection[] = [
-  { label: 'Overview', tiers: [1, 2, 3] },
-  { label: 'Opening Promise', tiers: [1, 2, 3] },
-  { label: 'Structure And Arc', tiers: [2, 3] },
-  { label: 'Voice And Narrator', tiers: [1, 2, 3] },
-  { label: 'Character', tiers: [2, 3] },
-  { label: 'Prose Rhythm And Texture', tiers: [1, 2, 3] },
-  { label: 'Imagery', tiers: [1, 2, 3] },
-  { label: 'Theme', tiers: [1, 2, 3] },
-  { label: 'The Ending', tiers: [1, 2, 3] },
-  { label: 'What Is Working', tiers: [1, 2, 3] },
-  { label: 'Character Consistency', tiers: [2, 3] },
-  { label: 'Tradition Alignment', tiers: [2, 3] },
-  { label: 'Revision Notes', tiers: [1, 3] },
+const STORY_SECTIONS: string[] = [
+  'Overview',
+  'Opening Promise',
+  'Structure And Arc',
+  'Voice And Narrator',
+  'Character',
+  'Prose Rhythm And Texture',
+  'Imagery',
+  'Theme',
+  'The Ending',
+  'What Is Working',
+  'Character Consistency',
+  'Tradition Alignment',
+  'What To Revise',
 ];
 
-const TREATMENT_SECTIONS: SkeletonSection[] = [
-  { label: 'Overview', tiers: [1, 2, 3] },
-  { label: 'The Spine', tiers: [1, 2, 3] },
-  { label: 'Structure And Turns', tiers: [2, 3] },
-  { label: 'Through-Line And Momentum', tiers: [2, 3] },
-  { label: 'Character And Arc', tiers: [1, 2, 3] },
-  { label: 'Proportion And Pacing', tiers: [2, 3] },
-  { label: 'Premise And Engine', tiers: [1, 2, 3] },
-  { label: 'Tone And Register', tiers: [1, 2, 3] },
-  { label: 'The Ending', tiers: [1, 2, 3] },
-  { label: 'What Is Working', tiers: [1, 2, 3] },
-  { label: 'Character Consistency', tiers: [2, 3] },
-  { label: 'Tradition Alignment', tiers: [2, 3] },
-  { label: 'Development Directives', tiers: [3] },
+const TREATMENT_SECTIONS: string[] = [
+  'Overview',
+  'The Spine',
+  'Structure And Turns',
+  'Through-Line And Momentum',
+  'Character And Arc',
+  'Proportion And Pacing',
+  'Premise And Engine',
+  'Tone And Register',
+  'The Ending',
+  'What Is Working',
+  'Character Consistency',
+  'Tradition Alignment',
+  'What To Revise',
 ];
 
-const SECTIONS_BY_MODE: Record<Mode, SkeletonSection[]> = {
+const SECTIONS_BY_MODE: Record<Mode, string[]> = {
   script: SCRIPT_SECTIONS,
   play: SCRIPT_SECTIONS,
   story: STORY_SECTIONS,
   treatment: TREATMENT_SECTIONS,
 };
 
-/** <800 words → tier 1 (micro), <3000 → tier 2 (short), else → tier 3 (full). */
-function reportTier(wordCount: number): 1 | 2 | 3 {
-  if (wordCount < 800) return 1;
-  if (wordCount < 3000) return 2;
-  return 3;
-}
-
-export function getSkeletonSections(mode: Mode, wordCount: number): string[] {
-  const tier = reportTier(wordCount);
-  return SECTIONS_BY_MODE[mode]
-    .filter((s) => s.tiers.includes(tier))
-    .map((s) => s.label);
+export function getSkeletonSections(mode: Mode): string[] {
+  return SECTIONS_BY_MODE[mode];
 }
