@@ -13,6 +13,17 @@ import type {
   Scores,
 } from '@/components/analysis/types';
 import { TESTER_WORD_CAP, countWords } from '@/lib/limits';
+import {
+  MAX_UPLOAD_BYTES,
+  UPLOAD_ACCEPT,
+  UPLOAD_FORMAT_HINT,
+  UPLOAD_MESSAGES,
+  extensionOf,
+  formatFor,
+  rejectionReason,
+  stripMarkdown,
+  type UploadFormat,
+} from '@/lib/upload-formats';
 
 const TYPES: ReadonlyArray<{ value: Mode; label: string }> = [
   { value: 'script', label: 'Film Script' },
@@ -58,7 +69,22 @@ async function readFileAsText(file: File): Promise<string> {
   });
 }
 
-const ACCEPTED_EXTENSIONS = ['.pdf', '.txt', '.fountain', '.fdx', '.docx'];
+/**
+ * Binary formats (.docx, .pdf) are extracted server-side. `readAsText` does not
+ * throw on them, it returns mojibake, which is how an unreadable file used to
+ * pass the drop zone and only fail once the writer was already on the analysis
+ * screen with no way back.
+ */
+async function extractViaServer(file: File, format: UploadFormat): Promise<string> {
+  const body = new FormData();
+  body.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body });
+  const data = (await res.json().catch(() => null)) as { text?: string; error?: string } | null;
+  if (!res.ok || typeof data?.text !== 'string') {
+    throw new Error(data?.error ?? UPLOAD_MESSAGES.extractionFailed(format.label));
+  }
+  return data.text;
+}
 
 export default function AppHomePage() {
   const { isSignedIn } = useAuth();
@@ -86,6 +112,7 @@ export default function AppHomePage() {
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [uploadedFileText, setUploadedFileText] = useState('');
   const [uploadError, setUploadError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [bibleInput, setBibleInput] = useState('');
   const [bibleSkip, setBibleSkip] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -129,29 +156,60 @@ export default function AppHomePage() {
     submissionType !== null &&
     wordCount > 0 &&
     !running &&
+    !uploading &&
     !overCap;
 
+  /**
+   * Every failure below surfaces here, on the upload screen, with a message
+   * naming what went wrong and what to do next. Nothing reaches
+   * `uploadedFileText` unless it has passed extraction and the readable-text
+   * gate, so an unreadable file can no longer carry the writer through to the
+   * analysis screen.
+   */
   const handleFile = useCallback(async (file: File) => {
     setUploadError('');
-    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    setUploadedFileName('');
+    setUploadedFileText('');
+    // Clear the picker up front so re-choosing the same file still fires
+    // `change`. Without this, a writer who fixes and re-saves a file cannot
+    // retry it. The File handle above is unaffected.
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    const ext = extensionOf(file.name);
     if (ext === '.doc') {
-      setUploadError('Old-style .doc files cannot be read in the browser. Re-save as .docx, .pdf, or .txt.');
+      setUploadError(UPLOAD_MESSAGES.legacyDoc);
       return;
     }
-    if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-      setUploadError('Unsupported format. Use PDF, DOCX, TXT, Fountain, or FDX.');
+    const format = formatFor(file.name);
+    if (format === null) {
+      setUploadError(UPLOAD_MESSAGES.unsupported(ext));
       return;
     }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setUploadError(UPLOAD_MESSAGES.tooLarge(file.size));
+      return;
+    }
+
+    setUploading(true);
     try {
-      const content = await readFileAsText(file);
-      if (content.trim().length < 20) {
-        setUploadError('That file opened but almost no readable text came out. Try a .txt or text-based PDF.');
+      const raw = format.transport === 'server'
+        ? await extractViaServer(file, format)
+        : await readFileAsText(file);
+      const content = format.ext === '.md' ? stripMarkdown(raw) : raw;
+
+      const reason = rejectionReason(content, format);
+      if (reason !== null) {
+        setUploadError(reason);
         return;
       }
       setUploadedFileName(file.name);
       setUploadedFileText(content);
     } catch (err) {
-      setUploadError('Error reading file: ' + (err instanceof Error ? err.message : 'unknown'));
+      setUploadError(err instanceof Error && err.message !== ''
+        ? err.message
+        : UPLOAD_MESSAGES.readFailed(format.label));
+    } finally {
+      setUploading(false);
     }
   }, []);
 
@@ -407,18 +465,20 @@ export default function AppHomePage() {
 
               {/* Drop zone */}
               <div
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => { if (!uploading) fileInputRef.current?.click(); }}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={(e) => {
                   e.preventDefault();
                   setDragOver(false);
+                  if (uploading) return;
                   const file = e.dataTransfer.files[0];
                   if (file) handleFile(file);
                 }}
                 style={{
                   background: dragOver ? 'rgba(200,146,42,.06)' : 'var(--surface-input)',
-                  padding: '1.25rem', textAlign: 'center', cursor: 'pointer',
+                  padding: '1.25rem', textAlign: 'center',
+                  cursor: uploading ? 'progress' : 'pointer',
                   borderRadius: 18, border: `1px solid ${dragOver ? 'var(--amber)' : 'var(--amber-d)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   minHeight: 96, transition: 'all .15s',
@@ -427,14 +487,19 @@ export default function AppHomePage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.txt,.fountain,.fdx,.docx"
+                  accept={UPLOAD_ACCEPT}
                   style={{ display: 'none' }}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleFile(file);
                   }}
                 />
-                {uploadedFileName ? (
+                {uploading ? (
+                  <p style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+                    letterSpacing: '.08em', color: 'var(--amber-l)',
+                  }}>Reading your file…</p>
+                ) : uploadedFileName ? (
                   <div>
                     <p style={{
                       fontFamily: 'var(--font-mono)', fontSize: '.72rem',
@@ -464,7 +529,7 @@ export default function AppHomePage() {
                     <p style={{
                       fontFamily: 'var(--font-mono)', fontSize: '.58rem',
                       letterSpacing: '.08em', color: 'var(--ink-faint)',
-                    }}>.PDF &middot; .TXT &middot; .FOUNTAIN &middot; .FDX &middot; .DOCX</p>
+                    }}>{UPLOAD_FORMAT_HINT}</p>
                   </div>
                 )}
               </div>
