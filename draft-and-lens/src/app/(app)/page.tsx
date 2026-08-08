@@ -317,7 +317,9 @@ export default function AppHomePage() {
     fontSize: '.68rem',
     letterSpacing: '.14em',
     textTransform: 'uppercase',
-    color: 'var(--label-amber)',
+    // --label-amber is 4.31:1 on --black-band, under AA for body text.
+    // --amber-l is 6.46:1 and is already the accent used beside it.
+    color: 'var(--amber-l)',
     fontWeight: 500,
     marginBottom: '.35rem',
   };
@@ -326,7 +328,7 @@ export default function AppHomePage() {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
     width: '2rem', height: '2rem', borderRadius: '50%',
     background: active ? 'var(--amber)' : 'var(--border-dark)',
-    color: active ? 'var(--black-band)' : 'var(--ink-soft)',
+    color: active ? 'var(--black-band)' : 'var(--paper-dark)',
     fontFamily: 'var(--font-mono)', fontSize: '.95rem', fontWeight: 600,
     flexShrink: 0,
   });
@@ -412,7 +414,9 @@ export default function AppHomePage() {
                   </p>
                   <p style={{
                     fontFamily: 'var(--font-sans)', fontSize: '.8rem',
-                    color: 'var(--ink-faint)', maxWidth: 320, lineHeight: 1.6,
+                    // This overlay is near-paper, so the dark-surface tokens
+                    // invert here: --ink-faint is 3.30:1 on paper, --ink-soft 6.66:1.
+                    color: 'var(--ink-soft)', maxWidth: 320, lineHeight: 1.6,
                   }}>
                     Your work stays private and is never used to train AI.
                   </p>
@@ -509,7 +513,7 @@ export default function AppHomePage() {
                       type="button"
                       onClick={(e) => { e.stopPropagation(); clearFile(); }}
                       style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                        fontFamily: 'var(--font-mono)', fontSize: '.66rem',
                         letterSpacing: '.16em', textTransform: 'uppercase',
                         padding: '.55rem 1.1rem', background: 'var(--black-band)',
                         color: 'var(--amber-l)', border: '1px solid var(--amber)',
@@ -527,8 +531,8 @@ export default function AppHomePage() {
                       fontStyle: 'italic', fontWeight: 400, color: '#ffffff', marginBottom: '.5rem',
                     }}>Drop file or click to upload</p>
                     <p style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                      letterSpacing: '.08em', color: 'var(--ink-faint)',
+                      fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                      letterSpacing: '.08em', color: 'var(--paper-dark)',
                     }}>{UPLOAD_FORMAT_HINT}</p>
                   </div>
                 )}
@@ -561,7 +565,7 @@ export default function AppHomePage() {
                     }}>{wordCount.toLocaleString()} words</span>
                     <span style={{
                       fontFamily: 'var(--font-mono)', fontSize: '.65rem',
-                      letterSpacing: '.08em', color: 'var(--ink-faint)',
+                      letterSpacing: '.08em', color: 'var(--paper-dark)',
                     }}>limit: {TESTER_WORD_CAP.toLocaleString()}</span>
                   </div>
                   <div style={{
@@ -662,9 +666,9 @@ export default function AppHomePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginTop: '-.25rem' }}>
                 <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
                 <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
                   letterSpacing: '.16em', textTransform: 'uppercase',
-                  color: 'var(--ink-faint)',
+                  color: 'var(--paper-dark)',
                 }}>Optional</span>
                 <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
               </div>
@@ -679,7 +683,7 @@ export default function AppHomePage() {
                     <div style={{
                       fontFamily: 'var(--font-mono)', fontSize: '.68rem',
                       letterSpacing: '.14em', textTransform: 'uppercase',
-                      color: 'var(--label-amber)', fontWeight: 500, marginBottom: '.2rem',
+                      color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
                     }}>Character bible</div>
                     <div style={{
                       fontFamily: 'var(--font-sans)', fontSize: '.85rem',
@@ -707,11 +711,11 @@ export default function AppHomePage() {
                   <label style={{
                     fontFamily: 'var(--font-mono)', fontSize: '.68rem',
                     letterSpacing: '.14em', textTransform: 'uppercase',
-                    color: 'var(--label-amber)', fontWeight: 500,
+                    color: 'var(--amber-l)', fontWeight: 500,
                     display: 'block', marginBottom: '.4rem',
                   }}>
                     Paste your own to use instead{' '}
-                    <span style={{ color: 'var(--ink-soft)' }}>(optional)</span>
+                    <span style={{ color: 'var(--rule)' }}>(optional)</span>
                   </label>
                   <textarea
                     value={bibleInput}
@@ -732,11 +736,15 @@ export default function AppHomePage() {
               {/* Upload error */}
               {uploadError && (
                 <div style={{
-                  padding: '.55rem .9rem', background: 'rgba(139,32,32,.12)',
-                  border: '1px solid rgba(139,32,32,.4)',
-                  fontFamily: 'var(--font-mono)', fontSize: '.62rem',
-                  color: 'var(--error)',
-                }}>{uploadError}</div>
+                  padding: '.65rem .9rem', background: 'rgba(139,32,32,.12)',
+                  border: '1px solid var(--error)',
+                  fontFamily: 'var(--font-mono)', fontSize: '.7rem',
+                  lineHeight: 1.6,
+                  // --error is 4.01:1 on this band, under AA for body text, and
+                  // this is the one message a stuck writer has to be able to
+                  // read. The red border and tint carry the semantics instead.
+                  color: 'var(--paper)',
+                }} role="alert">{uploadError}</div>
               )}
 
               {/* Step 3 — Analyse */}
@@ -751,7 +759,7 @@ export default function AppHomePage() {
                     fontSize: '.65rem', letterSpacing: '.22em',
                     textTransform: 'uppercase', padding: '.95rem',
                     background: canAnalyse ? 'var(--amber)' : 'var(--border-dark)',
-                    color: canAnalyse ? 'var(--black-band)' : 'var(--ink-soft)',
+                    color: canAnalyse ? 'var(--black-band)' : 'var(--paper-dark)',
                     border: 'none', cursor: canAnalyse ? 'pointer' : 'not-allowed',
                     fontWeight: 500, borderRadius: 18,
                     transition: 'all .15s',
@@ -762,8 +770,8 @@ export default function AppHomePage() {
               </div>
 
               <p style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                letterSpacing: '.08em', color: 'var(--ink-faint)',
+                fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                letterSpacing: '.08em', color: 'var(--paper-dark)',
                 textAlign: 'center', marginTop: '.5rem', lineHeight: 1.6,
               }}>
                 Your work is yours. We never train AI on it — it&apos;s sent only to generate your reading.
@@ -771,7 +779,7 @@ export default function AppHomePage() {
 
               <p style={{
                 fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                letterSpacing: '.08em', color: 'var(--ink-faint)',
+                letterSpacing: '.08em', color: 'var(--paper-dark)',
                 textAlign: 'center', fontStyle: 'italic',
               }}>Analysis streams as it arrives</p>
 
@@ -796,7 +804,7 @@ export default function AppHomePage() {
             }}>Editorial Lenses</div>
             <p style={{
               fontFamily: 'var(--font-sans)', fontSize: '.82rem',
-              color: 'var(--ink-faint)', fontStyle: 'italic',
+              color: 'var(--paper-dark)', fontStyle: 'italic',
               marginBottom: '1rem', lineHeight: 1.6,
               maxWidth: 680, marginLeft: 'auto', marginRight: 'auto',
             }}>
@@ -808,16 +816,18 @@ export default function AppHomePage() {
             }}>
               {LENSES.map((name) => (
                 <span key={name} style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                  fontFamily: 'var(--font-mono)', fontSize: '.66rem',
                   letterSpacing: '.08em', color: 'var(--rule)',
-                  padding: '.22rem .65rem', border: '1px solid var(--ink-mid)',
+                  // --ink-mid is 1.55:1 here, under the 3:1 minimum for a
+                  // component boundary. --ink-faint is 5.04:1 and stays quiet.
+                  padding: '.22rem .65rem', border: '1px solid var(--ink-faint)',
                   whiteSpace: 'nowrap',
                 }}>{name}</span>
               ))}
             </div>
             <p style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.55rem',
-              letterSpacing: '.06em', color: 'var(--ink-faint)',
+              fontFamily: 'var(--font-mono)', fontSize: '.64rem',
+              letterSpacing: '.06em', color: 'var(--rule)',
               lineHeight: 1.6, fontStyle: 'italic', marginTop: '.85rem',
               maxWidth: 640, marginLeft: 'auto', marginRight: 'auto',
             }}>
@@ -829,8 +839,8 @@ export default function AppHomePage() {
           <footer style={{
             textAlign: 'center', padding: '2.5rem 1rem 2rem',
             marginTop: '2rem', borderTop: '1px solid var(--border-deeper)',
-            fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-            letterSpacing: '.12em', color: 'var(--ink-faint)',
+            fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+            letterSpacing: '.12em', color: 'var(--paper-dark)',
           }}>
             Copyright &copy; 2026 Draft&amp;Lens
           </footer>
@@ -890,7 +900,7 @@ export default function AppHomePage() {
                         const isActive = currentKey === s;
                         return (
                           <div key={s} style={{
-                            fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                            fontFamily: 'var(--font-mono)', fontSize: '.6rem',
                             letterSpacing: '.1em', textTransform: 'uppercase',
                             padding: '.15rem .5rem', borderRadius: 20,
                             border: isActive ? '1px solid var(--amber)' : '1px solid var(--border-dark)',
@@ -908,10 +918,10 @@ export default function AppHomePage() {
                     type="button"
                     onClick={stop}
                     style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+                      fontFamily: 'var(--font-mono)', fontSize: '.64rem',
                       letterSpacing: '.14em', textTransform: 'uppercase',
                       color: 'var(--paper)', background: 'transparent',
-                      border: '1px solid var(--border-dark)',
+                      border: '1px solid var(--ink-faint)',
                       padding: '.35rem .8rem', borderRadius: 20,
                       cursor: 'pointer', flexShrink: 0,
                     }}

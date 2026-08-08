@@ -18,7 +18,7 @@ export default function BetaGatePage({
         </div>
         <div style={{
           fontFamily: 'var(--font-mono)', fontSize: '.68rem', letterSpacing: '.14em',
-          textTransform: 'uppercase', color: 'var(--label-amber)', marginBottom: '2rem',
+          textTransform: 'uppercase', color: 'var(--amber-l)', marginBottom: '2rem',
         }}>
           Private beta &mdash; access required
         </div>
@@ -26,7 +26,7 @@ export default function BetaGatePage({
           <input type="hidden" name="next" value={next} />
           <label style={{
             fontFamily: 'var(--font-mono)', fontSize: '.68rem', letterSpacing: '.14em',
-            textTransform: 'uppercase', color: 'var(--label-amber)',
+            textTransform: 'uppercase', color: 'var(--amber-l)',
             display: 'block', marginBottom: '.5rem',
           }}>
             Beta password

@@ -45,9 +45,12 @@ export function SiteNav() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+                fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                 letterSpacing: '.12em', textTransform: 'uppercase',
-                color: isActive ? 'var(--amber-l)' : 'var(--ink-faint)',
+                // --paper-dark is the token tokens.css designates for text on
+                // dark. --ink-faint clears AA here on contrast alone, but at the
+                // previous 8px it did not read as legible; size and tone both moved.
+                color: isActive ? 'var(--amber-l)' : 'var(--paper-dark)',
                 textDecoration: 'none',
               }}
             >
@@ -58,10 +61,12 @@ export function SiteNav() {
         <SignedOut>
           <SignInButton mode="modal">
             <button type="button" style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+              fontFamily: 'var(--font-mono)', fontSize: '.68rem',
               letterSpacing: '.14em', textTransform: 'uppercase',
               padding: '.35rem .85rem', background: 'transparent',
-              border: '1px solid var(--ink-mid)', color: 'var(--ink-faint)',
+              // --ink-mid does not reach the 3:1 minimum for a control boundary
+              // on this band; --ink-faint does, and stays visually quiet.
+              border: '1px solid var(--ink-faint)', color: 'var(--paper-dark)',
               cursor: 'pointer',
             }}>
               Sign in
@@ -69,7 +74,7 @@ export function SiteNav() {
           </SignInButton>
           <SignUpButton mode="modal">
             <button type="button" style={{
-              fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+              fontFamily: 'var(--font-mono)', fontSize: '.68rem',
               letterSpacing: '.14em', textTransform: 'uppercase',
               padding: '.35rem .85rem', background: 'var(--amber)',
               border: '1px solid var(--amber)', color: 'var(--black-band)',
@@ -81,9 +86,9 @@ export function SiteNav() {
         </SignedOut>
         <SignedIn>
           <a href="/account" target="_blank" rel="noopener noreferrer" style={{
-            fontFamily: 'var(--font-mono)', fontSize: '.5rem',
+            fontFamily: 'var(--font-mono)', fontSize: '.72rem',
             letterSpacing: '.12em', textTransform: 'uppercase',
-            color: pathname === '/account' ? 'var(--amber-l)' : 'var(--ink-faint)',
+            color: pathname === '/account' ? 'var(--amber-l)' : 'var(--paper-dark)',
             textDecoration: 'none',
           }}>
             Your work
