@@ -14,9 +14,13 @@ const TABLE = 'submission_costs';
 
 /**
  * Anthropic API pricing (USD per million tokens). Captured 2026-07-15 from
- * anthropic.com/pricing. Token counts (below) are the source of truth — if
- * rates change, recalculate estimated_cost_usd from the stored counts rather
- * than trusting old rows' values.
+ * anthropic.com/pricing.
+ *
+ * ⚠️ STALE-PRICE WARNING: this is a hardcoded snapshot, not a live rate. Before
+ * this table is ever used for a real margin/pricing decision, re-check it
+ * against Anthropic's current pricing page. Token counts (below) are the true
+ * source of truth — if rates have moved, recalculate estimated_cost_usd from
+ * the stored counts rather than trusting old rows' values or this table as-is.
  */
 const PRICING_PER_MTOK: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4-6': { input: 3, output: 15 },
