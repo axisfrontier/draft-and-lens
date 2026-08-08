@@ -26,10 +26,12 @@
 5. Verify: `git log origin/main..HEAD --oneline` should be empty before firing hook
 
 ## Working directory (non-negotiable)
-This project lives at: `/Users/nenadkojic 1/Dropbox/Mac/Desktop/AI tool builds/Draft&Lens/draft-and-lens`
+This project lives at: `/Users/nenadkojic 1/Projects/Draft&Lens/draft-and-lens`
 
 Every bash command must be prefixed with:
-`cd "/Users/nenadkojic 1/Dropbox/Mac/Desktop/AI tool builds/Draft&Lens/draft-and-lens" &&`
+`cd "/Users/nenadkojic 1/Projects/Draft&Lens/draft-and-lens" &&`
+
+(The Dropbox path referenced in earlier sessions does not exist on disk — confirmed via `readlink -f` on 2026-08-08. Only the path above is real.)
 
 **Never touch codex-maths. Ever. It is a completely separate project in a different folder. If the shell resets to codex-maths between commands, ignore it — always prefix commands with the path above and work only in draft-and-lens.**
 
@@ -64,4 +66,7 @@ After firing the Vercel deploy hook, use the Chrome extension to confirm the liv
 
 ### Commits must be isolated and atomic
 One logical change per commit. Never bundle unrelated fixes. If a safety classifier outage blocks a commit, wait and retry — never skip tsc or the diff review.
+
+### Never do a full read-modify-write on .env.local
+Only single-line edits to a specific key, never a whole-file rewrite. The redaction layer turns secrets into the literal placeholder text `[SENSITIVE]` when read back into an AI session — a full-file read-modify-write risks writing that placeholder back out as if it were the real value, silently destroying the actual secret. This happened to `CLERK_SECRET_KEY` and several other keys in this file. Git cannot help recover from this: `.env.local` is gitignored, so there is no history to revert to.
 
