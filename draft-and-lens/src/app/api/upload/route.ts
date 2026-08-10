@@ -13,7 +13,7 @@ import { logSecurityEvent } from '../../../lib/security-log';
 /**
  * POST /api/upload — text extraction for binary manuscript formats.
  *
- * .txt, .md, .fountain and .fdx are read in the browser; they are already text.
+ * .txt, .md and .fountain are read in the browser; they are already text.
  * .docx and .pdf are not: they are binary containers, and the drop zone's
  * `FileReader.readAsText` returned mojibake for them rather than failing, which
  * is how an unreadable file reached the analysis screen. Those two formats come

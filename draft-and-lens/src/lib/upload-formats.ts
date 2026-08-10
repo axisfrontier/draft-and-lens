@@ -23,11 +23,18 @@ export interface UploadFormat {
   readonly transport: UploadTransport;
 }
 
+/**
+ * NOT listed, deliberately: `.fdx` (Final Draft). It is XML, so it passes the
+ * readable-text gate and reaches the analyst as raw markup — a reading degraded
+ * in a way nothing tells the writer. Silently degraded analysis is worse than
+ * an honest "not supported", so it is unadvertised until a real parser exists.
+ * Do not re-add it without extracting `<Paragraph>`/`<Text>` content the way
+ * .docx is extracted server-side. See SESSION_LOG.md, 2026-08-10.
+ */
 export const UPLOAD_FORMATS: readonly UploadFormat[] = [
   { ext: '.txt', label: '.TXT', transport: 'text' },
   { ext: '.md', label: '.MD', transport: 'text' },
   { ext: '.fountain', label: '.FOUNTAIN', transport: 'text' },
-  { ext: '.fdx', label: '.FDX', transport: 'text' },
   { ext: '.docx', label: '.DOCX', transport: 'server' },
   { ext: '.pdf', label: '.PDF', transport: 'server' },
 ];
