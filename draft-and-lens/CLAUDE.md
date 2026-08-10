@@ -27,7 +27,11 @@
 
 ### Repo hygiene
 - Never commit to codex-maths in a draft-and-lens session.
-- Always prefix bash commands with `cd "/Users/nenadkojic 1/Dropbox/Mac/Desktop/AI tool builds/Draft&Lens/draft-and-lens" &&`
+- Always prefix bash commands with `cd "/Users/nenadkojic 1/Projects/Draft&Lens/draft-and-lens" &&`
+  (The Dropbox path this file previously named does not exist on disk — confirmed via `readlink -f` on 2026-08-08, corrected here 2026-08-10.)
+
+### When Bash is unavailable, hand off the exact command
+Run terminal commands yourself whenever Bash works. If Bash is genuinely down (classifier outage, tool failure), give Nenad the exact command to run manually rather than waiting — then continue from the output he pastes back.
 
 ### Governing docs (read these, don't act on them as build instructions)
 - `DraftAndLens_Architecture_v6.md`

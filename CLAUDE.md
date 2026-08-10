@@ -41,13 +41,21 @@ Every bash command must be prefixed with:
 - `ThinkingDiscipline.md`
 - `DraftAndLens.html` (prototype — IP source of truth)
 
+## Session Discipline
+
+### No record, no proceed
+Claude Code has no memory across sessions except what's actually written into the repo (code, this file, `SESSION_LOG.md`). Decisions get made either in chat with Claude (claude.ai, not Claude Code) or in a separate Claude Code session, and don't always make it into the repo before being relayed as settled. If Nenad says something was "already agreed" or "already exists" and there's no record of it in the repo, stop and ask for the source before proceeding. Don't assume he's wrong, but don't take it on faith either — an unrecorded decision is indistinguishable from an unfounded claim without a repo record.
+
+### Write decisions down at the moment they're made
+Any decision made in a session that will matter to a future session — a scoping call, a design choice, "build X not Y," a deferred item — gets written into `SESSION_LOG.md` (or this file's Pending Decisions section) the moment it's made, not reconstructed from memory afterward. This applies equally to decisions made directly in a Claude Code session and decisions relayed from a claude.ai chat — both need to land in the repo the same way.
+
 ## Lessons learned — permanent rules (never repeat these mistakes)
 
 ### Use the Chrome extension first
 When verifying anything visual or live on draftandlens.com — always use the Chrome extension to inspect the live site directly. Never ask Nenad to do a live test when the extension can do it. Never reason from code alone when the live site can be checked.
 
-### Never ask Nenad to run terminal commands
-Code must run all terminal commands itself. Never ask Nenad to paste or run anything in Terminal unless Bash is genuinely down (classifier outage confirmed). If Bash is unavailable, state that explicitly and wait — do not hand off commands for Nenad to run manually.
+### When Bash is unavailable, hand off the exact command
+Run terminal commands yourself whenever Bash works. But if Bash is genuinely down (classifier outage, tool failure), do NOT state the problem and wait — give Nenad the exact command to run manually, in a copy-pasteable block, and continue from the output he pastes back. Blocking on a dead tool is slower than handing off. (Supersedes the earlier "never ask Nenad to run terminal commands" rule, removed 2026-08-10 at his instruction.)
 
 ### Staging/analysis phase must always be fully styled
 The analysis phase (stage pills active, report streaming) must show the full design system at all times — warm paper background, correct fonts, tokens. A bare/unstyled analysis phase is a regression. Check this after every deploy that touches page.tsx or layout.tsx.
