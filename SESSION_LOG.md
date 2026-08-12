@@ -20,18 +20,55 @@ Format per entry: date, source (Claude Code session / relayed from claude.ai cha
 - **Spidergram fix-vs-cut: still undecided**, needs more tester data than Noel alone. Building collapsible is fine either way.
 - **Differentiator messaging prominence: start subtle**, flag back before escalating to anything more marketing-like.
 
+### Spell-check (handover item 3) — scope ruled, engine written, NOT verified or committed
+
+**Nenad's scope ruling, 2026-08-10:** flag only high-confidence real misspellings (common English words spelled wrong). Skip anything that could plausibly be an invented name, dialect, or deliberate stylistic choice. **When in doubt, don't flag — false positives are worse than missed errors for this tool.** Writer-marked "known" terms worth including if clean; otherwise ship conservative first.
+
+**Architecture decision that follows from it: a curated known-misspellings list, NOT a dictionary.**
+A dictionary flags every word it does *not* contain — in a novel that means every invented name, place and rendering of dialect, i.e. a wall of false positives about the writer's own vocabulary. Inverting it means a word is only flagged when positively identified as wrong, and anything unfamiliar is silently ignored.
+*Invariant that makes it safe:* **every key in the list is a non-word in English**, so no valid word can ever be flagged. Anything that is a real word in any register (British, American, archaic, dialect) is excluded by construction — choosing between two real words is grammar, which is out of scope.
+*Consequence worth noting:* this largely **obviates the "mark as known" feature** — invented terms are never candidates in the first place, so there is nothing to suppress. Recommend shipping without it and seeing whether anyone asks.
+
+**Written:** `src/lib/spelling.ts` — `findMisspellings(text)`, ~120 curated entries, no IP, no dependency, importable client or server. Two guards: the list itself, and skipping capitalised occurrences that don't open a sentence (so a character named "Wisper" is never corrected to "whisper"). Documents its deliberately-excluded candidates and why (`judgment`/`judgement`, `strait`, `breath`/`breathe`, `agin`, `discreet`/`discrete`, `its`/`it's`).
+**Status: UNVERIFIED AND UNCOMMITTED.** `tsc` never ran — Bash was refused throughout. No caller yet; surfacing it in the UI is deliberately a separate chunk, because that touches the report sections and the 26-link sidebar contract and needs render verification.
+*A first draft of this file contained three defects, caught on self-review before this note: a stray Cyrillic-character key, an over-engineered dead "placeholder" mechanism, and `agin → again` — dialect, and a direct violation of the module's own invariant. Worth recording as evidence the invariant earns its keep.*
+
+### Scoping findings, 2026-08-10 — handover items 4 and 7
+
+**Item 4 (colour/font contrast) appears ALREADY DONE, undeployed — same pattern as item 2.**
+Commit `6fc6850` ("fix(a11y): raise contrast and type scale on dark-surface labels") covers `(app)/page.tsx`, `beta-gate/page.tsx`, `nav/SiteNav.tsx`. The fixes are present in the working tree — `page.tsx` carries the measured comments (`--label-amber` 4.31:1 → `--amber-l` 6.46:1 at line ~320; `--ink-faint` 3.30:1 → `--ink-soft` 6.66:1 on the paper overlay at ~418; the upload-error message raised to `--paper` at ~743). Nav type scale raised from .5–.58rem to .64–.72rem, which was Noel's "too small to read" point.
+*Unverified:* whether report-surface components (`ReportView` and children) also need it. They sit on the paper background, so the dark-surface failure mode is less likely, but nobody has measured them.
+*Action:* deploy and check with the Chrome extension before treating item 4 as closed. Do not rebuild it.
+
+**Item 7 (spidergram/pacing chart) — components located.**
+- **Spidergram** = `RadarChart`, rendered inside `components/analysis/ScoresDashboard.tsx` ("Editorial dashboard → Craft balance"), alongside the tradition-alignment bars.
+- **Pacing chart** = `components/analysis/StoryArc.tsx` — Tension/Pace/Emotion over beats. It **already has a toggleable legend**, so there is an established interaction idiom to match rather than invent.
+*Design interaction that must be handled, not discovered later:* the sidebar contract is 26 links, of which **Dashboard is 2**. If a section can collapse, a sidebar link pointing into collapsed content scrolls to nothing. Collapse must therefore default to **expanded**, and clicking a sidebar link into a collapsed section must auto-expand it. That makes this slightly more than wrapping a `<details>` around the chart.
+*Still not decided, per standing instruction:* fix-vs-cut. Collapsible only.
+
 ### Commands blocked by the Bash classifier outage on 2026-08-10 — run when convenient
 
-1. **Deploy.** Nothing from 2026-08-10 is live yet; `origin/main` is at `1337565` but no deploy has fired. Needs the Vercel hook on the clipboard:
-   `cd "/Users/nenadkojic 1/Projects/Draft&Lens" && HOOK="$(pbpaste)" && case "$HOOK" in https://api.vercel.com/v1/integrations/deploy/*) curl -X POST "$HOOK";; *) echo "REFUSING: not a Vercel deploy hook";; esac`
-   A first attempt was correctly **refused by the guard** — the clipboard held something else at the time.
-2. **Delete four stray empty files** (confirmed zero-byte, stray shell redirects):
+1. **Deploy — still not fired**, Bash refused on every attempt including with Nenad present and approving. Nothing from 2026-08-10 is live: `origin/main` is at `7d19e8c`. **Found a better path tonight: the hook is already saved on disk**, gitignored, no clipboard needed:
+   `cd "/Users/nenadkojic 1/Projects/Draft&Lens" && git log origin/main..HEAD --oneline && curl -sS -X POST "$(cat "draft-and-lens/.deploy-hook")" && echo " === DEPLOY FIRED ==="`
+   (`draft-and-lens/.deploy-hook` and `draft-and-lens/.vercel-deploy-hook` hold identical content — same project/token, just an uncleaned duplicate. Either works; Nenad may want to delete the duplicate at some point, not urgent.)
+   Original clipboard-based command, now superseded: `cd "/Users/nenadkojic 1/Projects/Draft&Lens" && HOOK="$(pbpaste)" && case "$HOOK" in https://api.vercel.com/v1/integrations/deploy/*) curl -X POST "$HOOK";; *) echo "REFUSING: not a Vercel deploy hook";; esac`
+2. **Delete four stray empty files.** All four verified zero-byte individually (`Fetched`, `main`, `next`, `draft-and-lens@0.1.0`) — stray shell redirects, safe to remove:
    `cd "/Users/nenadkojic 1/Projects/Draft&Lens/draft-and-lens" && rm -f Fetched main next "draft-and-lens@0.1.0"`
 3. **Stop git paging** (the pager swallowed several sessions' worth of output today):
    `cd "/Users/nenadkojic 1/Projects/Draft&Lens" && git config core.pager cat`
 4. **graphify query** for the continuity-ledger architecture — never ran (classifier down). The design was written from direct reads of `readings.ts`, `analyse/route.ts` and the upload path instead, so it is grounded in the actual code, but a graph query may surface call sites those reads missed.
-5. **Commit the two uncommitted files** (design doc + this log) — written but never committed, Bash was refused:
-   `cd "/Users/nenadkojic 1/Projects/Draft&Lens" && git add DraftAndLens_ContinuityLedger_Design_v1.md SESSION_LOG.md && git commit -m "docs: continuity ledger design v1 for review; log blocked commands and retention finding" && git push origin main`
+5. ~~Commit the design doc + this log~~ — **DONE**, Bash recovered briefly. Committed and pushed as `7d19e8c` (design v1.2). This log's own later edits are uncommitted again; fold them into the next commit.
+6. **Verify and commit the spell-check engine** — written, never type-checked:
+   `cd "/Users/nenadkojic 1/Projects/Draft&Lens/draft-and-lens" && npx tsc --noEmit && npm run build && cd "/Users/nenadkojic 1/Projects/Draft&Lens" && git add draft-and-lens/src/lib/spelling.ts SESSION_LOG.md && git commit -m "feat(spelling): conservative known-misspelling detector (no UI yet)" && git push origin main`
+7. **KEY ROTATION — status as of 2026-08-12, done by Nenad directly in Vercel/provider dashboards (Claude has no dashboard access):**
+   - ✅ **Anthropic** — rotated in Vercel, redeployed, **verified end-to-end**: an Analyse run completed and streamed back a full reading.
+   - ✅ **Supabase `service_role`** — rotated in Vercel, redeployed, **verified end-to-end**: the same reading saved and appeared correctly in "Your work" after refresh.
+   - ❌ **Clerk `CLERK_SECRET_KEY` — NOT yet rotated.** Still on its original value; sign-in has been working throughout tonight's testing only because this key was never touched. This is the one that actually protects authentication and is the most important of the three still open.
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Clerk publishable key) was also rotated — lower priority since it's meant to be public, but done.
+   - **Still to do once `CLERK_SECRET_KEY` is rotated:** go back to Anthropic, Clerk, and Supabase's own dashboards and delete/revoke the *old* key values. Rotating alone doesn't close the exposure while the old key can still authenticate — deletion is the step that does.
+
+**Finding, worth carrying into the launch checklist: the Supabase project was PAUSED (Free tier auto-pause after inactivity) when rotation started tonight.**
+Data was intact — Supabase's own pause screen confirms nothing is lost — but this means Supabase calls had likely been silently failing in production for a while before tonight, with no visible symptom, because `readings.ts` is deliberately written so every Supabase call degrades gracefully on failure (falls back to an ordinary fresh reading, nothing stored, no error shown). A user's saved works, revision history, and reading library could have simply stopped saving with nobody noticing — the exact blind spot graceful degradation creates. Resumed manually mid-rotation; confirmed working via the same Analyse-then-check-works-list test. **Action for later:** decide whether Supabase needs to move off Free tier before paid launch, since a paused database in production is a launch-blocking failure mode that produces zero error signal.
 
 ---
 
