@@ -9,6 +9,17 @@ Format per entry: date, source (Claude Code session / relayed from claude.ai cha
 ## Pending Decisions
 
 - **Continuity ledger (item 1): design at v1.2, AWAITING FINAL REVIEW, not built.** See `DraftAndLens_ContinuityLedger_Design_v1.md`. Eight open questions in its §11 still need Nenad's judgement. Do not start building until reviewed.
+- **Two findings from Nenad reviewing the live report page, 2026-08-12 — QUEUED, lower priority than `spelling.ts` and the ledger §11 review. Do not start until both of those are done.**
+
+### Queued item A — "Notes on the text" label without direction
+**Finding:** annotations name a technique but stop there — e.g. *"Mangled weather, bluff and blustery, yawned overhead like a sea without a shore"* gets flagged **lyrical** and nothing more. A useful note diagnoses *why* it works and gives *direction*: what makes the image effective, and where else in the piece the same technique could be reused or is currently missing.
+**Ruling:** every note must do **diagnosis + direction**, not labelling alone.
+**Located, not yet reviewed:** the annotation copy renders in `src/components/analysis/ReportView.tsx`; the underlying prompt lives in `src/prompts/diagnostic.ts` (confirmed via grep — contains the `lyrical` category). This is a prompt-engineering fix, most likely in `diagnostic.ts`'s instructions for what an annotation must contain, not a rendering change. Not yet read in full — graphify query attempted first per the codebase-question rule but was blocked by the same tool outage as everything else tonight; grep used as a fallback to at least locate the files.
+
+### Queued item B — duplicate copy above/below the story title
+**Finding:** on the report page, two pieces of copy sit above and below the title (example title: "A fine breakfast.") and appear to do the same job rather than distinct ones.
+**Ruling:** review both; either merge them, or make each clearly distinct in function (e.g. one is genre/tradition metadata, the other a plain reader-facing summary) — not both doing the same thing.
+**Not yet located precisely** — same `ReportView.tsx` area as item A almost certainly, but the exact two elements haven't been identified. Needs a proper read of the component, not just a grep hit.
 
 **Rulings on the continuity ledger, 2026-08-10 (Nenad):**
 1. **v1 scope narrowed** to names, physical descriptions, stated ages/dates, explicit relationships. Timeline and geography deferred until this is proven low-noise. Design line that keeps stated dates in while keeping timeline out: *compare assertions, never compute chronology.*
