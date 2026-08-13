@@ -30,7 +30,20 @@ The notes are **not separately generated**. Brain 2 (the analyst) writes its rep
 
 **Status: UNVERIFIED, UNCOMMITTED.** `tsc` refused repeatedly by the classifier outage. It is a string-only change to a prompt constant, so type risk is near zero, but it has not been checked and no reading has been run against it.
 
-### Queued item B — duplicate copy above/below the story title
+### Item B — investigated 2026-08-12, BLOCKED ON NENAD, no code changed
+**Located:** the title block is `src/components/analysis/ReportView.tsx:391–471` (`id="sec-title"`).
+- **Above the title** (line 399): `traditionLine` — `[diagnostic.tradition, diagnostic.register].join(' · ')`, uppercase mono. Metadata.
+- **Below the title** (line 434): `diagnostic.summary` — Brain 1's "one-sentence summary of what the work is about", prose with a left rule.
+
+**Key finding: the two are ALREADY functionally distinct in the code** — exactly the metadata-vs-plain-summary split Nenad proposed as the fix. So the observed duplication is not structural and must not be "fixed" by restructuring the layout.
+
+**Most likely cause — content collapse, not layout.** `PASS1_BASE` in `src/prompts/diagnostic.ts` asks Brain 1 for two adjacent one-sentence fields: `ambition` ("what the work is trying to achieve") and `summary` ("what the work is about"). These are close enough that the model can write a `summary` which restates tradition/register rather than describing content — at which point it reads as an echo of the line directly above it. Note `ambition` is **not rendered** in the title block at all; only `summary` is.
+
+**Proposed fix if confirmed:** constrain `summary` in `PASS1_BASE` to content only (what happens / what it concerns), explicitly forbidding restatement of tradition, register or ambition. Prompt change, not a layout change.
+
+**Blocked:** asked Nenad for the two actual rendered strings from his "A fine breakfast." report, to confirm content-collapse vs. a genuine presentation problem before changing anything. Do not guess at which layer to fix.
+
+### Superseded original note — duplicate copy above/below the story title
 **Finding:** on the report page, two pieces of copy sit above and below the title (example title: "A fine breakfast.") and appear to do the same job rather than distinct ones.
 **Ruling:** review both; either merge them, or make each clearly distinct in function (e.g. one is genre/tradition metadata, the other a plain reader-facing summary) — not both doing the same thing.
 **Not yet located precisely** — same `ReportView.tsx` area as item A almost certainly, but the exact two elements haven't been identified. Needs a proper read of the component, not just a grep hit.
