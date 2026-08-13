@@ -61,10 +61,18 @@ Run terminal commands yourself whenever Bash works. But if Bash is genuinely dow
 The analysis phase (stage pills active, report streaming) must show the full design system at all times — warm paper background, correct fonts, tokens. A bare/unstyled analysis phase is a regression. Check this after every deploy that touches page.tsx or layout.tsx.
 
 ### Token budget — check before shipping long prompts
-Before any analyst prompt change, verify maxTokens is high enough to return a full 13-section report. A token cap that silently truncates sections is a regression. Current target: 16000 tokens for top tier. Always verify all 13 sections render after any prompt change.
+Before any analyst prompt change, verify maxTokens is high enough for a full report at the top tier. A cap that silently truncates sections is a regression. Current target: 16000 tokens, set per-tier in `adaptiveAnalystConfig` (`src/ai/config.ts`) — NOT in `TOKEN_LIMITS`.
+
+**Section count is not a valid test.** Since 2026-07-23 section inclusion is evidence-gated (Principle 26, see `src/prompts/report/story-structure.ts`): the model includes a section only where the text earns it, so a short piece legitimately produces far fewer sections than a long one. Counting to a fixed number will produce false alarms.
+
+**Distinguishing truncation from gating** — the two look identical mid-stream, because `ReportSkeleton` renders the *whole* expected section list as placeholders and fills each as its `## HEADING` arrives. Gaps during streaming mean nothing. The real test: reload the FINISHED report. A section still absent was never written; sections that populate were just streaming. Then check that the sections that DID appear are complete rather than cut off mid-sentence — that is what truncation actually looks like.
 
 ### Sidebar links — always verify after any ReportView change
-The sidebar must show all sections: Overview (3 links), Dashboard (2), Analysis (01–13 = 13 links), Action (3), Reference (5). Total: 26 links. Verify this after every ReportView.tsx change.
+The fixed groups are Overview (3), Dashboard (2), Action (3), Reference (5) = 13 constant links. **The Analysis group is variable by design** — derived from `parsed.sections` in `ReportView.tsx`, so it tracks whatever the evidence-gated report contained.
+
+Story mode defines 13 sections, but `parseReport` lifts `WHAT TO REVISE` out into its own callout, so the Analysis maximum is **12** and the overall maximum is **25**. A count below that is not in itself a regression.
+
+What to actually verify after a ReportView change: every sidebar link resolves to a section that exists, and no section rendered in the body is missing from the sidebar. Sidebar/body agreement is the invariant — not a magic total.
 
 ### No margin stacking between components
 Each component owns its own bottom spacing only — never top margin. When adding bottom spacing to one component, check if the next component has a matching top margin that will double the gap.
