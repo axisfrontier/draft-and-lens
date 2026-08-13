@@ -11,10 +11,24 @@ Format per entry: date, source (Claude Code session / relayed from claude.ai cha
 - **Continuity ledger (item 1): design at v1.2, AWAITING FINAL REVIEW, not built.** See `DraftAndLens_ContinuityLedger_Design_v1.md`. Eight open questions in its §11 still need Nenad's judgement. Do not start building until reviewed.
 - **Two findings from Nenad reviewing the live report page, 2026-08-12 — QUEUED, lower priority than `spelling.ts` and the ledger §11 review. Do not start until both of those are done.**
 
-### Queued item A — "Notes on the text" label without direction
-**Finding:** annotations name a technique but stop there — e.g. *"Mangled weather, bluff and blustery, yawned overhead like a sea without a shore"* gets flagged **lyrical** and nothing more. A useful note diagnoses *why* it works and gives *direction*: what makes the image effective, and where else in the piece the same technique could be reused or is currently missing.
-**Ruling:** every note must do **diagnosis + direction**, not labelling alone.
-**Located, not yet reviewed:** the annotation copy renders in `src/components/analysis/ReportView.tsx`; the underlying prompt lives in `src/prompts/diagnostic.ts` (confirmed via grep — contains the `lyrical` category). This is a prompt-engineering fix, most likely in `diagnostic.ts`'s instructions for what an annotation must contain, not a rendering change. Not yet read in full — graphify query attempted first per the codebase-question rule but was blocked by the same tool outage as everything else tonight; grep used as a fallback to at least locate the files.
+### Item A — "Notes on the text" label without direction — FIX WRITTEN 2026-08-12, NOT YET VERIFIED OR COMMITTED
+**Finding:** annotations name a technique but stop there — e.g. *"Mangled weather, bluff and blustery, yawned overhead like a sea without a shore"* gets flagged **lyrical** and nothing more.
+**Ruling (Nenad):** every note must do **diagnosis + direction**, not labelling alone.
+
+**CORRECTION to the earlier entry in this log:** it claimed the annotation prompt lived in `src/prompts/diagnostic.ts` "confirmed via grep." That was wrong — a false lead. `diagnostic.ts` is Brain 1 and the `lyrical` match there is an example in its **register** list (the tonal register of the whole piece), not the label attached to a line. Recording the error because the grep looked like confirmation and wasn't.
+
+**How annotations actually work — worth knowing before touching this area again:**
+The notes are **not separately generated**. Brain 2 (the analyst) writes its report in prose and wraps verbatim quotes in `⟦…⟧`; `extractAnchors` in `src/lib/anchor.ts` then scrapes *the sentence surrounding each bracketed quote* and presents that as the margin note. So note quality is entirely a function of how the analyst phrases the sentence it puts the quote in — there is no separate "annotation prompt" to edit.
+`ANCHOR_DIRECTIVE` (`src/prompts/fragments/anchor-directive.ts`) is **mechanics only** — how to bracket, nothing about note content.
+`anchor.ts:86` already drops an anchor when fewer than 12 characters remain after removing the quote ("no note is better than a fake note") — a crude floor that Nenad's example clears while still being useless.
+
+**Root cause:** the analyst prompt already has `TEACH THE MOVE, NEVER FIX THE WORK`, which demands exactly diagnosis + direction — but it is scoped to *"MANDATORY FOR LINE-LEVEL CRAFT NOTES… where a note names a line-level craft **problem**."* Nothing governed notes that name a technique or a **strength**, so those labelled and stopped. Nenad's example is a strength note, falling straight through the gap.
+
+**Fix written:** new rule `NAME THE MECHANISM, THEN THE REACH` added to `src/prompts/analyst.ts`, placed directly after `TEACH THE MOVE` as its deliberate counterpart (that one governs problems, this governs strengths). Requires (1) MECHANISM — what specifically makes it work, not the adjective, with craft terms glossed per Principle 27; (2) REACH — another moment in the piece where the same instrument is already live, or one where its absence is felt and the move is available. Uses Nenad's own weather line as the wrong/right example. Includes an explicit guard against manufacturing reach where none exists, and against inventing strengths to have something to praise — the same false-positive discipline as the continuity ledger.
+
+**Token-budget check (per the standing rule on analyst prompt changes):** `adaptiveAnalystConfig` in `src/ai/config.ts` sets `maxTokens: 16000` at **every** tier, matching the documented target — no cap change needed. **But this change makes each note longer, which is exactly the truncation risk that rule exists for.** After deploying, verify all 13 sections still render and the sidebar still shows its full link count. If sections start dropping, the cap — not the rule — is what needs revisiting.
+
+**Status: UNVERIFIED, UNCOMMITTED.** `tsc` refused repeatedly by the classifier outage. It is a string-only change to a prompt constant, so type risk is near zero, but it has not been checked and no reading has been run against it.
 
 ### Queued item B — duplicate copy above/below the story title
 **Finding:** on the report page, two pieces of copy sit above and below the title (example title: "A fine breakfast.") and appear to do the same job rather than distinct ones.
