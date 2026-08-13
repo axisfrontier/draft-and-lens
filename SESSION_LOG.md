@@ -37,11 +37,17 @@ The notes are **not separately generated**. Brain 2 (the analyst) writes its rep
 
 **Key finding: the two are ALREADY functionally distinct in the code** — exactly the metadata-vs-plain-summary split Nenad proposed as the fix. So the observed duplication is not structural and must not be "fixed" by restructuring the layout.
 
-**Most likely cause — content collapse, not layout.** `PASS1_BASE` in `src/prompts/diagnostic.ts` asks Brain 1 for two adjacent one-sentence fields: `ambition` ("what the work is trying to achieve") and `summary` ("what the work is about"). These are close enough that the model can write a `summary` which restates tradition/register rather than describing content — at which point it reads as an echo of the line directly above it. Note `ambition` is **not rendered** in the title block at all; only `summary` is.
+**HYPOTHESIS OF "CONTENT COLLAPSE" WAS WRONG — recorded so nobody re-runs it.** I predicted Brain 1 was writing a `summary` that restated tradition/register. Nenad supplied the two real strings and they share no content at all: the top line is craft classification, the bottom is plot. The summary was fine.
 
-**Proposed fix if confirmed:** constrain `summary` in `PASS1_BASE` to content only (what happens / what it concerns), explicitly forbidding restatement of tradition, register or ambition. Prompt change, not a layout change.
+**ACTUAL CAUSE — field length, not content overlap.** Brain 1 returned whole paragraphs in `tradition` and `register`. Real example:
+`tradition` = *"Magical realism / literary fabulism — a contemporary fable set within a circus world, with secondary markers of near-future speculative fiction (the 2032 London setting, 'life-extended geriatric', 'destitute-inspired fashion') functioning as atmospheric texture rather than world-building premise."*
+`register` = *"Lyrical and warmly oblique — elevated in its descriptive passages, gently comic in dialogue, humane in its narrative gaze."*
+`traditionLine` joins those two and renders them uppercase mono at `.72rem` with `.22em` letter-spacing — styling built for something like `MAGICAL REALISM · LYRICAL AND WARMLY OBLIQUE`. The result is an essay in wide-tracked capitals above the title. It reads as duplicative because both it and the summary are large blocks of descriptive prose bracketing the title, not because they say the same thing.
 
-**Blocked:** asked Nenad for the two actual rendered strings from his "A fine breakfast." report, to confirm content-collapse vs. a genuine presentation problem before changing anything. Do not guess at which layer to fix.
+**Fix applied to `src/prompts/diagnostic.ts` (`PASS1_BASE`):** hard six-word limits on `tradition` and `register`, with all qualification, secondary markers and evidence pushed to `formNotes`. This was already the design intent — the prompt said *"if it blends two, name the dominant one and note the second in formNotes"* — but nothing enforced brevity, so the model ignored it.
+**Costs the analyst nothing:** `formNotes` is passed to Brain 2 in full (`analyst.ts:185`), so the nuance still reaches the reading. It also improves the ScoresDashboard alignment caption, which interpolates `tradition` into the sentence "how each element is serving …" — currently absurd with a paragraph in it.
+**Deliberately NOT done:** no layout change (the two elements are correctly distinct already), and no render-side length cap. A defensive cap on `traditionLine` is a reasonable follow-up if the model still over-runs, but it would mask a prompt-compliance problem rather than fix it, and it needs visual verification. Nenad's call.
+**Status: UNVERIFIED, UNCOMMITTED** — `tsc`/build refused by the classifier outage.
 
 ### Superseded original note — duplicate copy above/below the story title
 **Finding:** on the report page, two pieces of copy sit above and below the title (example title: "A fine breakfast.") and appear to do the same job rather than distinct ones.
