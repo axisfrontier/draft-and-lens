@@ -49,6 +49,21 @@ The notes are **not separately generated**. Brain 2 (the analyst) writes its rep
 **Deliberately NOT done:** no layout change (the two elements are correctly distinct already), and no render-side length cap. A defensive cap on `traditionLine` is a reasonable follow-up if the model still over-runs, but it would mask a prompt-compliance problem rather than fix it, and it needs visual verification. Nenad's call.
 **Status: COMMITTED `58fb0bc`, DEPLOYED, VERIFIED LIVE 2026-08-13.** The tradition banner now reads *"Reading this as near-future literary magical realism — warm, oblique, quietly fantastical"* — a short label, no paragraph in tracked capitals. The ScoresDashboard alignment caption also reads correctly again ("how each element is serving this work's tradition"), confirming the knock-on fix.
 
+### Spell-check UX — WRITTEN 2026-08-13, UNVERIFIED, UNCOMMITTED
+Nenad's ruling: inline highlighting in the text itself, hover popup with the suggestion, click accepts, hover-out dismisses with a small delay. He explicitly asked that the `⟦…⟧` anchor collision be solved rather than dodged by putting results elsewhere.
+
+**The anchor collision is solved, and it was never the hard part.** `segments` from `resolveAnchors` carry no absolute offsets, but they concatenate to the submitted text, so offsets recover by accumulation; `findMisspellings` already reports absolute indices. `mergeRuns` splits at every boundary from both systems, producing runs that belong to at most one anchor and at most one flag. Overlap in any combination — misspelling inside a quote, outside one, or straddling its edge — falls out naturally. A flag split across a segment boundary yields two runs sharing a `flagIndex`; only the first carries `flagStart`, so accepting substitutes the correction once instead of duplicating it.
+
+**The real conflict was click-to-replace, and it was a product-shape problem, not a rendering one.** D&L does not hold the manuscript. Mutating the displayed text would desync from `source_text` in Supabase (which revision-matching diffs against), invalidate the reading generated from the original, and shift every character offset after it — breaking anchor positions in the same view. Agreed resolution: accepting a correction updates the view only, accumulating into a running set; the writer then copies a corrected copy back to their own draft. Stored text is never touched.
+
+**Files:** new `src/components/analysis/SpellingMark.tsx` (highlight + hover popup); `AnchoredView.tsx` gains `mergeRuns`, `applyCorrections`, accepted-set state, and the export row.
+
+**Colour decision, flagged deliberately:** this uses `--error` (red) where the product otherwise avoids it. Narrow and intentional — Tradition Alignment avoids red because craft is not right-or-wrong, whereas a misspelling *is* wrong by construction (every entry in MISSPELLINGS is a non-word). The three ambers in this view are already taken by anchor spans, glossary terms and the active note; a fourth would be illegible. Accepted corrections turn green. **If Nenad dislikes red here, it is one constant in `SpellingMark.tsx`.**
+
+**Hover-dismiss:** ~260ms grace on mouse-out and the popup keeps its own hover alive, so the cursor can travel from word to popup without it vanishing — the standard pattern, and why no manual close button is needed. Focus/blur and Enter/Space/Escape mirror it for keyboard.
+
+**Status: UNVERIFIED, UNCOMMITTED** — `tsc`/build refused repeatedly by the classifier outage. Render change; needs a real reading with a typo in it to confirm the highlight lands on the right word, the popup is reachable, and an accepted correction substitutes exactly once.
+
 ### Streaming-view fixes (ReportSkeleton) — WRITTEN 2026-08-13, UNVERIFIED, UNCOMMITTED
 Nenad reported two distinct streaming symptoms: permanent grey placeholders that never fill, and content that renders → disappears → renders again. Two separate causes, both in `ReportSkeleton.tsx`, both fixed together.
 
