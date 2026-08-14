@@ -49,6 +49,23 @@ The notes are **not separately generated**. Brain 2 (the analyst) writes its rep
 **Deliberately NOT done:** no layout change (the two elements are correctly distinct already), and no render-side length cap. A defensive cap on `traditionLine` is a reasonable follow-up if the model still over-runs, but it would mask a prompt-compliance problem rather than fix it, and it needs visual verification. Nenad's call.
 **Status: COMMITTED `58fb0bc`, DEPLOYED, VERIFIED LIVE 2026-08-13.** The tradition banner now reads *"Reading this as near-future literary magical realism — warm, oblique, quietly fantastical"* — a short label, no paragraph in tracked capitals. The ScoresDashboard alignment caption also reads correctly again ("how each element is serving this work's tradition"), confirming the knock-on fix.
 
+### Streaming-view fixes (ReportSkeleton) — WRITTEN 2026-08-13, UNVERIFIED, UNCOMMITTED
+Nenad reported two distinct streaming symptoms: permanent grey placeholders that never fill, and content that renders → disappears → renders again. Two separate causes, both in `ReportSkeleton.tsx`, both fixed together.
+
+**Cause 1 — phantom placeholders (documented, pre-existing since 2026-07-25).**
+`reportSkeletonSections.ts` lists **every** heading a mode can produce (13 for story), because it cannot know in advance which the model will earn. Evidence-gating (Principle 26) means a short piece earns ~6, so the other ~7 sit blank for the whole run and then vanish when `ReportView` mounts. That file's own header documents this as expected. **Important for the open revert question: this predates the annotation fix (`3e594f7`) by three weeks — the visible gaps are NOT caused by that change.**
+*Fix:* sections stream in document order, so once a later heading arrives, an earlier missing one is provably skipped. Drop its placeholder at that point. Applied to the derivation, not the render sites, so the skeleton's sidebar and body cannot disagree — the invariant CLAUDE.md now names.
+
+**Cause 2 — flicker (new finding, root cause identified).**
+`findBody` re-parsed the **entire partial buffer** on every stream delta and matched headings by exact string equality. Two failure modes:
+(a) a heading arriving character-by-character momentarily equals a shorter heading — `## THEME` before `## THEMATIC …` — so a body renders under the wrong heading and then disappears;
+(b) `parseReport`'s `place()` routes on heading **content**, so `## WHAT` falls into `sections[]` and renders as a numbered section, then jumps out into the WHAT TO REVISE callout once the heading completes — taking its number with it and reshuffling every section after it.
+*Fix:* parse only up to the last completed section (`lastIndexOf('\n## ')`). A heading is only trustworthy once the next `## ` exists. The in-flight tail stays a placeholder a moment longer, which is what a placeholder is for.
+
+**Confirmed safe for the finished report:** `ReportView` re-parses the complete text independently and shares none of this code path. These changes cannot alter a completed reading — only the streaming view.
+
+**Status: UNVERIFIED, UNCOMMITTED** — `tsc`/build refused by the classifier outage. Render change, so it needs a real streaming run to confirm: watch that sections fill monotonically, nothing flickers out, and no blank placeholder survives past a later section filling.
+
 ### Tradition Alignment improvements — WRITTEN 2026-08-13, UNVERIFIED, UNCOMMITTED
 Nenad's request: (a) underline the six dimension labels with plain-language rollover glosses, using the same mechanism as Notes-on-text per Principle 27; (b) add a small coloured status dot left of each right-hand assessment label — green for landing well, amber for developing, explicitly **no red** because this is a read, not a mark scheme.
 

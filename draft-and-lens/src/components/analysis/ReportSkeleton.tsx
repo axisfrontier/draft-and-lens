@@ -86,11 +86,47 @@ export function ReportSkeleton({
   const pages = Math.max(1, Math.round(wordCount / 250));
   const modeLabel = mode === 'script' ? 'Film Script' : mode === 'treatment' ? 'Treatment' : mode === 'play' ? 'Stage Play' : 'Story';
 
-  const streamedSections = streamedText ? parseReport(streamedText).sections : [];
+  // FIX 1 — parse only up to the LAST COMPLETED section, never the in-flight tail.
+  //
+  // Re-parsing the whole buffer on every delta made sections flicker in and out:
+  //   (a) a heading arriving character-by-character momentarily equals a shorter
+  //       heading ("## THEME" before "## THEMATIC …"), so a body renders under the
+  //       wrong heading and then vanishes;
+  //   (b) parseReport's place() routes on heading CONTENT, so "## WHAT" lands in
+  //       sections[] and renders as a numbered section, then jumps out into the
+  //       WHAT TO REVISE callout once the heading completes — taking its number
+  //       with it and shifting every section after it.
+  // A heading is only trustworthy once the NEXT "## " exists, so we cut the buffer
+  // there. The trailing section simply stays a placeholder a moment longer, which
+  // is exactly what a placeholder is for.
+  const settledText = ((): string => {
+    if (!streamedText) return '';
+    const lastHeading = streamedText.lastIndexOf('\n## ');
+    return lastHeading === -1 ? '' : streamedText.slice(0, lastHeading + 1);
+  })();
+
+  const streamedSections = settledText ? parseReport(settledText).sections : [];
   const findBody = (label: string): string | null => {
     const match = streamedSections.find((s) => s.heading.trim().toUpperCase() === label.toUpperCase());
     return match && match.body.trim() ? match.body.trim() : null;
   };
+
+  // FIX 2 — drop placeholders for sections the model has provably skipped.
+  //
+  // Sections stream in document order, so once a LATER heading has arrived, any
+  // earlier heading still missing was omitted by evidence-gating (Principle 26)
+  // and is never coming. Left in place it sits blank for the whole run and then
+  // disappears when ReportView mounts — which reads as the page losing content.
+  // Filtering here (rather than at each render site) keeps the skeleton's sidebar
+  // and body in agreement, which is the invariant that actually matters.
+  const arrived = new Set(streamedSections.map((s) => s.heading.trim().toUpperCase()));
+  let furthestArrived = -1;
+  sections.forEach((label, i) => {
+    if (arrived.has(label.toUpperCase())) furthestArrived = i;
+  });
+  const visibleSections = sections.filter(
+    (label, i) => i >= furthestArrived || arrived.has(label.toUpperCase())
+  );
 
   const stickyTop = extraTopOffset
     ? `calc(var(--nav-h) + ${extraTopOffset}px)`
@@ -128,7 +164,7 @@ export function ReportSkeleton({
         <span style={sidebarLinkMuted}>Story arc</span>
 
         <div style={sidebarGroup}>Analysis</div>
-        {sections.map((label) => (
+        {visibleSections.map((label) => (
           <span key={label} style={sidebarLinkMuted}>{label}</span>
         ))}
 
@@ -277,8 +313,11 @@ export function ReportSkeleton({
             }}>Section by section breakdown</div>
           </div>
 
-          {/* Section placeholders — real headings; bodies fill in live as they stream */}
-          {sections.map((label, i) => {
+          {/* Section placeholders — real headings; bodies fill in live as they
+              stream. Sections proven skipped by evidence-gating are dropped, so
+              the page fills monotonically instead of leaving blanks that later
+              vanish. */}
+          {visibleSections.map((label, i) => {
             const body = findBody(label);
             return (
               <div key={label} style={{
