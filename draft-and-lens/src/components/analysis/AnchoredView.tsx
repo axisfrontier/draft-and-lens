@@ -98,6 +98,15 @@ export function AnchoredView({ report, text }: { report: string; text: string })
   const markRefs = useRef<Record<number, HTMLElement | null>>({});
   const noteRefs = useRef<Record<number, HTMLElement | null>>({});
 
+  // Hooks must run unconditionally on every render, so these — and the
+  // resolveAnchors call they depend on — sit above the empty-text early
+  // return below rather than after it.
+  const { segments, notes, orphans } = resolveAnchors(report, text);
+  // Regex scan over the whole manuscript — memoised so it does not re-run on
+  // every hover, note activation, or acceptance.
+  const flags = useMemo(() => findMisspellings(text), [text]);
+  const runs = useMemo(() => mergeRuns(text, segments, flags), [text, segments, flags]);
+
   if (!text.trim()) {
     return (
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.8rem', color: 'var(--ink-soft)', padding: '2rem' }}>
@@ -106,11 +115,6 @@ export function AnchoredView({ report, text }: { report: string; text: string })
     );
   }
 
-  const { segments, notes, orphans } = resolveAnchors(report, text);
-  // Regex scan over the whole manuscript — memoised so it does not re-run on
-  // every hover, note activation, or acceptance.
-  const flags = useMemo(() => findMisspellings(text), [text]);
-  const runs = useMemo(() => mergeRuns(text, segments, flags), [text, segments, flags]);
   // One count map shared across all notes + orphans, so a glossary term is
   // annotated at most once across the whole panel — mirrors FormattedBody's
   // per-body scoping for the main report sections.
