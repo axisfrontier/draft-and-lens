@@ -49,6 +49,19 @@ The notes are **not separately generated**. Brain 2 (the analyst) writes its rep
 **Deliberately NOT done:** no layout change (the two elements are correctly distinct already), and no render-side length cap. A defensive cap on `traditionLine` is a reasonable follow-up if the model still over-runs, but it would mask a prompt-compliance problem rather than fix it, and it needs visual verification. Nenad's call.
 **Status: COMMITTED `58fb0bc`, DEPLOYED, VERIFIED LIVE 2026-08-13.** The tradition banner now reads *"Reading this as near-future literary magical realism — warm, oblique, quietly fantastical"* — a short label, no paragraph in tracked capitals. The ScoresDashboard alignment caption also reads correctly again ("how each element is serving this work's tradition"), confirming the knock-on fix.
 
+### Tradition Alignment improvements — WRITTEN 2026-08-13, UNVERIFIED, UNCOMMITTED
+Nenad's request: (a) underline the six dimension labels with plain-language rollover glosses, using the same mechanism as Notes-on-text per Principle 27; (b) add a small coloured status dot left of each right-hand assessment label — green for landing well, amber for developing, explicitly **no red** because this is a read, not a mark scheme.
+
+**Both done in `src/components/analysis/ScoresDashboard.tsx`.**
+
+**Design decision — glosses defined locally, NOT added to `GLOSSARY`.** `glossary-data.ts` is the *detection set*: its own header says "adding a term here makes it legible everywhere in a reading", i.e. every occurrence gets auto-underlined throughout report prose. Of the six dimensions only `register` and `voice` already exist there; adding `form` in particular would litter every ordinary use of that very common word. `TermTooltip` takes `term` and `gloss` as props, so passing them directly gives an identical reader experience with no change to global detection. Glosses are written to say what **that row assesses**, not what the craft term means in the abstract — the reader's question at that table is "what is being judged?".
+
+**Judgement call flagged — two colours, five labels.** `scoreLabel` returns five values (Fully earned / Landing well / Developing / Needs attention / Not yet landing), but the request described two states. Split at score ≥ 7: the two positive labels green, the three below amber. No red at any level. If Nenad wants a third tier, the split lives in one function (`statusColour`).
+
+**Accessibility:** the dot carries `aria-hidden="true"` — the adjacent text already states the status, so the dot is decorative reinforcement rather than a second wordless signal read out to screen readers.
+
+**Status: UNVERIFIED, UNCOMMITTED** — `tsc`/build refused repeatedly by the classifier outage. This is a **render change**, so unlike the prompt edits it genuinely needs visual confirmation: check the dots align with the text baseline, the tooltip on the first row is not clipped by the caption above it, and the amber dashed underline reads correctly against the uppercase mono labels.
+
 ### Item A — VERIFIED LIVE 2026-08-13 (commit `3e594f7`)
 The `NAME THE MECHANISM, THEN THE REACH` rule is working in production. On the very line Nenad originally flagged, the reading now returns: *"The mechanism, 'yawned' gives the sky appetite… 'without a shore' refuses the reader a horizon, which is exactly right for a story about a young woman with nowhere to go."* Mechanism, not label. Elsewhere: *"specific nouns, an image that adds atmosphere the words alone can't carry."*
 
