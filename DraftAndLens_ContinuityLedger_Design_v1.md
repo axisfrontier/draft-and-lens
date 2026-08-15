@@ -1,9 +1,17 @@
-# Continuity Ledger — Design v1.2 (for review, not yet approved)
+# Continuity Ledger — Design v1.3 (§11 resolved — cleared to build)
 
-**Status:** proposal. Nothing built. Written 2026-08-10 for Nenad's review.
+**Status:** **approved for build.** All eight §11 open questions answered by Nenad 2026-08-15. Phase 1 + 2 cleared; nothing built yet at time of writing.
 **Source:** `DraftAndLens_Handover_2026-08-02.md` item 1 — "the priority build, not squeezed in alongside bug fixes." Answers Noel Lyons' third want-list item (flag contradictions against earlier chapters).
 
 **Why this feature and not another:** it is the one item on the tester's list that a raw Claude chat genuinely cannot do. A chat window has no persistent state across a manuscript; by chapter 12 it has forgotten chapter 2. This is the strongest available answer to "how is this better than pasting a chapter into Claude?"
+
+### Changes in v1.3 — 2026-08-15
+
+All eight §11 questions ruled on (see §11 for the answers as given). Three change the design body rather than merely unblocking it:
+
+6. **Frame declaration is removed** (ruling 1). §5.1 no longer asks the writer anything up front; the frame is inferred silently and corrected through dismissal (§5.5). This is a real weakening of the precision story — §5.1 called the declaration "the highest-leverage precision gain available" — and its knock-on effect on §5.4 and §5.7 is recorded as **open sub-question 1a**, which lands in phase 3, not phase 2.
+7. **Locks move into phase 2** (ruling 8), alongside the ledger view, so the view has a job before any flagging exists. §10 updated.
+8. **Timeline reasoning is promoted from "deferred" to next priority** (ruling 7) — it comes after phase 2, ahead of broader v2 work, because state locks are not honestly checkable without it.
 
 ### Changes in v1.2 — 2026-08-10
 
@@ -91,6 +99,8 @@ A writer uploads chapter 1, gets a reading. Next week, chapter 2. Today those ar
 
 **Recommendation: C.** The suggestion does the work; confirmation makes a wrong guess harmless and visible. A misgrouping caught at upload costs one click; a misgrouping *not* caught poisons every subsequent flag undiagnosably.
 
+**Ruling 2 (2026-08-15): C confirmed, with a hard constraint on its weight** — the confirm step must be a *single lightweight confirm/adjust*, not a multi-field form. One line stating the guess and one control to accept or change it. Combined with ruling 1 (no frame questions), upload gains exactly one new interaction and no new screen.
+
 It also does handover item 6 in its subtlest form: when the product says *"this looks like chapter 4 of the manuscript you've been working on,"* it has demonstrated persistent memory without a word of marketing.
 
 **Schema.** New table `manuscripts`: `id`, `user_id`, `title`, `format`, `narrative_frame` (§5.1), `created_at`, `deleted_at`. `readings` gains nullable `manuscript_id` and `sequence_index` (writer-orderable — writers don't draft in order). Nullable is deliberate: existing readings keep working, ungrouped, with no data migration.
@@ -142,19 +152,28 @@ Under ruling 1's narrowed scope most v1 facts are immutable, which is precisely 
 
 So the design never tries to detect intent. Five structural mechanisms instead, roughly in order of how much precision each buys.
 
-### 5.1 Ask the writer once, up front
+### 5.1 Frame — inferred silently, corrected by dismissal (ruling 1, 2026-08-15)
 
-At manuscript creation, three questions with safe defaults:
+Three frame properties govern the demotions in §5.2–5.4:
 
 - Does this book use an **unreliable narrator**?
 - Is the **timeline non-linear** (flashbacks, reordered chapters)?
 - Does it use **multiple POV characters**?
 
-One screen, once per manuscript, editable any time. This is not a fallback — it is the highest-leverage precision gain available, because it converts the hardest inference in the whole feature into a fact the writer simply tells us.
+**Ruling 1 (2026-08-15): do not ask.** No questions at manuscript creation. The frame is inferred from the text and corrected through dismissal (§5.5) alone — dismiss two or three flags on the same narrator and the product asks once, quietly, whether to treat that narrator as unreliable throughout. Friction only where it has been earned.
 
-It is also the honest move: the tool asks rather than guesses, and the question itself signals that it understands these are legitimate techniques rather than mistakes.
+*Superseded:* v1.2 proposed a three-question screen at manuscript creation and argued it was "the highest-leverage precision gain available, because it converts the hardest inference in the whole feature into a fact the writer simply tells us." That reasoning still stands on its own terms — ruling 1 accepts the precision cost in exchange for a zero-friction start. Recorded rather than deleted so the trade-off is visible if flag quality disappoints in phase 3.
 
-Effects: unreliable narrator → narration is demoted to a character's claim, not the book's (§5.2). Non-linear → stated-age and date clashes can never reach hard tier (§5.4). Multiple POV → cross-POV clashes demote (§5.3).
+Effects, unchanged in kind: unreliable narrator → narration is demoted to a character's claim, not the book's (§5.2). Non-linear → stated-age and date clashes can never reach hard tier (§5.4). Multiple POV → cross-POV clashes demote (§5.3). What changes is only *how the frame becomes known*.
+
+#### Open sub-question 1a — the starting assumption (phase 3, does not block phase 2)
+
+§5.4 lets ages and dates reach hard tier only when the manuscript is "declared linear"; §5.7 gates state locks the same way. With nothing declared, "declared linear" has no referent, so the design needs a starting assumption and ruling 1 does not supply one:
+
+- **Assume linear until taught otherwise** — preserves hard tier from the first chapter, at the cost of confidently flagging flashbacks in any book whose frame has not yet been learned.
+- **Treat the frame as unknown and demote** — ages/dates and state locks sit at worth-checking until dismissal behaviour establishes the frame, then promote.
+
+**Recommendation: unknown-and-demote**, as the reading consistent with §1.1 (precision over recall; a wrong flag costs trust) and §5.6 (better a quiet question than a confident accusation). Needs Nenad's ruling before phase 3 flagging is built. **Irrelevant to phase 2**, which displays and locks but never flags.
 
 ### 5.2 Register — who asserts this, and with what authority
 
@@ -283,6 +302,10 @@ Two quotes, the locations, one sentence. No score, no percentage, no verdict. Cr
 
 **Sidebar impact:** a new section changes the sidebar link count, which the standing rule fixes at 26. Because this section is conditional, the count becomes 26 or 27. The rule needs restating as "26, plus Continuity when present" — flagging now so the check isn't read as a regression.
 
+**Ruling 6 (2026-08-15): "26, plus Continuity when present" confirmed as the standing rule.** Applies from phase 3, when the Continuity section first exists; phase 2 adds no report section and leaves the count untouched.
+
+> ⚠️ **Unresolved conflict with `CLAUDE.md`, surfaced 2026-08-15.** `draft-and-lens/CLAUDE.md` currently states the fixed groups as Overview (3) + Dashboard (2) + Action (3) + Reference (5) = **13 constant links**, with Analysis variable to a maximum of 12, giving an **overall maximum of 25** — not 26. Ruling 6 confirms 26 against a figure `CLAUDE.md` does not agree with, so one of the two is wrong and neither should be treated as authoritative until reconciled against the rendered sidebar. Not reconciled here: it is a documentation-consistency question, not a ledger question, and phase 2 does not touch the sidebar. **Reconcile before building phase 3.**
+
 ### Between readings — the ledger view
 
 A per-manuscript view of what is being tracked, by character. The differentiator made visible (handover item 6) at its most subtle: the writer sees an actual accumulated memory of their book. No "unlike ChatGPT" copy — the thing itself argues the case.
@@ -307,6 +330,8 @@ It is also where a writer diagnoses a bad flag: if the ledger has misread someth
 | **Feels like grading** | "These disagree," never "you got this wrong" |
 | **Death locks over-promise** | The most intuitive lock is the least checkable without timeline reasoning (§5.7); demote to worth-checking rather than guess, and don't over-claim it in copy |
 | **Drift toward generation** | §1.1 — the ledger is never an input to generating prose; any such proposal is a position change, not a feature |
+| **Word cap makes a novel 25+ submissions** | `TESTER_WORD_CAP` is 4,000. Ruling 5 raises the priority of lifting it but **forbids lifting it by hand** — it depends on the hybrid long-form chunking architecture existing first (handover §"Long-form architecture"). The ledger ships against the current cap; the dependency is flagged, not bypassed |
+| **Excerpts poisoning the ledger** | Ruling 4 — only complete, canonical pieces contribute facts. Hard filter at the extractor entry point, not a confidence demotion |
 
 ---
 
@@ -335,31 +360,60 @@ Related finding, logged separately: `purgeExpiredDeletions` **is** already auto-
 
 ## 10. Phasing
 
-1. **Manuscript grouping** (§2) + **frame declaration** (§5.1). Prerequisite. Useful alone — a real library, chapters ordered.
-2. **Extraction + ledger view** (§3, §6b). Builds and shows the memory. **No flagging yet** — lets us inspect extraction quality, and especially register-detection accuracy, on real manuscripts before anything is called a contradiction. *Possibly locks too — see open question 8; they need no extraction to be useful and would give writers something to do in this view.*
-3. **Detection + Continuity section** (§6a, §9) once (2) demonstrably produces clean facts.
-4. **GDPR cascade** (§8) — with (1), not after.
+*Updated 2026-08-15 for rulings 7 and 8.*
 
-Phase 2 before 3 is the important call: we see what the extractor actually produces before telling writers their book contradicts itself.
+1. **Manuscript grouping** (§2). Prerequisite — §0.1, "a prerequisite, not a sub-task": `continuity_facts` is scoped by `manuscript_id`, and no concept of manuscript exists in the code today. Useful alone — a real library, chapters ordered. *Frame declaration is no longer part of this phase (ruling 1); frame is inferred and does not gate phase 1.*
+2. **Extraction + ledger view + locks** (§3, §6b, §5.7). Builds and shows the memory, and — per **ruling 8** — ships locking alongside it. Locks need no extraction to be useful, so they give the view a job before flagging exists. **No flagging yet** — lets us inspect extraction quality, and especially register-detection accuracy, on real manuscripts before anything is called a contradiction. The ledger view lives at **its own route** (ruling 3), not nested inside account/works.
+3. **Timeline reasoning** — promoted from deferred to next (**ruling 7**), because state locks (§5.7) are the lock a writer reaches for first and are not honestly checkable without it. Ahead of the rest of v2, after phase 2.
+4. **Detection + Continuity section** (§6a, §9) once (2) demonstrably produces clean facts, and informed by (3).
+5. **GDPR cascade** (§8) — with (1), not after.
+
+Phase 2 before detection is the important call: we see what the extractor actually produces before telling writers their book contradicts itself.
+
+**Sequencing note (2026-08-15):** the instruction to "start with phase 2" is understood as naming the *target deliverable*, not as authorising a skip of phase 1 — phase 2 cannot compile against a `manuscript_id` that does not exist. Phase 1 is therefore built first as phase 2's foundation. Flagged to Nenad rather than assumed silently.
 
 ---
 
-## 11. Open questions — still need Nenad's judgement
+## 11. Open questions — RESOLVED 2026-08-15
 
-1. **Frame declaration UX** (§5.1) — three questions at manuscript creation: acceptable, or should it be inferred silently and corrected via dismissal (§5.5) alone?
-2. **Grouping friction** (§2) — is confirm-on-upload acceptable for a first-time user?
-3. **Ledger view placement** — inside account/works, or its own route? (Relates to the parked `/reading/abc123` stable-URL item.)
-4. **Excerpts** — should they contribute facts, or only complete pieces? An excerpt may be mid-revision and not yet canonical.
-5. **Word cap** — `TESTER_WORD_CAP` is 4,000, so a novel is 25+ submissions. Does the ledger raise the priority of lifting it?
-6. **Sidebar count** (§6) — confirm "26, plus Continuity when present" as the new standing rule.
-7. **Does locking change v2 priority?** (§5.7) — state locks (character death) are what writers will reach for first and are the least checkable without timeline reasoning. Does that promote timeline from "deferred" to "next"?
-8. **Locking in phase 2 or 3?** (§10) — locks need no extraction to be useful, so they could ship with the ledger view in phase 2, giving writers something to *do* there before any flagging exists.
+All eight answered by Nenad, relayed in a Claude Code session on 2026-08-15. **Answers recorded verbatim as given**, with the design consequence noted beneath each.
+
+1. **Frame declaration UX** (§5.1) — *"inferred silently, corrected via dismissal (§5.5) only — no upfront questions at manuscript creation."*
+   → §5.1 rewritten. Raises **open sub-question 1a** (starting assumption for an un-inferred frame) — phase 3, does not block phase 2.
+2. **Grouping friction** (§2) — *"acceptable if it's a single lightweight confirm/adjust step, not a multi-field form."*
+   → §2 option C confirmed, with the weight constraint recorded there.
+3. **Ledger view placement** — *"its own route, not nested inside account/works — build as a separate, composable piece from the stable-URL work, even though they may ship close together."*
+   → §6b and §10 phase 2. Note the deliberate independence from the `/analysis/[id]` stable-URL item, which is separately tracked on the launch checklist and currently a placeholder stub.
+4. **Excerpts** — *"do NOT contribute facts to the ledger — only complete, canonical pieces do. An excerpt mid-revision is not trustworthy source material."*
+   → Extraction (phase 2) must gate on `submissionType === 'complete'`. This is a hard filter at the extractor's entry point, not a confidence demotion.
+5. **Word cap** — *"the ledger raises the priority of lifting `TESTER_WORD_CAP`, but don't lift it manually — it depends on the long-form chunking architecture actually existing first. Flag this dependency, don't bypass it."*
+   → Priority raised; **cap not to be changed by hand**. Dependency: the hybrid chunking design in `DraftAndLens_Handover_2026-08-02.md` §"Long-form architecture". Recorded in §7 Risks.
+6. **Sidebar count** (§6) — *"confirmed as '26, plus Continuity when present' — standing rule."*
+   → §6 updated. ⚠️ Conflicts with `CLAUDE.md`'s stated maximum of 25 — see the warning in §6; reconcile before phase 3.
+7. **Does locking change v2 priority?** (§5.7) — *"promoted from 'deferred' to 'next priority' — state locks need it to be genuinely checkable, not just theoretically useful."*
+   → §10 phase 3 is now timeline reasoning, ahead of detection.
+8. **Locking in phase 2 or 3?** (§10) — *"ships in phase 2, alongside the ledger view — gives the ledger view something functional before flagging/detection exists."*
+   → §10 phase 2 now reads "Extraction + ledger view + locks".
 
 *Resolved in v1.1:* scope (ruling 1), surfacing format and severity tiers (ruling 2).
 *Resolved in v1.2:* locked facts adopted (§5.7); detection-not-prevention boundary stated (§1.1).
+*Resolved in v1.3:* all eight above.
+
+### Still open after v1.3
+
+- **1a — starting frame assumption** (§5.1). Blocks phase 3 flagging only.
+- **Sidebar count 25 vs 26** (§6). Documentation conflict, blocks phase 3 only.
+- **Applying the schema migration to production Supabase.** The migration is written and checked in; it has deliberately **not** been applied. See §12.
 
 ---
 
-## 12. What I have NOT done
+## 12. Build status
 
-No code. No schema migration. No dependency added. This document is the deliverable; the build waits for review.
+**v1.2 (2026-08-10):** no code, no schema migration, no dependency. Document was the deliverable, awaiting review.
+
+**v1.3 (2026-08-15):** review complete, build started. Standing constraints on how it proceeds:
+
+- **The schema migration is written but NOT applied.** It lands in `draft-and-lens/supabase/migrations/` as checked-in SQL, following the `submission_telemetry.sql` convention (idempotent `create table if not exists`, RLS enabled, applied by hand). Applying DDL to the production Supabase project is a hard-to-reverse change to live infrastructure and is **Nenad's to run**, not something to fire unattended. Until it is applied, ledger code compiles and type-checks but cannot be verified end-to-end against real data.
+- **The migration is purely additive by design** (§2): new tables plus *nullable* `manuscript_id` / `sequence_index` on `readings`. Existing readings keep working, ungrouped, with no data migration and no backfill.
+- **No dependency added.** Nothing here needs a new package.
+- **GDPR cascade (§8) ships with phase 1, not after** — two new tables mean `deleteAllUserData`, `softDeleteWork`, `restoreWork`, `exportUserData` and `purgeExpiredDeletions` must all be extended, or the launch checklist's deletion-cascade test fails.
