@@ -8,7 +8,8 @@ Format per entry: date, source (Claude Code session / relayed from claude.ai cha
 
 ## Pending Decisions
 
-- **Continuity ledger (item 1): design at v1.2, AWAITING FINAL REVIEW, not built.** See `DraftAndLens_ContinuityLedger_Design_v1.md`. Eight open questions in its §11 still need Nenad's judgement. Do not start building until reviewed.
+- **Continuity ledger (item 1): design at v1.3, REVIEWED AND CLEARED TO BUILD, 2026-08-15.** Supersedes the previous "AWAITING FINAL REVIEW — do not start building" entry. All eight §11 questions answered by Nenad; answers recorded verbatim in the design doc's §11 and reflected in §2, §5.1, §6, §7, §10, §12. Build order is phase 1 (manuscript grouping — a prerequisite, not a sub-task, per §0.1) then phase 2 (extraction + ledger view at its own route + locks). **Two things still open and both block phase 3 only, not phase 2:** sub-question 1a (what to assume about a frame that has not yet been inferred) and the sidebar-count conflict below.
+- **Sidebar link count: `CLAUDE.md` says 25 max, ledger design + ruling 6 say 26. Unresolved.** `draft-and-lens/CLAUDE.md` states 13 constant links + Analysis variable to 12 = 25 overall maximum. The ledger design has said 26 since v1.2 and Nenad's ruling 6 confirmed "26, plus Continuity when present." One of the two is wrong; neither should be trusted until counted against the rendered sidebar. Not urgent — phase 2 adds no report section — but **reconcile before phase 3.**
 - **Two findings from Nenad reviewing the live report page, 2026-08-12 — QUEUED, lower priority than `spelling.ts` and the ledger §11 review. Do not start until both of those are done.**
 
 ### Item A — "Notes on the text" label without direction — FIX WRITTEN 2026-08-12, NOT YET VERIFIED OR COMMITTED
@@ -170,6 +171,34 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
 ---
 
 ## Log
+
+### 2026-08-15 — Claude Code session (STATUS NOTE — stopped at usage limit)
+
+**Where this stopped:** cleanly, at a commit boundary. Nothing half-edited, nothing uncommitted except this log entry. Resume by re-reading `DraftAndLens_Handover_2026-08-02.md` and this file, then continuing at "Next" below.
+
+**DONE and deployed earlier in the session** (all pushed; `origin/main` at `31ab45b` when the deploy hook was fired):
+- **Analyst self-consistency (bug #14)** — two passes on `src/prompts/analyst.ts` adding `ESTABLISHED CONTEXT JUSTIFIES THE CHOICE`, in the same "MANDATORY BEFORE FAULTING" family as DEVICE vs INSTANCE. Commits `106eafe`, `d66cc20`. All three snippets in `DraftAndLens_Annotation_Test_Set.md` run against the **real** pipeline (Brain 1 + Brain 2, live API, no mocks) — tests 2 and 3 pass; test 1 closed by Nenad's ruling that "cut the redundant intensifier" is a legitimate craft note distinct from the vague-verb pattern the test targets. Logged in the feedback tracker as #14, status Done.
+- **Collapsible spidergram + pacing chart (bug #6)** — commit `5a48a1b`. `ScoresDashboard` and `StoryArc` are now native `<details>`, independently toggleable. Tracker marked **In progress, not Done**: collapsing answers the clutter complaint but not the underlying "what do I do with this shape" question.
+  - ⚠️ **Supersedes the 2026-08-10 note in this log** (Pending Decisions → item 7 scoping) which said collapse "must therefore default to **expanded**". Nenad chose **collapsed by default** when asked directly. The auto-expand-on-sidebar-click half of that older note was implemented and is correct — a fragment jump only auto-reveals a closed `<details>` when the target is *inside* it, not when the id is *on* it, so the sidebar links carry an explicit `onClick`.
+  - Second non-obvious fix worth keeping: `stopPropagation()` does **not** stop `<summary>`'s disclosure toggle — it is a default action on the click, not a bubbled listener. The legend toggles needed `preventDefault()` too.
+- **Eyebrow font-swap hypothesis — DISCONFIRMED, no code changed.** Measured directly with `ResizeObserver` + `document.fonts.status` on a repro that mirrors the real title block. Captured the genuine `loading → loaded` transition; rect and computed `fontSize` byte-identical across it (601×38.875px, 12.96px), zero resize events, same for the `<h1>` (601×151.1875px, 72px). `next/font/google`'s metric-matched fallback is doing its job. **Do not re-run this investigation** — it is not a FOUT. If the "briefly looked wrong" symptom recurs, look at pop-in perception or the SSE update path, not fonts.
+- **Deploy** — build green, bundle IP-leak guard passed against the fresh `.next/static`, pushed, hook fired, live site verified.
+  - Two **pre-existing, unrelated** failures in `tests/prompts/client-ip-guard.test.ts` surfaced and were deliberately not fixed: `cost-log.ts` trips the "UI must not import ai/" rule via a *type-only* import (erased at compile time, no runtime leak — verified by reading it), and the lens-count assertion expects 27 against an actual 35. Both predate tonight. **Test hygiene item, not a leak.**
+
+**DONE this step — continuity ledger unblocked:**
+- Design doc updated to **v1.3** (commit `2e7d98c`) recording all eight §11 rulings verbatim plus their design consequences. §5.1 rewritten (frame no longer declared), §2 constrained (single lightweight confirm), §6 sidebar rule, §7 two new risk rows, §10 rephased, §12 turned into a build-status section.
+
+**Next — nothing started, no code written yet:**
+1. Migration SQL in `draft-and-lens/supabase/migrations/` — `manuscripts` + `continuity_facts` (incl. `source`, `lock_kind`, `lock_from_sequence` per §5.7), plus nullable `manuscript_id` / `sequence_index` on `readings`. Follow `submission_telemetry.sql`: idempotent, RLS enabled, **write it, do not apply it**.
+2. Phase 1 data layer + GDPR cascade (§8) — five functions in `readings.ts` must learn about both new tables or the launch checklist's deletion-cascade test fails.
+3. Phase 2: ledger view at its own route (ruling 3) + locks (ruling 8).
+
+**BLOCKED / needs Nenad:**
+- **Applying the migration to production Supabase.** Deliberately not fired unattended — DDL on live infrastructure is hard to reverse and there is no staging project configured that I found. Until it is applied, ledger code can type-check but cannot be verified end-to-end. *(Related standing risk from 2026-08-12: the Supabase project is on Free tier and auto-pauses.)*
+- **Sub-question 1a** (starting frame assumption) — phase 3 only. Recommendation in design §5.1: unknown-and-demote.
+- **Sidebar 25-vs-26 conflict** — phase 3 only. See Pending Decisions above.
+
+**Correction worth recording, because instruction 6 says to re-read the handover on resume and it will mislead:** `DraftAndLens_Handover_2026-08-02.md` does **not** contain tonight's context. Verified by grep: no §11 answers, no annotation self-consistency work, no eyebrow/skeleton investigation, and it still lists key rotation as outstanding when this log has recorded it **done since 2026-08-12**. What it *does* carry that matters is the file-upload and spell-check rulings and, appended 2026-08-15, the hybrid long-form chunking architecture (which ruling 5 makes a hard dependency for lifting `TESTER_WORD_CAP`). **Treat this log, not that handover, as the record of 12–15 August.**
 
 ### 2026-08-10 — Claude Code session
 
