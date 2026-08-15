@@ -263,6 +263,78 @@ export function newWorkId(): string {
   return randomUUID();
 }
 
+// ── Continuity ledger tables (design §8) ─────────────────────────────────────
+
+/**
+ * The ledger lives in its own tables with their own lifecycle (§0.2): facts
+ * must outlive the readings they were extracted from, because `pruneVersions`
+ * hard-deletes anything beyond MAX_VERSIONS. That independence is the whole
+ * point — and it is exactly why every user-data function below has to name
+ * these tables explicitly. Nothing cascades for free.
+ */
+const MANUSCRIPTS_TABLE = 'manuscripts';
+const FACTS_TABLE = 'continuity_facts';
+
+/**
+ * True when an error means only "that table does not exist yet".
+ *
+ * The ledger migration is applied by hand in the Supabase SQL editor, so this
+ * code can legitimately run against a database that predates it: during the
+ * window between deploy and migration, on a machine pointed at an older
+ * project, or after a rollback. Treating an absent ledger table as an empty
+ * one keeps account deletion and export working rather than failing the whole
+ * operation over a table containing nothing.
+ *
+ * Deliberately narrow — PostgREST's schema-cache miss and Postgres'
+ * undefined_table, nothing else. Any other error is still a real failure and
+ * must still fail, or this becomes a way to silently lose deletions.
+ */
+export function isMissingTable(error: { code?: string } | null | undefined): boolean {
+  return error?.code === 'PGRST205' || error?.code === '42P01';
+}
+
+/** The reading ids belonging to one work — the join ledger facts hang off. */
+async function readingIdsForWork(
+  supabase: ReturnType<typeof getServiceClient>,
+  userId: string,
+  workId: string
+): Promise<string[]> {
+  const { data } = await supabase
+    .from(TABLE)
+    .select('id')
+    .eq('user_id', userId)
+    .eq('work_id', workId);
+  if (!data) return [];
+  return (data as unknown as Array<{ id: string }>).map((r) => r.id);
+}
+
+/**
+ * Mirror a work's deleted_at onto the ledger facts extracted from it.
+ *
+ * Facts are scoped to a manuscript but sourced from a reading, so a work-level
+ * delete has to reach them through `reading_id`. Best-effort by design: a
+ * failure here must never block the delete or restore of the work itself,
+ * which is the operation the writer actually asked for.
+ */
+async function cascadeFactsForWork(
+  supabase: ReturnType<typeof getServiceClient>,
+  userId: string,
+  workId: string,
+  deletedAt: string | null
+): Promise<void> {
+  try {
+    const readingIds = await readingIdsForWork(supabase, userId, workId);
+    if (readingIds.length === 0) return;
+    await supabase
+      .from(FACTS_TABLE)
+      .update({ deleted_at: deletedAt })
+      .eq('user_id', userId)
+      .in('reading_id', readingIds);
+  } catch {
+    /* best-effort — never block the work-level operation */
+  }
+}
+
 // ── User-data functions (CHANGE 4) ───────────────────────────────────────────
 
 /** One row per saved work for the library view (latest version's metadata). */
@@ -277,11 +349,23 @@ export interface WorkSummary {
 /** Soft-deleted works stay recoverable for this many days, then are hard-purged. */
 export const SOFT_DELETE_GRACE_DAYS = 30;
 
-/** Permanently delete EVERY row for a user (account wipe — real, not a flag). */
+/** Permanently delete EVERY row for a user (account wipe — real, not a flag).
+ *  Covers the ledger tables too (§8) — an account wipe that left continuity
+ *  facts behind would fail the launch checklist's deletion-cascade test and,
+ *  more to the point, would be a false claim to the user. */
 export async function deleteAllUserData(userId: string): Promise<boolean> {
   if (!isSupabaseConfigured()) return true; // nothing stored to remove
   try {
     const supabase = getServiceClient();
+
+    // Facts before manuscripts: continuity_facts.manuscript_id references
+    // manuscripts, so this order holds even if that FK is ever tightened from
+    // `on delete cascade` to something restrictive.
+    for (const table of [FACTS_TABLE, MANUSCRIPTS_TABLE]) {
+      const { error } = await supabase.from(table).delete().eq('user_id', userId);
+      if (error && !isMissingTable(error)) return false;
+    }
+
     const { error } = await supabase.from(TABLE).delete().eq('user_id', userId);
     return !error;
   } catch {
@@ -300,7 +384,10 @@ export async function softDeleteWork(userId: string, workId: string): Promise<bo
       .eq('user_id', userId)
       .eq('work_id', workId)
       .is('deleted_at', null);
-    return !error;
+    if (error) return false;
+    // Ledger facts extracted from this work stop counting while it is deleted.
+    await cascadeFactsForWork(supabase, userId, workId, new Date().toISOString());
+    return true;
   } catch {
     return false;
   }
@@ -335,7 +422,10 @@ export async function restoreWork(userId: string, workId: string): Promise<boole
       .eq('user_id', userId)
       .eq('work_id', workId)
       .not('deleted_at', 'is', null);
-    return !error;
+    if (error) return false;
+    // Bring this work's ledger facts back with it.
+    await cascadeFactsForWork(supabase, userId, workId, null);
+    return true;
   } catch {
     return false;
   }
@@ -347,12 +437,18 @@ export async function purgeExpiredDeletions(userId: string): Promise<void> {
   try {
     const supabase = getServiceClient();
     const cutoff = new Date(Date.now() - SOFT_DELETE_GRACE_DAYS * 86_400_000).toISOString();
-    await supabase
-      .from(TABLE)
-      .delete()
-      .eq('user_id', userId)
-      .not('deleted_at', 'is', null)
-      .lt('deleted_at', cutoff);
+
+    // Ledger first, then readings — the same order as deleteAllUserData, and
+    // for the same reason. Each table is swept independently: the retention
+    // promise covers everything stored, not just the readings (§8).
+    for (const table of [FACTS_TABLE, MANUSCRIPTS_TABLE, TABLE]) {
+      await supabase
+        .from(table)
+        .delete()
+        .eq('user_id', userId)
+        .not('deleted_at', 'is', null)
+        .lt('deleted_at', cutoff);
+    }
   } catch {
     /* best-effort retention pruning */
   }
@@ -373,6 +469,17 @@ export interface UserDataExport {
       reading: ReadingPayload;
     }>;
   }>;
+  /** Continuity ledger (§8) — the accumulated facts are the writer's data too,
+   *  including any they locked by hand. Empty when the ledger tables are not
+   *  present yet, which is indistinguishable from having no ledger. */
+  manuscripts: Array<{
+    manuscriptId: string;
+    title: string | null;
+    format: string | null;
+    createdAt: string;
+    deletedAt: string | null;
+  }>;
+  continuityFacts: Array<Record<string, unknown>>;
 }
 
 export async function exportUserData(userId: string): Promise<UserDataExport> {
@@ -380,10 +487,38 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     exportedAt: new Date().toISOString(),
     account: userId,
     works: [],
+    manuscripts: [],
+    continuityFacts: [],
   };
   if (!isSupabaseConfigured()) return base;
   try {
     const supabase = getServiceClient();
+
+    // Ledger first and independently: a failure to read it must not cost the
+    // writer the export of their readings, which is the bulk of the value.
+    const ms = await supabase
+      .from(MANUSCRIPTS_TABLE)
+      .select('id, title, format, created_at, deleted_at')
+      .eq('user_id', userId);
+    if (ms.data) {
+      base.manuscripts = (ms.data as unknown as Array<{
+        id: string;
+        title: string | null;
+        format: string | null;
+        created_at: string;
+        deleted_at: string | null;
+      }>).map((m) => ({
+        manuscriptId: m.id,
+        title: m.title,
+        format: m.format,
+        createdAt: m.created_at,
+        deletedAt: m.deleted_at,
+      }));
+    }
+
+    const facts = await supabase.from(FACTS_TABLE).select('*').eq('user_id', userId);
+    if (facts.data) base.continuityFacts = facts.data as unknown as Array<Record<string, unknown>>;
+
     const { data, error } = await supabase
       .from(TABLE)
       .select('work_id, work_title, work_format, source_text, reading_json, created_at, deleted_at')
