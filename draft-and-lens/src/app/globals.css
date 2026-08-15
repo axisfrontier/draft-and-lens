@@ -43,3 +43,27 @@
     display: none !important;
   }
 }
+
+/* Collapsible report sections (Dashboard / Story Arc) — native <details>,
+   default marker replaced with a rotating chevron. */
+.dl-collapsible > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.dl-collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dl-collapsible > summary::marker {
+  content: '';
+}
+
+.dl-collapsible .dl-chevron {
+  display: inline-block;
+  transition: transform .15s ease;
+}
+
+.dl-collapsible[open] .dl-chevron {
+  transform: rotate(90deg);
+}

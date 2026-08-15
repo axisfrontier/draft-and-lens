@@ -6,7 +6,7 @@
  * legend. Beat→curve math ported verbatim from the prototype's arc renderer:
  * each line is plotted independently from its own value, no shared offset.
  */
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 
 interface Beat {
   pct: number;
@@ -35,7 +35,7 @@ const LINES: ReadonlyArray<{
 
 const clampY = (v: number): number => Math.max(10, Math.min(170, v));
 
-export function StoryArc({ beats }: { beats: Beat[] }) {
+export function StoryArc({ beats, id }: { beats: Beat[]; id?: string }) {
   const [hidden, setHidden] = useState<Record<LineKey, boolean>>({
     tension: false,
     pace: false,
@@ -64,14 +64,22 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
   const lineStr = (key: LineKey): string =>
     allPts.map((p) => `${p.x.toFixed(0)},${p[key].toFixed(0)}`).join(' ');
 
-  const toggle = (key: LineKey): void =>
+  const toggle = (key: LineKey, e: MouseEvent): void => {
+    // <summary>'s disclosure toggle is a default action tied to the click
+    // event, not a bubbled listener — stopPropagation() alone doesn't stop
+    // it. preventDefault() does. Without it, toggling a legend line also
+    // collapses/expands the whole chart.
+    e.preventDefault();
+    e.stopPropagation();
     setHidden((h) => ({ ...h, [key]: !h[key] }));
+  };
 
   return (
-    <section style={{ marginTop: '0', paddingBottom: '2.5rem', borderBottom: '1px solid var(--rule-l)' }}>
-      {/* header: label + info, legend */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+    <details className="dl-collapsible" id={id} style={{ marginTop: '0', paddingBottom: '2.5rem', borderBottom: '1px solid var(--rule-l)', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
+      {/* header: label + info, legend — also the disclosure control */}
+      <summary style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+          <span className="dl-chevron" aria-hidden="true" style={{ fontSize: '.7rem', color: 'var(--amber-d)' }}>▸</span>
           <div
             style={{
               fontFamily: 'var(--font-mono)',
@@ -88,7 +96,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
           {LINES.map((l) => (
             <div
               key={l.key}
-              onClick={() => toggle(l.key)}
+              onClick={(e) => toggle(l.key, e)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -108,7 +116,7 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
             </div>
           ))}
         </div>
-      </div>
+      </summary>
 
       {/* the arc */}
       <div
@@ -220,6 +228,6 @@ export function StoryArc({ beats }: { beats: Beat[] }) {
         Arc reflects page order. If your story is told non-chronologically — events presented out
         of sequence — this structural reading may not map to your intended narrative shape.
       </div>
-    </section>
+    </details>
   );
 }

@@ -18,6 +18,18 @@ import { VerdictBand } from './VerdictBand';
 import { extractVerdict, parseReport } from './report';
 import type { Coverage, Diagnostic, Market, Scores } from './types';
 
+/**
+ * Dashboard/Story Arc render collapsed by default (native <details>). A plain
+ * fragment jump only auto-reveals a closed <details> when the target is
+ * HIDDEN INSIDE one — not when the id sits on the <details> itself, which is
+ * always visible regardless of open state. So the sidebar links open it
+ * explicitly before the browser's default anchor-scroll runs.
+ */
+function expandCollapsible(id: string): void {
+  const el = document.getElementById(id);
+  if (el instanceof HTMLDetailsElement) el.open = true;
+}
+
 interface LensEntry { name: string; id: string | null }
 
 type ConvMsg = { role: 'user' | 'assistant'; content: string };
@@ -319,8 +331,8 @@ export function ReportView({
         <a href="#sec-bible" style={sidebarLink}>Character bible</a>
 
         <div style={sidebarGroup}>Dashboard</div>
-        <a href="#sec-dashboard" style={sidebarLink}>Dimension map</a>
-        <a href="#sec-arc" style={sidebarLink}>Story arc</a>
+        <a href="#sec-dashboard" style={sidebarLink} onClick={() => expandCollapsible('sec-dashboard')}>Dimension map</a>
+        <a href="#sec-arc" style={sidebarLink} onClick={() => expandCollapsible('sec-arc')}>Story arc</a>
 
         <div style={sidebarGroup}>Editorial analysis</div>
         {sidebarSections.map((s) => (
@@ -480,15 +492,12 @@ export function ReportView({
             <BiblePanel bible={bible} />
           </div>
 
-          {/* Dashboard */}
-          <div id="sec-dashboard" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
-            <ScoresDashboard scores={scores} tradition={diagnostic?.tradition} />
-          </div>
+          {/* Dashboard — collapsed by default; id lives on the <details> itself so
+              the sidebar link's fragment jump auto-expands it (native behaviour). */}
+          <ScoresDashboard scores={scores} tradition={diagnostic?.tradition} id="sec-dashboard" />
 
-          {/* Story Arc */}
-          <div id="sec-arc" style={{ scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
-            <StoryArc beats={scores?.beats ?? []} />
-          </div>
+          {/* Story Arc — same collapse/auto-expand-on-jump behaviour. */}
+          <StoryArc beats={scores?.beats ?? []} id="sec-arc" />
 
           {/* Editorial Analysis header */}
           <div style={{

@@ -94,39 +94,50 @@ const captionStyle = {
   marginBottom: '2.25rem',
 };
 
-export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; tradition?: string }) {
+export function ScoresDashboard({
+  scores,
+  tradition,
+  id,
+}: {
+  scores: Scores | null;
+  tradition?: string;
+  id?: string;
+}) {
   if (!scores || !scores.scores) return null;
   const craft = scores.scores;
   const alignment = scores.alignment ?? {};
 
   return (
-    <section style={{ marginTop: '0' }}>
-      {/* header */}
-      <div style={{ padding: '2.5rem 0 1rem', borderBottom: '1px solid var(--rule)', marginBottom: '2rem' }}>
-        <div
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '.72rem',
-            letterSpacing: '.2em',
-            textTransform: 'uppercase',
-            color: 'var(--amber-d)',
-            marginBottom: '.4rem',
-          }}
-        >
-          Editorial dashboard
-        </div>
-        <div
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '1.4rem',
-            fontWeight: 700,
-            color: 'var(--ink)',
-            letterSpacing: '-.01em',
-          }}
-        >
-          Craft balance
-        </div>
-      </div>
+    <details className="dl-collapsible" id={id} style={{ marginTop: '0', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
+      {/* header — also the disclosure control */}
+      <summary style={{ padding: '2.5rem 0 1rem', borderBottom: '1px solid var(--rule)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+        <span className="dl-chevron" aria-hidden="true" style={{ fontSize: '.7rem', color: 'var(--amber-d)' }}>▸</span>
+        <span>
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '.72rem',
+              letterSpacing: '.2em',
+              textTransform: 'uppercase',
+              color: 'var(--amber-d)',
+              marginBottom: '.4rem',
+            }}
+          >
+            Editorial dashboard
+          </div>
+          <div
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '1.4rem',
+              fontWeight: 700,
+              color: 'var(--ink)',
+              letterSpacing: '-.01em',
+            }}
+          >
+            Craft balance
+          </div>
+        </span>
+      </summary>
 
       {/* data-section grid: radar (left) + alignment bars (right) */}
       <div
@@ -210,6 +221,6 @@ export function ScoresDashboard({ scores, tradition }: { scores: Scores | null; 
           </div>
         </div>
       </div>
-    </section>
+    </details>
   );
 }
