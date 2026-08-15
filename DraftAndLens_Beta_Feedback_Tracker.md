@@ -40,7 +40,7 @@ Living document. One row per distinct piece of feedback. Add new tester notes at
 |---|---|---|---|---|---|---|
 | 4 | Nav and header text — light grey on black — hard to read; copy size too small | Noel Lyons | UX | Medium | Open | Contrast/accessibility fix. Check against WCAG AA at minimum |
 | 5 | Umber colour tones read as "generic AI design" | Noel Lyons | UX | Low–Medium | Open | Aesthetic judgement call — worth a design pass once other fixes land, not urgent alone |
-| 6 | Spidergram and pacing chart — not clear what to *do* with the information | Noel Lyons | UX/Product | High | Open | A visualisation with no prescriptive next step is decoration. Either (a) make it actionable — annotate what the shape means and what to fix, or (b) cut it if it can't be made useful |
+| 6 | Spidergram and pacing chart — not clear what to *do* with the information | Noel Lyons | UX/Product | High | In progress | A visualisation with no prescriptive next step is decoration. Either (a) make it actionable — annotate what the shape means and what to fix, or (b) cut it if it can't be made useful. **2026-08-15:** shipped a third option first — both sections now collapse by default (native `<details>`/`<summary>`, independently toggleable, sidebar links auto-expand on jump) so they no longer clutter the report by default but stay one click away. This addresses the "decoration by default" complaint but not the underlying "what do I do with this" question — (a) annotate-what-the-shape-means is still open. |
 
 ---
 
