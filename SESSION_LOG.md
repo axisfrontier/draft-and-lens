@@ -194,9 +194,9 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
 3. Phase 2: ledger view at its own route (ruling 3) + locks (ruling 8).
 
 **BLOCKED / needs Nenad:**
-- **Applying the migration to production Supabase.** Deliberately not fired unattended — DDL on live infrastructure is hard to reverse and there is no staging project configured that I found. Until it is applied, ledger code can type-check but cannot be verified end-to-end. *(Related standing risk from 2026-08-12: the Supabase project is on Free tier and auto-pauses.)*
-- **Sub-question 1a** (starting frame assumption) — phase 3 only. Recommendation in design §5.1: unknown-and-demote.
-- **Sidebar 25-vs-26 conflict** — phase 3 only. See Pending Decisions above.
+- **Applying the migration to production Supabase.** Deliberately not fired unattended — DDL on live infrastructure is hard to reverse and there is no staging project configured that I found. Nenad confirmed 2026-08-15 he will apply it. Until then, ledger code can type-check but cannot be verified end-to-end. *(Related standing risk from 2026-08-12: the Supabase project is on Free tier and auto-pauses.)*
+- ~~**Sub-question 1a**~~ — **RESOLVED 2026-08-15: unknown-and-demote**, per recommendation. Frame begins unknown, never default-linear; ages/dates and state locks cannot reach hard/locked tier until dismissal behaviour establishes the frame; rule locks unaffected. Implement in phase 3 — see design §5.1.
+- **Sidebar 25-vs-26 conflict** — still open. Nenad will confirm the correct figure once he can count it against the rendered sidebar. **Do not guess; do not let it block phase 1/2.** Phase 3 only.
 
 **Correction worth recording, because instruction 6 says to re-read the handover on resume and it will mislead:** `DraftAndLens_Handover_2026-08-02.md` does **not** contain tonight's context. Verified by grep: no §11 answers, no annotation self-consistency work, no eyebrow/skeleton investigation, and it still lists key rotation as outstanding when this log has recorded it **done since 2026-08-12**. What it *does* carry that matters is the file-upload and spell-check rulings and, appended 2026-08-15, the hybrid long-form chunking architecture (which ruling 5 makes a hard dependency for lifting `TESTER_WORD_CAP`). **Treat this log, not that handover, as the record of 12–15 August.**
 

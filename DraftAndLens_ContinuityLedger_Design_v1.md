@@ -166,14 +166,20 @@ Three frame properties govern the demotions in §5.2–5.4:
 
 Effects, unchanged in kind: unreliable narrator → narration is demoted to a character's claim, not the book's (§5.2). Non-linear → stated-age and date clashes can never reach hard tier (§5.4). Multiple POV → cross-POV clashes demote (§5.3). What changes is only *how the frame becomes known*.
 
-#### Open sub-question 1a — the starting assumption (phase 3, does not block phase 2)
+#### Sub-question 1a — the starting assumption — RESOLVED 2026-08-15
 
-§5.4 lets ages and dates reach hard tier only when the manuscript is "declared linear"; §5.7 gates state locks the same way. With nothing declared, "declared linear" has no referent, so the design needs a starting assumption and ruling 1 does not supply one:
+§5.4 lets ages and dates reach hard tier only when the manuscript is "declared linear"; §5.7 gates state locks the same way. Ruling 1 removed the declaration, leaving those clauses with no referent. Two candidates were put to Nenad:
 
 - **Assume linear until taught otherwise** — preserves hard tier from the first chapter, at the cost of confidently flagging flashbacks in any book whose frame has not yet been learned.
 - **Treat the frame as unknown and demote** — ages/dates and state locks sit at worth-checking until dismissal behaviour establishes the frame, then promote.
 
-**Recommendation: unknown-and-demote**, as the reading consistent with §1.1 (precision over recall; a wrong flag costs trust) and §5.6 (better a quiet question than a confident accusation). Needs Nenad's ruling before phase 3 flagging is built. **Irrelevant to phase 2**, which displays and locks but never flags.
+**Ruling (2026-08-15): unknown-and-demote.** Consistent with §1.1 (precision over recall; a wrong flag costs trust) and §5.6 (better a quiet question than a confident accusation).
+
+**Consequences to implement in phase 3:**
+- A manuscript's frame begins **unknown**, not linear. `manuscripts.narrative_frame` is null until something is learned — null means *unknown*, never *default*.
+- While the frame is unknown, stated ages/dates (§5.4) and state locks (§5.7) **cannot reach hard or locked tier**. They surface at worth-checking, phrased so a flashback is the obvious first explanation.
+- Rule locks (§5.7) are unaffected — they are chronology-free by definition and never depended on the frame.
+- Promotion to hard/locked becomes available only once dismissal behaviour (§5.5) has established the frame. Frame is therefore *earned*, and the ledger gets stricter as it learns rather than starting confident and retreating.
 
 ### 5.2 Register — who asserts this, and with what authority
 
@@ -401,9 +407,9 @@ All eight answered by Nenad, relayed in a Claude Code session on 2026-08-15. **A
 
 ### Still open after v1.3
 
-- **1a — starting frame assumption** (§5.1). Blocks phase 3 flagging only.
-- **Sidebar count 25 vs 26** (§6). Documentation conflict, blocks phase 3 only.
-- **Applying the schema migration to production Supabase.** The migration is written and checked in; it has deliberately **not** been applied. See §12.
+- ~~**1a — starting frame assumption**~~ — **RESOLVED 2026-08-15: unknown-and-demote.** See §5.1.
+- **Sidebar count 25 vs 26** (§6). Documentation conflict. Nenad will confirm which figure is correct once he can count it against the rendered sidebar; **do not guess, and do not let it block phase 1/2** — phase 2 adds no report section. Blocks phase 3 only.
+- **Applying the schema migration to production Supabase.** Written and checked in; deliberately **not** applied — Nenad applies it. See §12.
 
 ---
 
