@@ -190,6 +190,10 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
 
 **Next — nothing started, no code written yet:**
 1. Migration SQL in `draft-and-lens/supabase/migrations/` — `manuscripts` + `continuity_facts` (incl. `source`, `lock_kind`, `lock_from_sequence` per §5.7), plus nullable `manuscript_id` / `sequence_index` on `readings`. Follow `submission_telemetry.sql`: idempotent, RLS enabled, **write it, do not apply it**.
+
+   **Schema reconnaissance already done — don't re-derive it.** `readings` columns confirmed in use by `src/lib/readings.ts`: `id` (PK, string — used by `pruneVersions` at :252/:258), `user_id`, `work_id`, `work_title`, `work_format`, `source_text`, `reading_json`, `submission_type`, `created_at`, `deleted_at`. Two things this settles for the migration:
+   - **`work_id` is NOT a primary key** — it repeats across the ≤5 versions of a work (`MAX_VERSIONS`), so `continuity_facts.reading_id` must FK to `readings.id`, not `work_id`.
+   - **`id`'s exact SQL type is still unconfirmed** — it is read as a string in TS, which is consistent with `uuid` (as in `submission_telemetry.sql`) but not proof. **Confirm against the live table before writing the FK**, or write the FK in a follow-up statement so a type mismatch can't fail the whole migration. `MAX_VERSIONS = 5` pruning is also why the ledger needs its own table (§0.2) — facts must outlive the readings they came from, so `reading_id` should be recorded but **must not** cascade-delete facts when a version is pruned.
 2. Phase 1 data layer + GDPR cascade (§8) — five functions in `readings.ts` must learn about both new tables or the launch checklist's deletion-cascade test fails.
 3. Phase 2: ledger view at its own route (ruling 3) + locks (ruling 8).
 
