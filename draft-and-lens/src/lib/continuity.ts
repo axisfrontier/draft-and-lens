@@ -319,3 +319,89 @@ export async function deleteFact(userId: string, factId: string): Promise<boolea
     return false;
   }
 }
+
+/** Entity keys already known in this manuscript, for the extractor's spelling
+ *  anchor (see buildContinuityPrompt). Capped: the list is a hint, and a very
+ *  long one would crowd the prompt for no benefit. */
+export async function listKnownEntities(
+  userId: string,
+  manuscriptId: string,
+  limit = 60
+): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(FACTS_TABLE)
+      .select('entity')
+      .eq('manuscript_id', manuscriptId)
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+    if (error || !data) return [];
+    const uniq = new Set((data as unknown as Array<{ entity: string }>).map((r) => r.entity));
+    return [...uniq].sort().slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+export interface FactToStore {
+  entity: string;
+  category: string;
+  attribute: string;
+  value: string;
+  mutability: string;
+  register: string | null;
+  povCharacter: string | null;
+  evidenceQuote: string;
+  confidence: number;
+}
+
+/**
+ * Store a chapter's extracted facts.
+ *
+ * Inserted as ONE batch on purpose: a partial write would leave a chapter half
+ * represented in the ledger, which is worse than not represented at all —
+ * later chapters would be checked against an arbitrary subset of what this one
+ * established. If the batch fails, the chapter simply contributes nothing and
+ * can be re-extracted.
+ *
+ * Best-effort like everything else here: extraction runs alongside a reading
+ * the writer already has, and must never be able to cost them it.
+ */
+export async function storeFacts(args: {
+  userId: string;
+  manuscriptId: string;
+  readingId: string | null;
+  sequenceIndex: number | null;
+  facts: readonly FactToStore[];
+}): Promise<number> {
+  if (!isSupabaseConfigured() || args.facts.length === 0) return 0;
+  try {
+    const supabase = getServiceClient();
+    if (!(await ownsManuscript(supabase, args.userId, args.manuscriptId))) return 0;
+
+    const rows = args.facts.map((f) => ({
+      manuscript_id: args.manuscriptId,
+      user_id: args.userId,
+      entity: f.entity,
+      category: f.category,
+      attribute: f.attribute,
+      value: f.value,
+      mutability: f.mutability,
+      register: f.register,
+      pov_character: f.povCharacter,
+      evidence_quote: f.evidenceQuote,
+      reading_id: args.readingId,
+      sequence_index: args.sequenceIndex,
+      confidence: f.confidence,
+      source: 'extracted',
+    }));
+
+    const { data, error } = await supabase.from(FACTS_TABLE).insert(rows).select('id');
+    if (error || !data) return 0;
+    return data.length;
+  } catch {
+    return 0;
+  }
+}

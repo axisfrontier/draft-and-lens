@@ -2,10 +2,12 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { recordStageTiming, withCostTracking, type CostEntry } from '../../../ai/cost-tracker';
+import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
+import { listKnownEntities, storeFacts } from '../../../lib/continuity';
 import { resolveAttachment } from '../../../lib/manuscripts';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
@@ -311,7 +313,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           ? await resolveAttachment(userId, manuscriptId, mode)
           : null;
 
-        await storeReading({
+        const readingId = await storeReading({
           userId,
           workId,
           mode,
@@ -335,6 +337,44 @@ export async function POST(req: NextRequest): Promise<Response> {
             manuscriptId: attachment.manuscriptId,
             sequenceIndex: attachment.sequenceIndex,
           });
+
+          // ── Continuity extraction (§9 Stage 1) ───────────────────────────
+          // Gated on BOTH conditions, and neither is a preference:
+          //   • complete pieces only (ruling 4) — an excerpt is mid-revision
+          //     and not canonical, so holding the rest of the book to it is
+          //     exactly backwards;
+          //   • grouped only — continuity_facts.manuscript_id is NOT NULL, so
+          //     a standalone piece has nowhere to put facts.
+          // Runs after the reading has been delivered, so its latency and any
+          // failure are invisible to the writer. A chapter that extracts
+          // nothing simply contributes nothing.
+          if (cleanSubmissionType === 'complete') {
+            try {
+              const known = await listKnownEntities(userId, attachment.manuscriptId);
+              const extracted = await runContinuityExtractor({
+                text: clean,
+                chapterLabel: result.diagnostic.title || `Chapter ${attachment.sequenceIndex}`,
+                knownEntities: known,
+              });
+              const stored = await storeFacts({
+                userId,
+                manuscriptId: attachment.manuscriptId,
+                readingId,
+                sequenceIndex: attachment.sequenceIndex,
+                facts: extracted.facts,
+              });
+              // Deliberately not logged through logSecurityEvent: extraction
+              // counts are telemetry, not a security event, and widening that
+              // typed union to fit would blur what a security event means.
+              // The rejection pattern IS worth capturing — it is the earliest
+              // signal the extractor has drifted — but it needs a telemetry
+              // channel shaped for it rather than a misused one. Flagged in
+              // SESSION_LOG rather than bodged in here.
+              void stored;
+            } catch {
+              /* extraction is best-effort; the reading is already delivered */
+            }
+          }
         }
 
         // Cost log (financial model data collection) — metadata + token counts

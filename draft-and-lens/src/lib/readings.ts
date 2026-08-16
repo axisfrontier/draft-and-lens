@@ -230,11 +230,15 @@ export async function storeReading(args: {
    *  case for a standalone piece. */
   manuscriptId?: string | null;
   sequenceIndex?: number | null;
-}): Promise<void> {
-  if (!isSupabaseConfigured()) return;
+  // Returns the inserted row's id so the continuity extractor can record which
+  // reading a fact came from (§3 `reading_id`). Null when storage is
+  // unavailable or the insert failed — callers must treat provenance as
+  // optional, never assume it.
+}): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
   try {
     const supabase = getServiceClient();
-    await supabase.from(TABLE).insert({
+    const { data } = await supabase.from(TABLE).insert({
       user_id: args.userId,
       work_id: args.workId,
       work_title: args.title || null,
@@ -244,10 +248,12 @@ export async function storeReading(args: {
       submission_type: args.submissionType,
       manuscript_id: args.manuscriptId ?? null,
       sequence_index: args.sequenceIndex ?? null,
-    });
+    }).select('id');
     await pruneVersions(supabase, args.userId, args.workId);
+    return (data as unknown as Array<{ id: string }> | null)?.[0]?.id ?? null;
   } catch {
     /* storage is best-effort — never block the reading the user already has */
+    return null;
   }
 }
 
