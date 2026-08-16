@@ -16,6 +16,10 @@ export const MODELS = {
   bible: 'claude-sonnet-4-6',
   lens: 'claude-sonnet-4-6',
   conversation: 'claude-sonnet-4-6',
+  // Extraction is structured, mechanical work with a hard verbatim-quote
+  // check behind it, so the cheap tier is the right fit: a weaker extractor
+  // fails by returning fewer facts, not worse ones.
+  continuityExtractor: 'claude-sonnet-4-6',
 } as const;
 
 /** Analyst adaptive thinking effort — tunable (prototype default: medium). */
@@ -70,4 +74,8 @@ export const TOKEN_LIMITS = {
   bible: 1200,
   lens: 1200,
   conversation: 800,
+  // A chapter can legitimately yield 20-30 facts, each carrying a verbatim
+  // quote — the quotes dominate the budget. Sized above structuralReader
+  // (2500) for that reason; truncation here silently loses facts.
+  continuityExtractor: 3000,
 } as const;
