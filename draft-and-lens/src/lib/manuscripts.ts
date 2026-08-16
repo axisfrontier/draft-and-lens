@@ -321,7 +321,8 @@ export async function attachReading(
  */
 export async function resolveAttachment(
   userId: string,
-  manuscriptId: string
+  manuscriptId: string,
+  mode?: string | null
 ): Promise<{ manuscriptId: string; sequenceIndex: number } | null> {
   if (!isSupabaseConfigured()) return null;
   try {
@@ -329,12 +330,29 @@ export async function resolveAttachment(
 
     const { data: owned } = await supabase
       .from(MANUSCRIPTS_TABLE)
-      .select('id')
+      .select('id, format')
       .eq('id', manuscriptId)
       .eq('user_id', userId)
       .is('deleted_at', null)
       .limit(1);
     if (!owned || owned.length === 0) return null;
+
+    // Backfill a missing format from the first chapter filed into this book.
+    //
+    // A manuscript created before the writer picked a submission type stores
+    // format null, and criterion 5 of the auto-grouping bar fails closed on
+    // unknown — so such a manuscript could never auto-group, permanently and
+    // invisibly. Healing it here rather than at creation also repairs the rows
+    // already created that way, which a UI-side guard alone would not.
+    const existingFormat = (owned as unknown as Array<{ format: string | null }>)[0]?.format;
+    if (!existingFormat && mode) {
+      await supabase
+        .from(MANUSCRIPTS_TABLE)
+        .update({ format: mode })
+        .eq('id', manuscriptId)
+        .eq('user_id', userId)
+        .is('format', null);
+    }
 
     const { data } = await supabase
       .from(READINGS_TABLE)
