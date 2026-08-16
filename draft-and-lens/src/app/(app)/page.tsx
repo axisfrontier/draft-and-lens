@@ -56,6 +56,8 @@ type StreamEvent =
       bible: string;
       revision?: { status: RevisionStatus; readAt?: string };
     }
+  // Sent after `done`, only when the reading was grouped into a manuscript.
+  | { type: 'grouped'; workId: string; manuscriptId: string; sequenceIndex: number | null }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -158,9 +160,14 @@ export default function AppHomePage() {
    * makes silent wrong grouping the failure that poisons every later flag.
    */
   const [grouping, setGrouping] = useState<{
+    band: 'auto' | 'confirm' | 'none';
     suggestion: { manuscriptId: string; title: string | null; sharedEntities: string[] } | null;
     manuscripts: Array<{ manuscriptId: string; title: string | null; chapters: number }>;
   } | null>(null);
+  /** Set when a grouping was applied WITHOUT asking, so the report can show a
+   *  non-blocking trace with an undo. Never set for a grouping the writer
+   *  chose — they do not need telling what they just did. */
+  const [autoGrouped, setAutoGrouped] = useState<{ workId: string; title: string } | null>(null);
   const [chosenManuscript, setChosenManuscript] = useState<string | null>(null);
   const [groupingOpen, setGroupingOpen] = useState(false);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
@@ -186,14 +193,16 @@ export default function AppHomePage() {
       fetch('/api/ledger/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: effectiveText }),
+        body: JSON.stringify({ text: effectiveText, mode }),
       })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (!d) return;
           setGrouping(d);
-          // Pre-select the proposal so confirming is a no-op click, but never
-          // apply it silently — the writer still has to leave it selected.
+          // `auto` and `confirm` both pre-select the proposal; the difference
+          // is whether the writer is asked about it (see the panel's own gate).
+          // The bar for `auto` is deliberately high — see AUTO_MIN_* — because
+          // a wrong silent grouping is far worse than a missed one.
           if (d.suggestion && chosenManuscript === null) {
             setChosenManuscript(d.suggestion.manuscriptId);
           }
@@ -206,7 +215,25 @@ export default function AppHomePage() {
     // chosenManuscript deliberately omitted: re-running on the writer's own
     // choice would fight them for control of the control.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveText, isSignedIn, wordCount, running]);
+  }, [effectiveText, isSignedIn, wordCount, running, mode]);
+
+  /** Undo an auto-grouping. Detaches the whole work, not one version — see
+   *  detachWork. The same correction is available later in the ledger view, so
+   *  missing this line is not the only chance to fix it. */
+  async function undoAutoGroup() {
+    if (!autoGrouped) return;
+    try {
+      await fetch('/api/ledger/detach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workId: autoGrouped.workId }),
+      });
+    } catch {
+      /* best-effort */
+    }
+    setAutoGrouped(null);
+    setChosenManuscript(null);
+  }
 
   async function createManuscriptAndSelect() {
     const title = newManuscriptTitle.trim();
@@ -221,6 +248,9 @@ export default function AppHomePage() {
       const d = (await res.json()) as { manuscriptId: string };
       setChosenManuscript(d.manuscriptId);
       setGrouping((g) => ({
+        // Stays 'confirm': the writer has made an explicit choice, so this must
+        // never silently flip to 'auto' and hide the control they just used.
+        band: 'confirm',
         suggestion: g?.suggestion ?? null,
         manuscripts: [
           { manuscriptId: d.manuscriptId, title, chapters: 0 },
@@ -374,6 +404,15 @@ export default function AppHomePage() {
             setBible(evt.bible);
             setRevisionStatus(evt.revision?.status ?? 'new');
             setReadAt(evt.revision?.readAt ?? null);
+          } else if (evt.type === 'grouped') {
+            // Only surfaced when the grouping was applied without asking; a
+            // writer who chose it themselves needs no notice.
+            if (grouping?.band === 'auto' && grouping.suggestion) {
+              setAutoGrouped({
+                workId: evt.workId,
+                title: grouping.suggestion.title || 'your manuscript',
+              });
+            }
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -830,13 +869,14 @@ export default function AppHomePage() {
                   ruling 2 was explicit that this must be a single lightweight
                   confirm/adjust, not a form. Only appears once there is
                   something to group against. */}
-              {/* Shown as soon as the server has answered, even when it has
-                  nothing to propose. An earlier version hid the panel unless a
-                  suggestion or an existing manuscript came back — which made
-                  the feature unreachable, because with no manuscripts there was
-                  no way to create the first one. "Start a new book" has to be
-                  available from the empty state or grouping can never begin. */}
-              {grouping !== null && (
+              {/* Hidden entirely when the match is strong enough to act on
+                  (band 'auto') — that is the point of the banding: no prompt on
+                  every upload. Shown for 'confirm' (a match that could be
+                  coincidence) and for 'none' (nothing proposed), because the
+                  latter is the only route to creating a first manuscript.
+                  An earlier version also hid it on 'none', which made the whole
+                  feature unreachable. */}
+              {grouping !== null && grouping.band !== 'auto' && (
                 <div
                   style={{
                     marginTop: '.75rem', padding: '.6rem .8rem',
@@ -1145,6 +1185,41 @@ export default function AppHomePage() {
           }}>
             Could not complete: {error}
           </p>
+        </div>
+      )}
+
+      {/* Trace of a silent auto-grouping (§2). Non-blocking by design: nothing
+          to dismiss, nothing gated behind it — but a grouping the writer never
+          learns about cannot be corrected, and a wrong one goes on to poison
+          every later flag. The undo detaches the whole chapter; the same
+          correction stays available in the ledger view afterwards. */}
+      {report !== '' && autoGrouped && (
+        <div
+          style={{
+            maxWidth: 760, margin: '1.25rem auto 0', padding: '.6rem .9rem',
+            background: 'var(--cream)', borderLeft: '3px solid var(--amber)',
+            fontSize: '.82rem', color: 'var(--ink-mid)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+          }}
+        >
+          <span>
+            Added to <strong>{autoGrouped.title}</strong>.{' '}
+            <a href="/ledger" style={{ color: 'var(--amber-d)' }}>
+              See what it has established
+            </a>
+          </span>
+          <button
+            type="button"
+            onClick={undoAutoGroup}
+            style={{
+              flexShrink: 0, background: 'transparent', border: '1px solid var(--border-dark)',
+              padding: '.2rem .6rem', cursor: 'pointer', color: 'var(--ink)',
+              fontFamily: 'var(--font-mono)', fontSize: '.66rem',
+              letterSpacing: '.1em', textTransform: 'uppercase',
+            }}
+          >
+            Undo
+          </button>
         </div>
       )}
 

@@ -133,14 +133,18 @@ export async function buildCandidates(userId: string): Promise<ManuscriptCandida
     const supabase = getServiceClient();
     const { data: msRows, error } = await supabase
       .from(MANUSCRIPTS_TABLE)
-      .select('id, title')
+      .select('id, title, format')
       .eq('user_id', userId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(MAX_CANDIDATES);
     if (error || !msRows || msRows.length === 0) return [];
 
-    const manuscripts = msRows as unknown as Array<{ id: string; title: string | null }>;
+    const manuscripts = msRows as unknown as Array<{
+      id: string;
+      title: string | null;
+      format: string | null;
+    }>;
 
     const { data: readingRows } = await supabase
       .from(READINGS_TABLE)
@@ -171,10 +175,91 @@ export async function buildCandidates(userId: string): Promise<ManuscriptCandida
       for (const text of textsByManuscript.get(m.id) ?? []) {
         for (const e of extractEntities(text)) entities.add(e);
       }
-      return { id: m.id, title: m.title, entities };
+      return { id: m.id, title: m.title, format: m.format, entities };
     });
   } catch {
     return [];
+  }
+}
+
+/** One chapter of a manuscript — a work, not a row: a chapter revised five
+ *  times is still one chapter (MAX_VERSIONS keeps up to 5 rows per work). */
+export interface ManuscriptChapter {
+  workId: string;
+  title: string;
+  sequenceIndex: number | null;
+  updatedAt: string;
+}
+
+/**
+ * The chapters currently grouped into a manuscript, for the correction control
+ * in the ledger view (§2 — a misgrouping must be visible and reversible after
+ * the fact, not only at upload).
+ */
+export async function listChapters(
+  userId: string,
+  manuscriptId: string
+): Promise<ManuscriptChapter[]> {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(READINGS_TABLE)
+      .select('work_id, work_title, sequence_index, created_at')
+      .eq('user_id', userId)
+      .eq('manuscript_id', manuscriptId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    if (error || !data) return [];
+
+    // Newest row per work wins — the query is newest-first, so the first
+    // sighting of a work_id carries its current title and position.
+    const seen = new Map<string, ManuscriptChapter>();
+    for (const r of data as unknown as Array<{
+      work_id: string;
+      work_title: string | null;
+      sequence_index: number | null;
+      created_at: string;
+    }>) {
+      if (seen.has(r.work_id)) continue;
+      seen.set(r.work_id, {
+        workId: r.work_id,
+        title: r.work_title || 'Untitled',
+        sequenceIndex: r.sequence_index,
+        updatedAt: r.created_at,
+      });
+    }
+
+    return [...seen.values()].sort(
+      (a, b) => (a.sequenceIndex ?? Number.MAX_SAFE_INTEGER) - (b.sequenceIndex ?? Number.MAX_SAFE_INTEGER)
+    );
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Remove a whole work from its manuscript — the undo for a wrong grouping,
+ * whether it was auto-applied or confirmed.
+ *
+ * Detaches by work rather than by reading: "this chapter isn't part of that
+ * book" is a statement about the chapter, and leaving four of its five stored
+ * versions attached would be a half-corrected state the writer cannot see.
+ */
+export async function detachWork(userId: string, workId: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(READINGS_TABLE)
+      .update({ manuscript_id: null, sequence_index: null })
+      .eq('user_id', userId)
+      .eq('work_id', workId)
+      .not('manuscript_id', 'is', null)
+      .select('id');
+    return !error && Array.isArray(data) && data.length > 0;
+  } catch {
+    return false;
   }
 }
 

@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { suggestManuscript } from '../../../../lib/manuscript-match';
+import { classifyMatch } from '../../../../lib/manuscript-match';
 import { buildCandidates, createManuscript, listManuscripts } from '../../../../lib/manuscripts';
 import { logSecurityEvent } from '../../../../lib/security-log';
 
@@ -9,7 +9,7 @@ import { logSecurityEvent } from '../../../../lib/security-log';
  * POST /api/ledger/suggest — "does this look like part of something you're
  * already writing?" (§2 option C).
  *
- * Deterministic and local: `suggestManuscript` makes no model call, so this is
+ * Deterministic and local: `classifyMatch` makes no model call, so this is
  * cheap enough to run while the writer is still looking at the upload form.
  * Returns the proposal AND the full manuscript list, so the confirm step can
  * offer "no, this one instead" without a second round trip — ruling 2 asked
@@ -54,11 +54,24 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const text = typeof body.text === 'string' ? body.text : '';
+  const mode = typeof body.mode === 'string' ? body.mode : null;
   const [candidates, manuscripts] = await Promise.all([
     buildCandidates(userId),
     listManuscripts(userId),
   ]);
 
-  const suggestion = text ? suggestManuscript(text, candidates) : null;
-  return NextResponse.json({ suggestion, manuscripts });
+  // `band` decides whether the client asks at all (§2, confidence banding):
+  //   auto    — group without prompting
+  //   confirm — a match exists but could be coincidence; show the step
+  //   none    — nothing to propose
+  const classification = text
+    ? classifyMatch(text, candidates, mode)
+    : { band: 'none' as const, suggestion: null, failedCriteria: [] };
+
+  return NextResponse.json({
+    band: classification.band,
+    suggestion: classification.suggestion,
+    failedCriteria: classification.failedCriteria,
+    manuscripts,
+  });
 }

@@ -323,6 +323,20 @@ export async function POST(req: NextRequest): Promise<Response> {
           sequenceIndex: attachment?.sequenceIndex ?? null,
         });
 
+        // Tell the client what was grouped, so a silent auto-group leaves a
+        // visible trace it can undo. Sent after `done` deliberately: the
+        // reading is already on screen and this must not delay it. A grouping
+        // the writer never learns about is the dangerous case — it cannot be
+        // caught, and a wrong one goes on to poison every later flag (§2).
+        if (attachment) {
+          send({
+            type: 'grouped',
+            workId,
+            manuscriptId: attachment.manuscriptId,
+            sequenceIndex: attachment.sequenceIndex,
+          });
+        }
+
         // Cost log (financial model data collection) — metadata + token counts
         // only, never the text. Best-effort, never blocks the reading.
         // NOTE: deliberately still only `result.costEntries`. submission_costs

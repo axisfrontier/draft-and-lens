@@ -39,6 +39,13 @@ interface LedgerEntity {
   facts: LedgerFact[];
 }
 
+interface Chapter {
+  workId: string;
+  title: string;
+  sequenceIndex: number | null;
+  updatedAt: string;
+}
+
 /** Plain-language glosses, per Principle 27 — a craft term is explained in the
  *  same breath it is used. These say what the row means to the writer, not
  *  what the term means in the abstract. */
@@ -65,6 +72,7 @@ function displayAttribute(attribute: string): string {
 export default function LedgerDetailPage({ params }: { params: { manuscriptId: string } }) {
   const { isSignedIn } = useAuth();
   const [entities, setEntities] = useState<LedgerEntity[] | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [lockingFact, setLockingFact] = useState<string | null>(null);
@@ -82,7 +90,10 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
   const load = useCallback(() => {
     fetch(`/api/ledger/${params.manuscriptId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Could not load this ledger.'))))
-      .then((d: { entities: LedgerEntity[] }) => setEntities(d.entities))
+      .then((d: { entities: LedgerEntity[]; chapters?: Chapter[] }) => {
+        setEntities(d.entities);
+        setChapters(d.chapters ?? []);
+      })
       .catch((e: Error) => setError(e.message));
   }, [params.manuscriptId]);
 
@@ -162,6 +173,32 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
     draft.value.trim() !== '' &&
     (draft.lockKind === 'rule' || draft.lockFromSequence !== '');
 
+  /**
+   * Remove a chapter that was grouped here by mistake (§2).
+   *
+   * This is the safety net for whatever the auto-grouping confidence bar gets
+   * wrong. The undo on the report only exists in the moment; this one is here
+   * whenever the writer notices — which matters, because a wrong grouping is
+   * most often spotted later, when the ledger starts showing a character who
+   * belongs to a different book.
+   */
+  async function detachChapter(workId: string) {
+    setBusy(workId);
+    setError('');
+    try {
+      const res = await fetch('/api/ledger/detach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workId }),
+      });
+      if (!res.ok) setError('Could not remove that chapter.');
+      else load();
+    } catch {
+      setError('Could not remove that chapter.');
+    }
+    setBusy(null);
+  }
+
   const locks = (entities ?? []).flatMap((e) => e.facts).filter((f) => f.lockKind);
 
   return (
@@ -204,6 +241,45 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {/* Chapters in this manuscript — the correction surface for a wrong
+          grouping. Deliberately near the top: if a chapter does not belong
+          here, that is the thing to fix before reading anything below it. */}
+      {chapters.length > 0 && (
+        <section className="mt-6 max-w-2xl">
+          <div className="font-mono text-xs uppercase tracking-widest text-amber-d">
+            Chapters in this book
+          </div>
+          <ul className="mt-2">
+            {chapters.map((ch) => (
+              <li
+                key={ch.workId}
+                className="flex items-baseline justify-between gap-4"
+                style={{ borderBottom: '1px solid var(--rule-l)', padding: '.5rem 0' }}
+              >
+                <span className="text-sm text-ink">
+                  {ch.sequenceIndex !== null && (
+                    <span className="font-mono text-xs text-ink-soft">{ch.sequenceIndex}. </span>
+                  )}
+                  {ch.title}
+                </span>
+                <button
+                  type="button"
+                  disabled={busy === ch.workId}
+                  onClick={() => detachChapter(ch.workId)}
+                  className="shrink-0 rounded border border-ink-soft px-2 py-0.5 text-xs text-ink hover:bg-cream"
+                >
+                  Not part of this book
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-ink-soft">
+            Removing a chapter leaves the reading untouched — it only stops it counting towards what
+            this book has established.
+          </p>
         </section>
       )}
 

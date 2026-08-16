@@ -9,6 +9,7 @@ import {
   unlockFact,
   type LockKind,
 } from '../../../../lib/continuity';
+import { listChapters } from '../../../../lib/manuscripts';
 import { logSecurityEvent } from '../../../../lib/security-log';
 
 /**
@@ -57,8 +58,14 @@ export async function GET(_req: NextRequest, { params }: Params): Promise<Respon
   const user = await requireUser('GET /api/ledger/[manuscriptId]');
   if (typeof user !== 'string') return user;
 
-  const entities = await listLedger(user, params.manuscriptId);
-  return NextResponse.json({ entities });
+  // Chapters come back alongside the facts so the view can show what is
+  // grouped into this manuscript, not just what was extracted from it — the
+  // correction surface for a wrong grouping (§2).
+  const [entities, chapters] = await Promise.all([
+    listLedger(user, params.manuscriptId),
+    listChapters(user, params.manuscriptId),
+  ]);
+  return NextResponse.json({ entities, chapters });
 }
 
 export async function POST(req: NextRequest, { params }: Params): Promise<Response> {
