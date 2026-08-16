@@ -227,13 +227,16 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
 **BUG 1 — a revised chapter is filed as an ADDITIONAL chapter, not the same one.**
 `resolveAttachment` always assigns "highest + 1", with no check for whether that work is already in this manuscript. Evidence in live data: work `c737cd7f` occupies BOTH ch1 and ch2, and work `63f74d39` occupies ch6 and ch7. So revising chapter 1 makes the book appear to gain a chapter, and the chapter list shows the same work twice under different numbers.
 
-**BUG 2 — re-extraction duplicates facts, and nothing supersedes the old ones.**
+**BUG 2 — FIXED 2026-08-16 (commit `8d8ae70`).** ~~re-extraction duplicates facts, and nothing supersedes the old ones.~~
 Every submission re-extracts and inserts a fresh set. Live data: 9 fact rows for 5 distinct (entity, attribute, value) identities. The `superseded_by` column exists in the schema (§3) and nothing writes to it.
 
 **Why these two together BLOCK detection, and must be fixed before it:**
 A writer revises chapter 3 and changes a character's eye colour. The old fact stays in the ledger; the new one is added alongside it. Detection then compares the two and reports that the book contradicts itself — **when the "contradiction" is between a chapter and its own earlier draft.** That is precisely the trust-destroying false positive §1.1 is built to prevent, and it would fire on the single most ordinary writer behaviour there is: revising. Building detection on top of this would make the feature's worst failure mode its most common one.
 
-*Suggested shape, not decided:* on attach, reuse the existing `sequence_index` when the work is already in the manuscript; on re-extract, soft-delete or supersede facts whose `reading_id` belongs to a superseded reading of the same work. Both need Nenad's ruling.
+**Bug 2 resolution (Nenad's ruling, 2026-08-16): soft-delete the old draft's facts outright, NOT `superseded_by`.** His reasoning, worth preserving: that column represents *a later chapter legitimately updating an established fact*, which is a meaningfully different case from *a chapter being revised before its real version is submitted*. Using one mechanism for both would conflate two concepts. The old draft's facts were never canonical.
+Implemented as `retireFactsForWork` in `src/lib/continuity.ts`, called from `/api/analyse` before the new facts are stored so the ledger never briefly holds both. **Writer-authored locks are excluded from retirement** — they are the writer's own assertion, not an extraction, so redrafting a chapter must not remove them. Verified 9/9 against live tables.
+
+**BUG 1 STILL OPEN — not ruled on.** A revision is still filed as an *additional* chapter (`resolveAttachment` assigns "highest + 1" without checking whether that `work_id` is already in the manuscript). Live evidence: work `c737cd7f` at ch1 and ch2; `63f74d39` at ch6 and ch7. Suggested fix, not implemented: reuse the existing `sequence_index` when the work is already grouped. Bug 2's fix works regardless of this — it keys on `work_id`, not on chapter number — but the chapter list still shows the same work twice under different numbers.
 
 **WATCH ITEM RECURRED — comparative/encoded values, as flagged.** Two of five: `age_gap_over_marisol = "9 years older"` and `eldest_of_three_siblings = "true"`. Both push the claim into the attribute name and leave a value that is not a short normalised token. Not harmful yet, but these compare badly: two chapters phrasing the same relationship differently would produce two unrelated attributes that can never be checked against each other. The prompt's normalisation rule needs tightening before detection relies on attribute matching.
 
