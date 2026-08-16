@@ -203,12 +203,32 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
 
   return (
     <main className="min-h-screen bg-paper p-8 text-ink">
-      <a
-        href="/ledger"
-        className="font-mono text-xs uppercase tracking-widest text-amber-d no-underline"
-      >
-        ← All manuscripts
-      </a>
+      {/* Two exits, because they go to different places: back up to the
+          manuscript list, or out of the ledger entirely to the reading this was
+          opened from. Only the first existed, which left the writer one link
+          from a page that also had no way out. */}
+      <div className="flex items-center gap-4">
+        <a
+          href="/ledger"
+          className="font-mono text-xs uppercase tracking-widest text-amber-d no-underline"
+        >
+          ← All manuscripts
+        </a>
+        <button
+          type="button"
+          onClick={() => {
+            // See the note on leave() in the ledger index — window.close() is a
+            // no-op for a tab the writer opened themselves.
+            window.close();
+            setTimeout(() => {
+              if (!window.closed) window.location.href = '/';
+            }, 100);
+          }}
+          className="cursor-pointer border-0 bg-transparent p-0 font-mono text-xs uppercase tracking-widest text-amber-d"
+        >
+          ← Back to your work
+        </button>
+      </div>
       <h1 className="mt-4 font-serif text-2xl">What this book has established</h1>
 
       {isSignedIn !== true && (
