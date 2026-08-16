@@ -830,7 +830,13 @@ export default function AppHomePage() {
                   ruling 2 was explicit that this must be a single lightweight
                   confirm/adjust, not a form. Only appears once there is
                   something to group against. */}
-              {grouping !== null && (grouping.manuscripts.length > 0 || grouping.suggestion) && (
+              {/* Shown as soon as the server has answered, even when it has
+                  nothing to propose. An earlier version hid the panel unless a
+                  suggestion or an existing manuscript came back — which made
+                  the feature unreachable, because with no manuscripts there was
+                  no way to create the first one. "Start a new book" has to be
+                  available from the empty state or grouping can never begin. */}
+              {grouping !== null && (
                 <div
                   style={{
                     marginTop: '.75rem', padding: '.6rem .8rem',
