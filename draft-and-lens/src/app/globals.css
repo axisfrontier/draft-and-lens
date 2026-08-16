@@ -27,10 +27,14 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Without this, body is only as tall as its content and the viewport shows
+       the browser's default white below it — visible on any short page. */
+    min-height: 100%;
   }
 
   body {
     @apply bg-paper font-sans text-ink antialiased;
+    min-height: 100vh;
   }
 }
 
