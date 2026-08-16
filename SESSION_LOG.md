@@ -220,7 +220,26 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
    - **Not yet verified end-to-end through a real submission** — that happens on the next grouped complete analysis. What to check: the ledger for that manuscript stops saying "Nothing tracked yet".
    - **Watch item:** one extracted value came back as `hair_colour_childhood = darker than current` — a comparative rather than the short normalised value the prompt asks for. Harmless here (dialogue register, 0.55 confidence, so it demotes), but if this shape recurs the prompt's normalisation rule needs tightening.
    - **Deferred deliberately:** extraction counts/rejection reasons are not logged. They belong in telemetry, and `logSecurityEvent`'s typed union is the wrong home — widening it would blur what a security event means. Rejection patterns are the earliest signal the extractor has drifted, so this is worth a proper channel.
-3. **Detection** — the actual contradiction flagging. **IN scope for beta**, added 2026-08-16.
+### EXTRACTION VERIFIED END-TO-END 2026-08-16 — and it exposed two bugs that BLOCK detection
+
+**Verification passed.** A grouped complete submission produced 5 distinct facts across 3 entities; the ledger stopped saying "Nothing tracked yet". Registers, categories and verbatim quotes all correct.
+
+**BUG 1 — a revised chapter is filed as an ADDITIONAL chapter, not the same one.**
+`resolveAttachment` always assigns "highest + 1", with no check for whether that work is already in this manuscript. Evidence in live data: work `c737cd7f` occupies BOTH ch1 and ch2, and work `63f74d39` occupies ch6 and ch7. So revising chapter 1 makes the book appear to gain a chapter, and the chapter list shows the same work twice under different numbers.
+
+**BUG 2 — re-extraction duplicates facts, and nothing supersedes the old ones.**
+Every submission re-extracts and inserts a fresh set. Live data: 9 fact rows for 5 distinct (entity, attribute, value) identities. The `superseded_by` column exists in the schema (§3) and nothing writes to it.
+
+**Why these two together BLOCK detection, and must be fixed before it:**
+A writer revises chapter 3 and changes a character's eye colour. The old fact stays in the ledger; the new one is added alongside it. Detection then compares the two and reports that the book contradicts itself — **when the "contradiction" is between a chapter and its own earlier draft.** That is precisely the trust-destroying false positive §1.1 is built to prevent, and it would fire on the single most ordinary writer behaviour there is: revising. Building detection on top of this would make the feature's worst failure mode its most common one.
+
+*Suggested shape, not decided:* on attach, reuse the existing `sequence_index` when the work is already in the manuscript; on re-extract, soft-delete or supersede facts whose `reading_id` belongs to a superseded reading of the same work. Both need Nenad's ruling.
+
+**WATCH ITEM RECURRED — comparative/encoded values, as flagged.** Two of five: `age_gap_over_marisol = "9 years older"` and `eldest_of_three_siblings = "true"`. Both push the claim into the attribute name and leave a value that is not a short normalised token. Not harmful yet, but these compare badly: two chapters phrasing the same relationship differently would produce two unrelated attributes that can never be checked against each other. The prompt's normalisation rule needs tightening before detection relies on attribute matching.
+
+**My error, recorded:** I ran the verification twice. The first `Runtime.evaluate` call timed out at 45s but the request had already reached the server and completed, producing ch6; the retry produced ch7. A timed-out tool call does not cancel server-side work. Cost: one extra analysis. ch6 and ch7 are my test artefacts and can be detached from the ledger view.
+
+3. **Detection** — the actual contradiction flagging. **IN scope for beta**, added 2026-08-16. **BLOCKED on bugs 1 and 2 above**, and on Nenad's ruling on model tier and the §5 gates.
 4. Ledger phase 3 — timeline reasoning (ruling 7). Positioned after or alongside extraction, since it operates on extracted facts.
 5. Mentor mode — persistent cross-session memory, editor→mentor progression.
 6. Differentiator messaging / editor voice — depends on Mentor mode existing, since the line is only true once there is real memory to point at.
