@@ -131,6 +131,7 @@ export function ReportView({
   revisionStatus,
   readAt,
   onFreshReadingRequest,
+  manuscriptId,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -143,6 +144,10 @@ export function ReportView({
   revisionStatus?: string;
   readAt?: string;
   onFreshReadingRequest?: () => void;
+  /** Set when this reading belongs to a grouped manuscript — adds the sidebar
+   *  link through to its continuity ledger. Absent for a standalone piece,
+   *  where there is no ledger to point at. */
+  manuscriptId?: string;
 }) {
   const verdict = extractVerdict(report);
   const parsed = parseReport(report);
@@ -329,6 +334,21 @@ export function ReportView({
         <a href="#sec-title" style={sidebarLink}>Title &amp; summary</a>
         <a href="#sec-verdict" style={sidebarLink}>Verdict</a>
         <a href="#sec-bible" style={sidebarLink}>Character bible</a>
+        {/* Only present when this reading is part of a grouped manuscript.
+            Conditional by the same logic as the Continuity section itself
+            (Principle 26 — a link earns its place by there being something
+            behind it); a standalone piece has no ledger to open. Opens in a new
+            tab so the reading is not lost. */}
+        {manuscriptId && (
+          <a
+            href={`/ledger/${manuscriptId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={sidebarLink}
+          >
+            Continuity ledger
+          </a>
+        )}
 
         <div style={sidebarGroup}>Dashboard</div>
         <a href="#sec-dashboard" style={sidebarLink} onClick={() => expandCollapsible('sec-dashboard')}>Dimension map</a>

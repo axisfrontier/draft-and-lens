@@ -85,6 +85,19 @@ export function SiteNav() {
           </SignUpButton>
         </SignedOut>
         <SignedIn>
+          {/* Continuity ledger. Signed-in only, like "Your work", because it is
+              per-writer data. Named for the craft idea rather than the data
+              structure: "Ledger" alone says nothing to a novelist, and the page
+              it opens is titled Continuity. Without this the feature had no
+              entry point at all outside the one-off line on a grouped report. */}
+          <a href="/ledger" target="_blank" rel="noopener noreferrer" style={{
+            fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+            letterSpacing: '.12em', textTransform: 'uppercase',
+            color: pathname.startsWith('/ledger') ? 'var(--amber-l)' : 'var(--paper-dark)',
+            textDecoration: 'none',
+          }}>
+            Continuity
+          </a>
           <a href="/account" target="_blank" rel="noopener noreferrer" style={{
             fontFamily: 'var(--font-mono)', fontSize: '.72rem',
             letterSpacing: '.12em', textTransform: 'uppercase',

@@ -169,6 +169,11 @@ export default function AppHomePage() {
    *  non-blocking trace with an undo. Never set for a grouping the writer
    *  chose — they do not need telling what they just did. */
   const [autoGrouped, setAutoGrouped] = useState<{ workId: string; title: string } | null>(null);
+  /** The manuscript this reading was actually filed under, whether auto-applied
+   *  or chosen. Drives the sidebar link through to the ledger — separate from
+   *  `autoGrouped`, which exists only to show the undo trace and so is set for
+   *  auto-groupings alone. */
+  const [groupedManuscriptId, setGroupedManuscriptId] = useState<string | null>(null);
   const [chosenManuscript, setChosenManuscript] = useState<string | null>(null);
   const [groupingOpen, setGroupingOpen] = useState(false);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
@@ -234,6 +239,7 @@ export default function AppHomePage() {
     }
     setAutoGrouped(null);
     setChosenManuscript(null);
+    setGroupedManuscriptId(null);
   }
 
   async function createManuscriptAndSelect() {
@@ -406,8 +412,9 @@ export default function AppHomePage() {
             setRevisionStatus(evt.revision?.status ?? 'new');
             setReadAt(evt.revision?.readAt ?? null);
           } else if (evt.type === 'grouped') {
-            // Only surfaced when the grouping was applied without asking; a
-            // writer who chose it themselves needs no notice.
+            setGroupedManuscriptId(evt.manuscriptId);
+            // The undo trace, by contrast, is only surfaced when the grouping
+            // was applied without asking; a writer who chose it needs no notice.
             if (grouping?.band === 'auto' && grouping.suggestion) {
               setAutoGrouped({
                 workId: evt.workId,
@@ -1250,6 +1257,7 @@ export default function AppHomePage() {
           submittedText={text || uploadedFileText}
           coverage={coverage}
           mode={mode ?? undefined}
+          manuscriptId={groupedManuscriptId ?? undefined}
           revisionStatus={revisionStatus ?? undefined}
           readAt={readAt ?? undefined}
           onFreshReadingRequest={() => analyse(true)}
