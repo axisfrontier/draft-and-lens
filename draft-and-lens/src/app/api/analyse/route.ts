@@ -7,7 +7,7 @@ import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
-import { listKnownEntities, storeFacts } from '../../../lib/continuity';
+import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { resolveAttachment } from '../../../lib/manuscripts';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
@@ -355,6 +355,15 @@ export async function POST(req: NextRequest): Promise<Response> {
                 text: clean,
                 chapterLabel: result.diagnostic.title || `Chapter ${attachment.sequenceIndex}`,
                 knownEntities: known,
+              });
+              // Retire the previous draft's facts BEFORE storing the new ones,
+              // so the ledger never briefly holds both. A revision replaces
+              // what that chapter established; it does not add to it.
+              await retireFactsForWork({
+                userId,
+                manuscriptId: attachment.manuscriptId,
+                workId,
+                keepReadingId: readingId,
               });
               const stored = await storeFacts({
                 userId,

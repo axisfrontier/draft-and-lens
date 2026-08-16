@@ -405,3 +405,67 @@ export async function storeFacts(args: {
     return 0;
   }
 }
+
+/**
+ * Retire the facts extracted from earlier readings of the same work.
+ *
+ * Called before storing a re-extraction. A chapter that is revised and
+ * resubmitted must not leave its previous draft's facts in the ledger: they
+ * were never canonical — they came from a version the writer has already
+ * replaced — and leaving them means detection would eventually compare a
+ * chapter against its own earlier draft and report the book contradicting
+ * itself. That is the false positive §1.1 exists to prevent, and it would fire
+ * on the most ordinary thing a writer does.
+ *
+ * SOFT-DELETE, NOT `superseded_by` (Nenad's ruling, 2026-08-16). That column
+ * means "a later chapter legitimately replaced this established fact", which is
+ * a different thing from "this draft never counted". Using one mechanism for
+ * both would blur two genuinely distinct concepts, and the ledger would lose
+ * the ability to say which had happened.
+ *
+ * Soft rather than hard so these follow the same retention path as everything
+ * else the writer owns (§8), and so a mistaken supersede is recoverable.
+ */
+export async function retireFactsForWork(args: {
+  userId: string;
+  manuscriptId: string;
+  workId: string;
+  /** The reading just stored — its facts are the new truth and must survive. */
+  keepReadingId: string | null;
+}): Promise<number> {
+  if (!isSupabaseConfigured()) return 0;
+  try {
+    const supabase = getServiceClient();
+
+    // Which readings belong to this work? Facts point at a reading, and a work
+    // has up to MAX_VERSIONS of them.
+    const { data: readings } = await supabase
+      .from('readings')
+      .select('id')
+      .eq('user_id', args.userId)
+      .eq('work_id', args.workId);
+    if (!readings) return 0;
+
+    const stale = (readings as unknown as Array<{ id: string }>)
+      .map((r) => r.id)
+      .filter((id) => id !== args.keepReadingId);
+    if (stale.length === 0) return 0;
+
+    const { data, error } = await supabase
+      .from(FACTS_TABLE)
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', args.userId)
+      .eq('manuscript_id', args.manuscriptId)
+      .in('reading_id', stale)
+      .is('deleted_at', null)
+      // Writer-authored locks are NEVER retired by a revision. They are the
+      // writer's own assertion about the book, not an extraction from a draft,
+      // so a redraft of one chapter has no business removing them.
+      .eq('source', 'extracted')
+      .select('id');
+    if (error || !data) return 0;
+    return data.length;
+  } catch {
+    return 0;
+  }
+}
