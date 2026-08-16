@@ -69,6 +69,15 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
   const [busy, setBusy] = useState<string | null>(null);
   const [lockingFact, setLockingFact] = useState<string | null>(null);
   const [stateChapter, setStateChapter] = useState('');
+  const [addingLock, setAddingLock] = useState(false);
+  const [draft, setDraft] = useState({
+    entity: '',
+    attribute: '',
+    value: '',
+    category: 'name',
+    lockKind: 'rule' as LockKind,
+    lockFromSequence: '',
+  });
 
   const load = useCallback(() => {
     fetch(`/api/ledger/${params.manuscriptId}`)
@@ -104,6 +113,54 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
     setLockingFact(null);
     setStateChapter('');
   }
+
+  /**
+   * Add a lock with no extracted fact behind it (§5.7). This is the path that
+   * makes locking useful before extraction exists — ruling 8's whole argument
+   * for moving locks into phase 2. `character:` is prefixed automatically when
+   * the writer has not named a kind, so nobody has to learn the entity syntax.
+   */
+  async function submitNewLock() {
+    setBusy('new');
+    setError('');
+    const entity = draft.entity.includes(':')
+      ? draft.entity.trim()
+      : `character:${draft.entity.trim().toLowerCase()}`;
+    try {
+      const res = await fetch(`/api/ledger/${params.manuscriptId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity,
+          category: draft.category,
+          attribute: draft.attribute,
+          value: draft.value,
+          lockKind: draft.lockKind,
+          lockFromSequence:
+            draft.lockKind === 'state' && draft.lockFromSequence !== ''
+              ? Number(draft.lockFromSequence)
+              : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const d = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(d?.error ?? 'Could not add that lock.');
+      } else {
+        setAddingLock(false);
+        setDraft({ entity: '', attribute: '', value: '', category: 'name', lockKind: 'rule', lockFromSequence: '' });
+        load();
+      }
+    } catch {
+      setError('Could not add that lock.');
+    }
+    setBusy(null);
+  }
+
+  const newLockReady =
+    draft.entity.trim() !== '' &&
+    draft.attribute.trim() !== '' &&
+    draft.value.trim() !== '' &&
+    (draft.lockKind === 'rule' || draft.lockFromSequence !== '');
 
   const locks = (entities ?? []).flatMap((e) => e.facts).filter((f) => f.lockKind);
 
@@ -147,6 +204,105 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {isSignedIn === true && (
+        <section className="mt-6 max-w-2xl">
+          {!addingLock ? (
+            <button
+              type="button"
+              onClick={() => setAddingLock(true)}
+              className="rounded border border-ink-soft px-3 py-1.5 text-sm text-ink hover:bg-cream"
+            >
+              Add a lock
+            </button>
+          ) : (
+            <div className="rounded p-3" style={{ background: 'var(--cream)' }}>
+              <div className="text-sm text-ink">Something this book must hold to</div>
+              <div className="mt-1 text-xs text-ink-soft">
+                A <strong>rule</strong> holds everywhere — “magic always costs blood”, “Katherine is
+                never spelled Kathryn”. A <strong>state</strong> holds from a chapter onward.
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                <input
+                  placeholder="Who or what (e.g. Sarah)"
+                  value={draft.entity}
+                  onChange={(e) => setDraft({ ...draft, entity: e.target.value })}
+                  className="w-44 rounded border border-ink-soft px-2 py-1"
+                />
+                <input
+                  placeholder="What about them (e.g. eye colour)"
+                  value={draft.attribute}
+                  onChange={(e) => setDraft({ ...draft, attribute: e.target.value })}
+                  className="w-52 rounded border border-ink-soft px-2 py-1"
+                />
+                <input
+                  placeholder="Must be (e.g. green)"
+                  value={draft.value}
+                  onChange={(e) => setDraft({ ...draft, value: e.target.value })}
+                  className="w-40 rounded border border-ink-soft px-2 py-1"
+                />
+                <select
+                  value={draft.category}
+                  onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+                  className="rounded border border-ink-soft px-2 py-1"
+                >
+                  <option value="name">Name</option>
+                  <option value="physical">Physical description</option>
+                  <option value="age_date">Age or date</option>
+                  <option value="relationship">Relationship</option>
+                </select>
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    checked={draft.lockKind === 'rule'}
+                    onChange={() => setDraft({ ...draft, lockKind: 'rule' })}
+                  />
+                  Holds everywhere
+                </label>
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    checked={draft.lockKind === 'state'}
+                    onChange={() => setDraft({ ...draft, lockKind: 'state' })}
+                  />
+                  Holds from chapter
+                </label>
+                {draft.lockKind === 'state' && (
+                  <input
+                    type="number"
+                    min={1}
+                    value={draft.lockFromSequence}
+                    onChange={(e) => setDraft({ ...draft, lockFromSequence: e.target.value })}
+                    className="w-16 rounded border border-ink-soft px-1 py-1"
+                  />
+                )}
+              </div>
+
+              <div className="mt-3 flex gap-2 text-xs">
+                <button
+                  type="button"
+                  disabled={!newLockReady || busy === 'new'}
+                  onClick={submitNewLock}
+                  className="rounded border border-ink-soft px-2.5 py-1 text-ink hover:bg-paper disabled:opacity-40"
+                >
+                  Add lock
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddingLock(false)}
+                  className="rounded border border-ink-soft px-2.5 py-1 text-ink hover:bg-paper"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       )}
 
