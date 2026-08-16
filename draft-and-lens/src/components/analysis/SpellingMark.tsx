@@ -137,7 +137,7 @@ export function SpellingMark({
             style={{
               fontFamily: 'var(--font-sans)',
               fontSize: '.74rem',
-              fontWeight: 600,
+              fontWeight: 500,
               background: 'var(--paper)',
               color: 'var(--ink)',
               border: 'none',

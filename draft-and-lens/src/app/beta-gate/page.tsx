@@ -57,7 +57,7 @@ export default function BetaGatePage({
               width: '100%', fontFamily: 'var(--font-mono)', fontSize: '.68rem',
               letterSpacing: '.18em', textTransform: 'uppercase', padding: '.9rem',
               background: 'var(--amber)', color: 'var(--black-band)', border: 'none',
-              cursor: 'pointer', fontWeight: 600, borderRadius: 12,
+              cursor: 'pointer', fontWeight: 500, borderRadius: 12,
             }}
           >
             Enter

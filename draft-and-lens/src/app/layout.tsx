@@ -16,7 +16,11 @@ const libreBaskerville = Libre_Baskerville({
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
+  // 300 dropped 2026-08-16: zero usages in the app. Every declared variant is
+  // a font file the browser may fetch, and each one is fetched lazily on first
+  // use, so keeping unused weights only costs payload. 400 and 500 are both in
+  // real use (body copy, and font-medium / the ex-600 sites).
+  weight: ['400', '500'],
   style: ['normal', 'italic'],
   variable: '--font-sans',
   display: 'swap',
@@ -24,7 +28,8 @@ const ibmPlexSans = IBM_Plex_Sans({
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
+  // 300 dropped 2026-08-16: zero usages, same reasoning as the sans above.
+  weight: ['400', '500'],
   style: ['normal', 'italic'],
   variable: '--font-mono',
   display: 'swap',

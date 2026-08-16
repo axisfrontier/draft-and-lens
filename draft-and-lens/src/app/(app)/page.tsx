@@ -473,7 +473,7 @@ export default function AppHomePage() {
     width: '2rem', height: '2rem', borderRadius: '50%',
     background: active ? 'var(--amber)' : 'var(--border-dark)',
     color: active ? 'var(--black-band)' : 'var(--paper-dark)',
-    fontFamily: 'var(--font-mono)', fontSize: '.95rem', fontWeight: 600,
+    fontFamily: 'var(--font-mono)', fontSize: '.95rem', fontWeight: 500,
     flexShrink: 0,
   });
 
@@ -506,7 +506,7 @@ export default function AppHomePage() {
                 marginBottom: '1.5rem',
               }}>
                 An editorial intelligence.<br />
-                <em style={{ fontWeight: 300, color: 'var(--amber)', fontStyle: 'italic' }}>Not a ghostwriter.</em>
+                <em style={{ fontWeight: 400, color: 'var(--amber)', fontStyle: 'italic' }}>Not a ghostwriter.</em>
               </h1>
 
               <p style={{

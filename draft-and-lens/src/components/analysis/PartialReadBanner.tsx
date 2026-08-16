@@ -19,7 +19,7 @@ export function PartialReadBanner({ coverage }: { coverage: Coverage | null }) {
         color: 'var(--ink-mid)',
       }}
     >
-      <strong style={{ color: 'var(--amber-d)', fontWeight: 600 }}>Partial read.</strong>{' '}
+      <strong style={{ color: 'var(--amber-d)', fontWeight: 500 }}>Partial read.</strong>{' '}
       This reading covers the first {coverage.wordsRead.toLocaleString()} of{' '}
       {coverage.wordsTotal.toLocaleString()} words — the opening only. The notes, scores, and arc
       reflect only what was read.
