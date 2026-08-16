@@ -6,7 +6,7 @@
  * Client-only; talks to the server through /api/works[...] — imports nothing
  * from src/prompts or src/ai.
  */
-import { closeOrGoHome } from '@/lib/leave-page';
+import { closeOrGoBack } from '@/lib/leave-page';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -112,7 +112,7 @@ export default function AccountPage() {
 
   return (
     <main className="min-h-screen bg-paper p-8 text-ink">
-      <button type="button" onClick={closeOrGoHome} className="bg-transparent border-0 p-0 cursor-pointer font-mono text-xs uppercase tracking-widest text-amber-d">
+      <button type="button" onClick={closeOrGoBack} className="bg-transparent border-0 p-0 cursor-pointer font-mono text-xs uppercase tracking-widest text-amber-d">
         ← Close
       </button>
       <h1 className="mt-4 font-serif text-2xl">Your work</h1>

@@ -176,10 +176,18 @@ export default function AppHomePage() {
   const [groupedManuscriptId, setGroupedManuscriptId] = useState<string | null>(null);
   const [chosenManuscript, setChosenManuscript] = useState<string | null>(null);
   const [groupingOpen, setGroupingOpen] = useState(false);
+  /** True once the grouping question has been put to the writer for this
+   *  submission. Keeps the panel on screen even if a later classification would
+   *  hide it — see the note where it is set. */
+  const [panelShown, setPanelShown] = useState(false);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
 
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
+  // A cleared box means a new submission — the previous answer no longer applies.
+  useEffect(() => {
+    if (countWords(text.trim() || uploadedFileText) === 0) setPanelShown(false);
+  }, [text, uploadedFileText]);
   const overCap = wordCount > TESTER_WORD_CAP;
   const canAnalyse =
     isSignedIn === true &&
@@ -194,7 +202,12 @@ export default function AppHomePage() {
   // on every keystroke in the paste box, and this is a courtesy question, not
   // something worth a request per character.
   useEffect(() => {
-    if (isSignedIn !== true || wordCount === 0 || running) return;
+    // Do not ask before the submission type is known. Criterion 5 of the
+    // auto-grouping bar compares formats, and a null mode fails it closed — so
+    // classifying early always returns `confirm`, shows the panel, and then
+    // silently flips to `auto` the moment the writer picks a type. That made the
+    // confirm step cancel itself, which is the safety mechanism failing open.
+    if (isSignedIn !== true || wordCount === 0 || running || !mode) return;
     const t = setTimeout(() => {
       fetch('/api/ledger/suggest', {
         method: 'POST',
@@ -205,6 +218,11 @@ export default function AppHomePage() {
         .then((d) => {
           if (!d) return;
           setGrouping(d);
+          // Sticky: once the panel has been shown for this submission, a later
+          // classification may not take it away. Re-answering is the writer's
+          // to do; silently upgrading to `auto` behind a question they have
+          // already seen is exactly the failure §2 warns about.
+          if (d.band !== 'auto') setPanelShown(true);
           // `auto` and `confirm` both pre-select the proposal; the difference
           // is whether the writer is asked about it (see the panel's own gate).
           // The bar for `auto` is deliberately high — see AUTO_MIN_* — because
@@ -884,7 +902,7 @@ export default function AppHomePage() {
                   latter is the only route to creating a first manuscript.
                   An earlier version also hid it on 'none', which made the whole
                   feature unreachable. */}
-              {grouping !== null && grouping.band !== 'auto' && (
+              {grouping !== null && (grouping.band !== 'auto' || panelShown) && (
                 <div
                   style={{
                     marginTop: '.75rem', padding: '.6rem .8rem',
@@ -1104,7 +1122,12 @@ export default function AppHomePage() {
               <>
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '2rem',
-                  maxWidth: 1100, margin: '0 auto',
+                  // Matches SiteNav's container (full width, 2.5rem side padding)
+                  // rather than centring in a 1100px column. Centred, the Stop
+                  // button sat well inside the right edge while the avatar above
+                  // it stayed pinned to the far right, so the two read as
+                  // unrelated floating controls instead of a column.
+                  padding: '0 2.5rem',
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{

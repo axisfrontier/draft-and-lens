@@ -80,16 +80,34 @@ export function StoryArc({ beats, id }: { beats: Beat[]; id?: string }) {
       <summary style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
           <span className="dl-chevron" aria-hidden="true" style={{ fontSize: '.7rem', color: 'var(--amber-d)' }}>▸</span>
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '.72rem',
-              letterSpacing: '.2em',
-              textTransform: 'uppercase',
-              color: 'var(--amber-d)',
-            }}
-          >
-            Story arc · interpreted
+          {/* Two-line header matching ScoresDashboard's (mono eyebrow + serif
+              title). This panel previously had the eyebrow alone, so collapsed
+              it read as markedly less prominent than the Craft balance header
+              directly above it, despite being a peer section. */}
+          <div>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '.72rem',
+                letterSpacing: '.2em',
+                textTransform: 'uppercase',
+                color: 'var(--amber-d)',
+                marginBottom: '.4rem',
+              }}
+            >
+              Story arc · interpreted
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '1.4rem',
+                fontWeight: 700,
+                color: 'var(--ink)',
+                letterSpacing: '-.01em',
+              }}
+            >
+              Pacing and tension
+            </div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1.5rem' }}>

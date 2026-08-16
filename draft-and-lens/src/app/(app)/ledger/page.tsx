@@ -11,7 +11,7 @@
  * Client-only; talks to the server through /api/ledger and imports nothing
  * from src/prompts or src/ai (IP boundary).
  */
-import { closeOrGoHome } from '@/lib/leave-page';
+import { closeOrGoBack } from '@/lib/leave-page';
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
@@ -37,10 +37,17 @@ export default function LedgerIndexPage() {
   }, [isSignedIn]);
 
   return (
-    <main className="min-h-screen bg-paper p-8 text-ink">
+    <main
+      // Same container as every other secondary page (glossary, about, privacy,
+      // terms): centred, 760px. These two were left-flush against a full-width
+      // nav, which read as broken alignment beside the rest of the app rather
+      // than as a deliberate layout.
+      style={{ maxWidth: 760, margin: '4rem auto', padding: '0 2rem 6rem' }}
+      className="text-ink"
+    >
       <button
         type="button"
-        onClick={closeOrGoHome}
+        onClick={closeOrGoBack}
         className="mb-4 block cursor-pointer border-0 bg-transparent p-0 font-mono text-xs uppercase tracking-widest text-amber-d"
       >
         ← Back to your work
