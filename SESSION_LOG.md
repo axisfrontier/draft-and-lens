@@ -197,12 +197,20 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
 2. ~~Phase 1 data layer + GDPR cascade~~ — **DONE 2026-08-16.** `src/lib/manuscript-match.ts` (deterministic grouping suggestion, 18 unit tests), `src/lib/manuscripts.ts` (create/list/attach/detach/buildCandidates, verified 19/19 against the live tables), and the §8 cascade across all five user-data functions in `readings.ts` (5 unit tests). Commits `0f8f1f7`, `5f28b11`, `92ff685`.
 3. ~~Phase 2: ledger view + locks~~ — **DONE 2026-08-16.** `src/lib/continuity.ts` (23/23 against live tables, incl. 4 cross-user ownership attempts), `/api/ledger` + `/api/ledger/[manuscriptId]`, and the view at `/ledger` + `/ledger/[manuscriptId]` with promote-to-lock, unlock, remove, and add-directly. Commits `08d2aa4`, `5439697`, `2f6c328`. Build green; IP boundary re-checked on the new client surface (all 5 markers absent, bundle guard passing).
 
-**Beta-completion list (Nenad, 2026-08-16) — separate from the launch checklist, which is OUT OF SCOPE until beta is done:**
+**Beta-completion list (Nenad, 2026-08-16, revised same day after the two blockers below were ruled on):**
 1. Ledger phase 2 — view + locks. **DONE.**
-2. Ledger phase 3 — timeline reasoning (ruling 7).
-3. Mentor mode — persistent cross-session memory, editor→mentor progression.
-4. Differentiator messaging / editor voice — depends on Mentor mode existing, since the line is only true once there is real memory to point at.
+1b. **Grouping confirm step at upload** (ruling 2) — not new scope, just never wired in. Nenad: "go ahead." **IN PROGRESS.**
+2. **Extraction (§9 Stage 1)** — populates the ledger. **IN scope for beta**, added 2026-08-16.
+3. **Detection** — the actual contradiction flagging. **IN scope for beta**, added 2026-08-16.
+4. Ledger phase 3 — timeline reasoning (ruling 7). Positioned after or alongside extraction, since it operates on extracted facts.
+5. Mentor mode — persistent cross-session memory, editor→mentor progression.
+6. Differentiator messaging / editor voice — depends on Mentor mode existing, since the line is only true once there is real memory to point at.
+
+**Nenad's ruling on (b), 2026-08-16, worth preserving verbatim in substance:** the ledger ships as the *real* feature for beta. A manual-only ledger "doesn't answer what Noel actually asked for (automatic contradiction flagging) and risks looking finished while not doing the thing that matters." Extraction and detection are therefore beta items, not post-beta.
+
 *Explicitly out of scope: pre-paid-launch checklist (Clerk production, security re-check, GDPR controls, solicitor review, Stripe, stable reading URLs) and the long-form chunking architecture.*
+
+**Follow-up logged, NOT to be fixed unasked:** audit `softDeleteWork`, `restoreWork` and `renameWork` in `readings.ts` for the same `return !error` pattern fixed in `attachReading` — a Supabase update matching zero rows succeeds with no error. Judged **not trivial** despite being a three-line change: adding the row check makes `softDeleteWork` return false when a work is already deleted, which the account page surfaces as an error to the writer. That is arguably more correct but is a user-visible behaviour change and needs its own verification pass.
 
 ### TWO BLOCKERS FOR THAT LIST — flagged 2026-08-16, need Nenad's ruling
 
