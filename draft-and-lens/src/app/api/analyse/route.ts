@@ -310,7 +310,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         // like everything else here: a grouping failure must never cost the
         // writer the reading they already have on screen.
         const attachment = manuscriptId
-          ? await resolveAttachment(userId, manuscriptId, mode)
+          ? await resolveAttachment(userId, manuscriptId, mode, workId)
           : null;
 
         const readingId = await storeReading({

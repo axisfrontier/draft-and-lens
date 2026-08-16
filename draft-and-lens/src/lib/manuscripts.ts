@@ -313,16 +313,18 @@ export async function attachReading(
  * in it — resolved together because a caller should never have one without the
  * other. Returns null when the manuscript is not theirs or does not exist.
  *
- * The sequence index is "one past the highest so far", not "count + 1": works
- * can be detached and re-ordered, so counting rows would reuse an index that
- * is already taken. Writers reorder chapters afterwards (§2 calls the column
+ * A work already in this manuscript keeps the chapter number it has — a
+ * revision is the same chapter, not a new one. Only a genuinely new work gets
+ * a number, and that is "one past the highest so far" rather than "count + 1":
+ * works can be detached, so counting rows would reuse an index already taken. Writers reorder chapters afterwards (§2 calls the column
  * writer-orderable); this only has to produce a sane default that never
  * collides.
  */
 export async function resolveAttachment(
   userId: string,
   manuscriptId: string,
-  mode?: string | null
+  mode?: string | null,
+  workId?: string | null
 ): Promise<{ manuscriptId: string; sequenceIndex: number } | null> {
   if (!isSupabaseConfigured()) return null;
   try {
@@ -352,6 +354,26 @@ export async function resolveAttachment(
         .eq('id', manuscriptId)
         .eq('user_id', userId)
         .is('format', null);
+    }
+
+    // A REVISION keeps its chapter's number. Without this check every
+    // resubmission was filed as an additional chapter, so revising chapter 1
+    // made the book appear to gain a chapter and the same work showed twice in
+    // the chapter list under different numbers. Keyed on work_id because that
+    // is what resolveRevision already decided identifies "the same piece".
+    if (workId) {
+      const { data: existing } = await supabase
+        .from(READINGS_TABLE)
+        .select('sequence_index')
+        .eq('user_id', userId)
+        .eq('manuscript_id', manuscriptId)
+        .eq('work_id', workId)
+        .not('sequence_index', 'is', null)
+        .order('sequence_index', { ascending: true })
+        .limit(1);
+      const already = (existing as unknown as Array<{ sequence_index: number }> | null)?.[0]
+        ?.sequence_index;
+      if (typeof already === 'number') return { manuscriptId, sequenceIndex: already };
     }
 
     const { data } = await supabase
