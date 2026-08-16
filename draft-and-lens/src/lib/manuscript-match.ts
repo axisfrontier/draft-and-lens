@@ -44,12 +44,35 @@ const NOT_A_NAME: ReadonlySet<string> = new Set([
   'i', 'god', 'christmas', 'easter', 'english', 'french', 'american', 'british',
 ]);
 
+/**
+ * Thresholds for SILENT auto-grouping. Deliberately far above the thresholds
+ * for merely proposing one, because the two failure modes are not symmetric:
+ *
+ *   a missed grouping  → the ledger does less than it could (safe)
+ *   a wrong grouping   → the ledger confidently reports a contradiction
+ *                        between two unrelated books (actively wrong)
+ *
+ * The second is the trust-destroying failure §1.1 is built to avoid, arrived at
+ * structurally rather than through a bad note. So the bar for acting without
+ * asking is "this is obviously the same book", not "something matched".
+ *
+ * First-pass values, to be tuned on real manuscripts — like MIN_OVERLAP, they
+ * are named rather than buried so tuning is a one-line change.
+ */
+export const AUTO_MIN_SHARED = 3;
+export const AUTO_MIN_OVERLAP = 0.6;
+export const AUTO_MIN_DISTINCTIVE = 2;
+export const AUTO_MAX_RIVAL_RATIO = 0.5;
+
 /** A manuscript this submission might belong to. */
 export interface ManuscriptCandidate {
   id: string;
   title: string | null;
   /** Entities accumulated from the chapters already in this manuscript. */
   entities: ReadonlySet<string>;
+  /** Submission format of the manuscript ('story', 'script', …). Null when
+   *  unknown, which blocks auto-grouping — see criterion 5. */
+  format?: string | null;
 }
 
 export interface ManuscriptSuggestion {
@@ -157,34 +180,101 @@ export function suggestManuscript(
   text: string,
   candidates: readonly ManuscriptCandidate[]
 ): ManuscriptSuggestion | null {
-  if (candidates.length === 0) return null;
+  return rankCandidates(extractEntities(text), candidates)[0] ?? null;
+}
 
-  const entities = extractEntities(text);
-  if (entities.size === 0) return null;
+/** Every candidate clearing the propose floor, best first. Shared by the
+ *  suggestion and the confidence banding so they can never disagree. */
+function rankCandidates(
+  entities: ReadonlySet<string>,
+  candidates: readonly ManuscriptCandidate[]
+): ManuscriptSuggestion[] {
+  if (candidates.length === 0 || entities.size === 0) return [];
 
-  let best: ManuscriptSuggestion | null = null;
-
+  const ranked: ManuscriptSuggestion[] = [];
   for (const candidate of candidates) {
     const shared = sharedEntities(entities, candidate.entities);
     if (shared.length < MIN_SHARED_ENTITIES) continue;
-
     const score = entityOverlap(entities, candidate.entities);
     if (score < MIN_OVERLAP) continue;
-
-    const better =
-      best === null ||
-      score > best.score ||
-      (score === best.score && shared.length > best.sharedEntities.length);
-
-    if (better) {
-      best = {
-        manuscriptId: candidate.id,
-        title: candidate.title,
-        score,
-        sharedEntities: shared,
-      };
-    }
+    ranked.push({
+      manuscriptId: candidate.id,
+      title: candidate.title,
+      score,
+      sharedEntities: shared,
+    });
   }
 
-  return best;
+  return ranked.sort(
+    (a, b) => b.score - a.score || b.sharedEntities.length - a.sharedEntities.length
+  );
+}
+
+/**
+ * `auto`    — group silently, no prompt
+ * `confirm` — a match exists but could plausibly be coincidence; ask
+ * `none`    — nothing to propose; standalone stays the default
+ */
+export type MatchBand = 'auto' | 'confirm' | 'none';
+
+export interface MatchClassification {
+  band: MatchBand;
+  suggestion: ManuscriptSuggestion | null;
+  /** Which auto criteria the winner failed. Empty when the band is `auto`.
+   *  Recorded rather than discarded so a threshold that turns out to be badly
+   *  set can be diagnosed from real behaviour instead of guessed at again. */
+  failedCriteria: string[];
+}
+
+/**
+ * Decide whether a match is strong enough to act on without asking.
+ *
+ * Five criteria, all required for `auto`. Criteria 3 and 4 are the ones doing
+ * the real work: raw overlap alone would happily merge two thrillers that both
+ * contain a Sarah, a Tom and a London.
+ */
+export function classifyMatch(
+  text: string,
+  candidates: readonly ManuscriptCandidate[],
+  mode: string | null
+): MatchClassification {
+  const entities = extractEntities(text);
+  const ranked = rankCandidates(entities, candidates);
+  const winner = ranked[0];
+  if (!winner) return { band: 'none', suggestion: null, failedCriteria: [] };
+
+  const failed: string[] = [];
+
+  // 1 — enough shared names that coincidence stops being a reasonable
+  // explanation. Two common first names across unrelated novels is plausible.
+  if (winner.sharedEntities.length < AUTO_MIN_SHARED) failed.push('shared-names');
+
+  // 2 — the bulk of the smaller cast is shared, not two names at the edges.
+  if (winner.score < AUTO_MIN_OVERLAP) failed.push('overlap');
+
+  // 3 — distinctiveness. A name appearing in several of this writer's
+  // manuscripts is weak evidence for any one of them; a name unique to this
+  // manuscript is strong. This is what kills the shared-"Sarah" case.
+  const others = candidates.filter((c) => c.id !== winner.manuscriptId);
+  const distinctive = winner.sharedEntities.filter(
+    (name) => !others.some((c) => c.entities.has(name))
+  );
+  if (distinctive.length < AUTO_MIN_DISTINCTIVE) failed.push('distinctiveness');
+
+  // 4 — no close rival. If two manuscripts both plausibly match, the situation
+  // is ambiguous by definition, however good the winner looks on its own.
+  const rival = ranked[1];
+  if (rival && rival.score > winner.score * AUTO_MAX_RIVAL_RATIO) failed.push('close-rival');
+
+  // 5 — format agreement. A screenplay must never silently join a prose novel.
+  // Unknown format fails closed: absence of evidence is not agreement.
+  const winnerCandidate = candidates.find((c) => c.id === winner.manuscriptId);
+  const format = winnerCandidate?.format ?? null;
+  if (!mode || !format || format !== mode) failed.push('format');
+
+  return {
+    band: failed.length === 0 ? 'auto' : 'confirm',
+    suggestion: winner,
+    failedCriteria: failed,
+  };
 }

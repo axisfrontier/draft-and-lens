@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AUTO_MIN_OVERLAP,
+  AUTO_MIN_SHARED,
   MIN_OVERLAP,
   MIN_SHARED_ENTITIES,
   entityOverlap,
   extractEntities,
   sharedEntities,
+  classifyMatch,
   suggestManuscript,
   type ManuscriptCandidate,
 } from '../../src/lib/manuscript-match';
@@ -152,5 +155,79 @@ describe('suggestManuscript', () => {
     expect(MIN_SHARED_ENTITIES).toBeGreaterThanOrEqual(2);
     expect(MIN_OVERLAP).toBeGreaterThan(0);
     expect(MIN_OVERLAP).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('classifyMatch — silent auto-grouping bar', () => {
+  // A strong, unambiguous match: 4 shared names, all unique to this manuscript,
+  // no rival, formats agree.
+  const strong: ManuscriptCandidate = {
+    id: 'ms-strong',
+    title: 'The Salt House',
+    format: 'story',
+    entities: new Set(['sarah', 'marcus', 'dell', 'katherine']),
+  };
+  const text = 'She waited. Then Sarah spoke, Marcus answered, Dell left, and Katherine watched.';
+
+  it('auto-groups an obvious same-book match', () => {
+    const c = classifyMatch(text, [strong], 'story');
+    expect(c.band).toBe('auto');
+    expect(c.failedCriteria).toEqual([]);
+  });
+
+  it('returns none when nothing matches', () => {
+    const c = classifyMatch('The engine died. Then Priya swore at Okonkwo.', [strong], 'story');
+    expect(c.band).toBe('none');
+    expect(c.suggestion).toBeNull();
+  });
+
+  it('CONFIRMS rather than auto-groups on only two shared names', () => {
+    const c = classifyMatch('She waited. Then Sarah spoke and Marcus answered.', [strong], 'story');
+    expect(c.band).toBe('confirm');
+    expect(c.failedCriteria).toContain('shared-names');
+  });
+
+  it('CONFIRMS when the shared names are not distinctive — the shared-Sarah case', () => {
+    // Every shared name also appears in another manuscript, so none is evidence
+    // for this one in particular.
+    const other: ManuscriptCandidate = {
+      id: 'ms-other',
+      title: 'Unrelated Novel',
+      format: 'story',
+      entities: new Set(['sarah', 'marcus', 'dell', 'katherine', 'x1', 'x2', 'x3', 'x4']),
+    };
+    const c = classifyMatch(text, [strong, other], 'story');
+    expect(c.band).toBe('confirm');
+    expect(c.failedCriteria).toContain('distinctiveness');
+  });
+
+  it('CONFIRMS when a rival manuscript also matches well', () => {
+    const rival: ManuscriptCandidate = {
+      id: 'ms-rival',
+      title: 'Also Plausible',
+      format: 'story',
+      entities: new Set(['sarah', 'marcus', 'dell', 'katherine']),
+    };
+    const c = classifyMatch(text, [strong, rival], 'story');
+    expect(c.band).toBe('confirm');
+    expect(c.failedCriteria).toContain('close-rival');
+  });
+
+  it('CONFIRMS when formats disagree — a script never silently joins a novel', () => {
+    const c = classifyMatch(text, [strong], 'script');
+    expect(c.band).toBe('confirm');
+    expect(c.failedCriteria).toContain('format');
+  });
+
+  it('fails format closed when the manuscript format is unknown', () => {
+    const noFormat: ManuscriptCandidate = { ...strong, format: null };
+    const c = classifyMatch(text, [noFormat], 'story');
+    expect(c.band).toBe('confirm');
+    expect(c.failedCriteria).toContain('format');
+  });
+
+  it('auto thresholds are strictly stricter than the propose thresholds', () => {
+    expect(AUTO_MIN_SHARED).toBeGreaterThan(MIN_SHARED_ENTITIES);
+    expect(AUTO_MIN_OVERLAP).toBeGreaterThan(MIN_OVERLAP);
   });
 });
