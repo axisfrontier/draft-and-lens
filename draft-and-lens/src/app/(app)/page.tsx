@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 
 import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
+import { TermTooltip } from '@/components/glossary/TermTooltip';
 import type {
   Coverage,
   Diagnostic,
@@ -884,21 +885,35 @@ export default function AppHomePage() {
                     fontSize: '.82rem', color: 'var(--ink-mid)',
                   }}
                 >
+                  <div style={{ fontWeight: 500, color: 'var(--ink)' }}>
+                    Is this part of a larger work?
+                  </div>
+                  <div style={{ fontSize: '.76rem', color: 'var(--ink-soft)', marginTop: '.15rem' }}>
+                    Chapters read as one book build a{' '}
+                    <TermTooltip
+                      term="continuity ledger"
+                      gloss="A record of what your book has established — names, descriptions, ages and relationships — carried across every chapter, so later chapters can be read against earlier ones."
+                    />
+                    . A single piece needs none of that.
+                  </div>
+
                   {!groupingOpen ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', marginTop: '.5rem' }}>
                       <span>
                         {chosenManuscript && chosenTitle ? (
                           <>
-                            Part of <strong>{chosenTitle}</strong>
+                            Yes — part of <strong>{chosenTitle}</strong>
                             {grouping.suggestion?.manuscriptId === chosenManuscript &&
                               grouping.suggestion.sharedEntities.length > 0 && (
                                 <span style={{ color: 'var(--ink-soft)' }}>
-                                  {' '}— same {grouping.suggestion.sharedEntities.slice(0, 3).join(', ')}
+                                  {' '}(both mention {grouping.suggestion.sharedEntities.slice(0, 3).join(', ')})
                                 </span>
                               )}
                           </>
                         ) : (
-                          <>A standalone piece</>
+                          <>
+                            No — read it on its own
+                          </>
                         )}
                       </span>
                       <button
@@ -911,18 +926,18 @@ export default function AppHomePage() {
                           letterSpacing: '.1em', textTransform: 'uppercase',
                         }}
                       >
-                        Change
+                        {chosenManuscript ? 'Change' : 'Add to a book'}
                       </button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginTop: '.5rem' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
                         <input
                           type="radio"
                           checked={chosenManuscript === null}
                           onChange={() => { setChosenManuscript(null); setGroupingOpen(false); }}
                         />
-                        A standalone piece
+                        No — read it on its own
                       </label>
                       {grouping.manuscripts.map((ms) => (
                         <label key={ms.manuscriptId} style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
@@ -931,15 +946,16 @@ export default function AppHomePage() {
                             checked={chosenManuscript === ms.manuscriptId}
                             onChange={() => { setChosenManuscript(ms.manuscriptId); setGroupingOpen(false); }}
                           />
-                          {ms.title || 'Untitled manuscript'}
+                          Yes — part of {ms.title || 'an untitled book'}
                           <span style={{ color: 'var(--ink-soft)' }}>
-                            ({ms.chapters} {ms.chapters === 1 ? 'chapter' : 'chapters'})
+                            ({ms.chapters} so far)
                           </span>
                         </label>
                       ))}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginTop: '.2rem' }}>
+                        <span style={{ color: 'var(--ink-soft)' }}>Yes — start a new book:</span>
                         <input
-                          placeholder="Start a new book…"
+                          placeholder="Give it a title…"
                           value={newManuscriptTitle}
                           onChange={(e) => setNewManuscriptTitle(e.target.value)}
                           style={{

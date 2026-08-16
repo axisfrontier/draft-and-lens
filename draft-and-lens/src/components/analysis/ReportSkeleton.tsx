@@ -173,7 +173,7 @@ export function ReportSkeleton({
         <span style={sidebarLinkMuted}>Editorial lenses</span>
         <span style={sidebarLinkMuted}>Studio match</span>
 
-        <div style={{ ...sidebarGroup, marginTop: '1.25rem' }}>Reference</div>
+        <div style={sidebarGroup}>Reference</div>
         <span style={sidebarLinkMuted}>About</span>
         <span style={sidebarLinkMuted}>Glossary</span>
         <span style={sidebarLinkMuted}>Feedback</span>

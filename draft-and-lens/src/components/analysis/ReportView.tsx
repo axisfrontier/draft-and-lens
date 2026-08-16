@@ -344,7 +344,7 @@ export function ReportView({
         <a href="#sec-lenses" style={sidebarLink}>Editorial lenses</a>
         <a href="#sec-studios" style={sidebarLink}>Studio match</a>
 
-        <div style={{ ...sidebarGroup, marginTop: '1.25rem' }}>Reference</div>
+        <div style={sidebarGroup}>Reference</div>
         <a href="/about" target="_blank" rel="noopener noreferrer" style={sidebarLink}>About</a>
         <a href="/glossary" target="_blank" rel="noopener noreferrer" style={sidebarLink}>Glossary</a>
         <a href="/feedback" target="_blank" rel="noopener noreferrer" style={sidebarLink}>Feedback</a>
