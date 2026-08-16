@@ -18,10 +18,12 @@
 --
 -- If `id` is not uuid, change continuity_facts.reading_id to match before
 -- applying — it stores readings.id values. If `user_id` is not text, change
--- it in both new tables. Neither is guessed lightly: readings.ts reads both as
--- JS strings and submission_telemetry.sql uses uuid, but that is inference,
--- not proof, and the local env could not be used to confirm it (see the note
--- at the foot of this file).
+-- it in both new tables.
+--
+-- Status 2026-08-16: `readings.id` CONFIRMED uuid-shaped by a live read
+-- against the project, so that half is no longer inference. `user_id` is still
+-- inferred — readings.ts reads it as a JS string, which is consistent with
+-- text but does not prove it — hence the query above.
 -- ───────────────────────────────────────────────────────────────────────────
 
 
@@ -192,10 +194,25 @@ alter table public.continuity_facts  enable row level security;
 -- * No flagging structures. Phase 2 stores and displays; detection is phase 4
 --   and adds nothing to this schema.
 --
--- Local verification was not possible: .env.local cannot load
--- NEXT_PUBLIC_SUPABASE_URL because the NEXT_PUBLIC_SUPABASE_ANON_KEY line
--- above it has an unterminated quote, which swallows the following line. That
--- is a local-only fault (production reads its env from Vercel) but it means
--- isSupabaseConfigured() is false in local dev, and readings.ts degrades
--- silently by design — so local runs have not been saving to Supabase at all.
+-- AFTER APPLYING, verify it actually took — twice now the run has reported
+-- success without the objects appearing. Two rows expected:
+--
+--   select table_name
+--   from information_schema.tables
+--   where table_schema = 'public'
+--     and table_name in ('manuscripts', 'continuity_facts');
+--
+-- The Supabase SQL editor runs only the SELECTED text when a selection exists,
+-- which is the most likely way this file gets partially applied with no error
+-- shown. Click into the editor and deselect before running. Re-running the
+-- whole file is always safe — every statement is `if not exists`.
+--
+-- History note (resolved 2026-08-15): this file previously recorded that local
+-- verification was impossible because an unterminated quote on the
+-- NEXT_PUBLIC_SUPABASE_ANON_KEY line of .env.local swallowed the following
+-- line, leaving NEXT_PUBLIC_SUPABASE_URL unset. Nenad fixed the quote; local
+-- reads and writes are now confirmed working. Worth keeping because the
+-- failure was invisible: isSupabaseConfigured() returned false and readings.ts
+-- degrades silently by design, so local runs had been saving nothing at all
+-- with no error anywhere.
 -- ───────────────────────────────────────────────────────────────────────────
