@@ -343,7 +343,7 @@ export function ReportView({
           <a
             href={`/ledger/${manuscriptId}`}
             target="_blank"
-            rel="noopener noreferrer"
+           
             style={sidebarLink}
           >
             Continuity ledger
@@ -365,9 +365,9 @@ export function ReportView({
         <a href="#sec-studios" style={sidebarLink}>Studio match</a>
 
         <div style={sidebarGroup}>Reference</div>
-        <a href="/about" target="_blank" rel="noopener noreferrer" style={sidebarLink}>About</a>
-        <a href="/glossary" target="_blank" rel="noopener noreferrer" style={sidebarLink}>Glossary</a>
-        <a href="/feedback" target="_blank" rel="noopener noreferrer" style={sidebarLink}>Feedback</a>
+        <a href="/about" target="_blank" style={sidebarLink}>About</a>
+        <a href="/glossary" target="_blank" style={sidebarLink}>Glossary</a>
+        <a href="/feedback" target="_blank" style={sidebarLink}>Feedback</a>
         <a href="mailto:hello@draftandlens.com" style={sidebarLink}>Contact</a>
         <a href="#sec-disclaimer" style={sidebarLink}>Disclaimer</a>
       </aside>
@@ -979,7 +979,7 @@ export function ReportView({
             Copyright &copy; 2026 Draft&amp;Lens
             <div style={{ marginTop: '.75rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
               {([['Privacy Policy', '/privacy'], ['Terms of Service', '/terms'], ['Acceptable Use', '/acceptable-use']] as const).map(([label, href]) => (
-                <a key={href} href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink-faint)', textDecoration: 'none' }}>{label}</a>
+                <a key={href} href={href} target="_blank" style={{ color: 'var(--ink-faint)', textDecoration: 'none' }}>{label}</a>
               ))}
             </div>
           </footer>

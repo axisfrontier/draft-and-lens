@@ -43,7 +43,6 @@ export function SiteNav() {
               key={link.href}
               href={link.href}
               target="_blank"
-              rel="noopener noreferrer"
               style={{
                 fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                 letterSpacing: '.12em', textTransform: 'uppercase',
@@ -90,7 +89,7 @@ export function SiteNav() {
               structure: "Ledger" alone says nothing to a novelist, and the page
               it opens is titled Continuity. Without this the feature had no
               entry point at all outside the one-off line on a grouped report. */}
-          <a href="/ledger" target="_blank" rel="noopener noreferrer" style={{
+          <a href="/ledger" target="_blank" style={{
             fontFamily: 'var(--font-mono)', fontSize: '.72rem',
             letterSpacing: '.12em', textTransform: 'uppercase',
             color: pathname.startsWith('/ledger') ? 'var(--amber-l)' : 'var(--paper-dark)',
@@ -98,7 +97,7 @@ export function SiteNav() {
           }}>
             Continuity
           </a>
-          <a href="/account" target="_blank" rel="noopener noreferrer" style={{
+          <a href="/account" target="_blank" style={{
             fontFamily: 'var(--font-mono)', fontSize: '.72rem',
             letterSpacing: '.12em', textTransform: 'uppercase',
             color: pathname === '/account' ? 'var(--amber-l)' : 'var(--paper-dark)',

@@ -1122,12 +1122,11 @@ export default function AppHomePage() {
               <>
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '2rem',
-                  // Matches SiteNav's container (full width, 2.5rem side padding)
-                  // rather than centring in a 1100px column. Centred, the Stop
-                  // button sat well inside the right edge while the avatar above
-                  // it stayed pinned to the far right, so the two read as
-                  // unrelated floating controls instead of a column.
-                  padding: '0 2.5rem',
+                  // No padding here on purpose: the banner's own wrapper already
+                  // carries '.7rem 2.5rem', which matches SiteNav's 2.5rem. An
+                  // earlier fix added 2.5rem here as well, doubling it to 5rem —
+                  // which pushed the stage header right of the logo and the Stop
+                  // button left of the avatar by exactly that 40px.
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
