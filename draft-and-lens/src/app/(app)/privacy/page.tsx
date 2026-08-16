@@ -1,4 +1,6 @@
 'use client';
+
+import { closeOrGoHome } from '@/lib/leave-page';
 export default function PrivacyPage() {
   const h2: React.CSSProperties = { fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', margin: '2rem 0 .75rem' };
   const p: React.CSSProperties = { fontFamily: 'var(--font-sans)', fontSize: '.95rem', lineHeight: 1.85, color: 'var(--ink-mid)', marginBottom: '1.25rem' };
@@ -6,7 +8,7 @@ export default function PrivacyPage() {
 
   return (
     <main style={{ maxWidth: 760, margin: '4rem auto', padding: '0 2rem 6rem' }}>
-      <button type="button" onClick={() => window.close()} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-faint)', textDecoration: 'none', display: 'inline-block', marginBottom: '2rem' }}>← Close</button>
+      <button type="button" onClick={closeOrGoHome} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-faint)', textDecoration: 'none', display: 'inline-block', marginBottom: '2rem' }}>← Close</button>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--amber-d)', marginBottom: '.4rem' }}>Legal</div>
       <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-.01em', marginBottom: '.5rem' }}>Privacy Policy</h1>
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.7rem', color: 'var(--ink-faint)', marginBottom: '2rem' }}>Last updated: 29 June 2026</p>

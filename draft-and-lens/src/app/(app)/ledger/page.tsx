@@ -11,6 +11,7 @@
  * Client-only; talks to the server through /api/ledger and imports nothing
  * from src/prompts or src/ai (IP boundary).
  */
+import { closeOrGoHome } from '@/lib/leave-page';
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
@@ -35,27 +36,11 @@ export default function LedgerIndexPage() {
       .catch((e: Error) => setError(e.message));
   }, [isSignedIn]);
 
-  /**
-   * Leave the ledger.
-   *
-   * Both routes in — the nav and a reading's sidebar — open this in a new tab,
-   * so closing is the action that actually returns the writer to what they were
-   * reading. But `window.close()` is a no-op for a tab the user opened
-   * themselves (or navigated to directly), which would strand them on a page
-   * with no way out — so it falls back to the app rather than trusting it.
-   */
-  function leave() {
-    window.close();
-    setTimeout(() => {
-      if (!window.closed) window.location.href = '/';
-    }, 100);
-  }
-
   return (
     <main className="min-h-screen bg-paper p-8 text-ink">
       <button
         type="button"
-        onClick={leave}
+        onClick={closeOrGoHome}
         className="mb-4 block cursor-pointer border-0 bg-transparent p-0 font-mono text-xs uppercase tracking-widest text-amber-d"
       >
         ← Back to your work

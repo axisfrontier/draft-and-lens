@@ -14,6 +14,7 @@
  *
  * Client-only; imports nothing from src/prompts or src/ai (IP boundary).
  */
+import { closeOrGoHome } from '@/lib/leave-page';
 import { useAuth } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -216,14 +217,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
         </a>
         <button
           type="button"
-          onClick={() => {
-            // See the note on leave() in the ledger index — window.close() is a
-            // no-op for a tab the writer opened themselves.
-            window.close();
-            setTimeout(() => {
-              if (!window.closed) window.location.href = '/';
-            }, 100);
-          }}
+          onClick={closeOrGoHome}
           className="cursor-pointer border-0 bg-transparent p-0 font-mono text-xs uppercase tracking-widest text-amber-d"
         >
           ← Back to your work
