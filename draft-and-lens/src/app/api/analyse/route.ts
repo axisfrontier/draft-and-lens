@@ -6,6 +6,7 @@ import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
+import { resolveAttachment } from '../../../lib/manuscripts';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
 import { logSubmissionTelemetry, type TraditionSource } from '../../../lib/telemetry-log';
@@ -77,6 +78,9 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const { text, mode, genre, intent, bible, skipBible, submissionType, forceRefresh } = body;
+  // Continuity-ledger grouping (§2). Optional: absent for a standalone piece,
+  // which stays the default. Ownership is verified before it is used.
+  const manuscriptId = typeof body.manuscriptId === 'string' ? body.manuscriptId : null;
 
   // mode required + validated — the server never infers the submission type (§15).
   if (typeof mode !== 'string' || !MODES.has(mode)) {
@@ -298,6 +302,15 @@ export async function POST(req: NextRequest): Promise<Response> {
         // future diffing and the exact payload the client just received.
         const workId =
           decision.kind === 'revised' || decision.kind === 'refreshed' ? decision.workId : newWorkId();
+        // Resolve grouping before the insert so the row is never written
+        // ungrouped and then updated. Returns null when the manuscript is not
+        // this writer's, which is also how a forged id is refused — best-effort
+        // like everything else here: a grouping failure must never cost the
+        // writer the reading they already have on screen.
+        const attachment = manuscriptId
+          ? await resolveAttachment(userId, manuscriptId)
+          : null;
+
         await storeReading({
           userId,
           workId,
@@ -306,6 +319,8 @@ export async function POST(req: NextRequest): Promise<Response> {
           sourceText: clean,
           reading: payload,
           submissionType: cleanSubmissionType,
+          manuscriptId: attachment?.manuscriptId ?? null,
+          sequenceIndex: attachment?.sequenceIndex ?? null,
         });
 
         // Cost log (financial model data collection) — metadata + token counts

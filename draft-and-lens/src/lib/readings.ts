@@ -223,6 +223,13 @@ export async function storeReading(args: {
   sourceText: string;
   reading: ReadingPayload;
   submissionType: 'complete' | 'excerpt';
+  /** Continuity-ledger grouping (§2). Set at insert rather than by a follow-up
+   *  update: the row is being created here, so there is no window in which it
+   *  exists ungrouped, and no second write to fail independently. Both stay
+   *  null when the writer did not group this chapter, which is the ordinary
+   *  case for a standalone piece. */
+  manuscriptId?: string | null;
+  sequenceIndex?: number | null;
 }): Promise<void> {
   if (!isSupabaseConfigured()) return;
   try {
@@ -235,6 +242,8 @@ export async function storeReading(args: {
       source_text: args.sourceText,
       reading_json: args.reading,
       submission_type: args.submissionType,
+      manuscript_id: args.manuscriptId ?? null,
+      sequence_index: args.sequenceIndex ?? null,
     });
     await pruneVersions(supabase, args.userId, args.workId);
   } catch {

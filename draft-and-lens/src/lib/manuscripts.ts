@@ -223,6 +223,51 @@ export async function attachReading(
   }
 }
 
+/**
+ * Verify a manuscript is this writer's and work out where a new chapter sits
+ * in it — resolved together because a caller should never have one without the
+ * other. Returns null when the manuscript is not theirs or does not exist.
+ *
+ * The sequence index is "one past the highest so far", not "count + 1": works
+ * can be detached and re-ordered, so counting rows would reuse an index that
+ * is already taken. Writers reorder chapters afterwards (§2 calls the column
+ * writer-orderable); this only has to produce a sane default that never
+ * collides.
+ */
+export async function resolveAttachment(
+  userId: string,
+  manuscriptId: string
+): Promise<{ manuscriptId: string; sequenceIndex: number } | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = getServiceClient();
+
+    const { data: owned } = await supabase
+      .from(MANUSCRIPTS_TABLE)
+      .select('id')
+      .eq('id', manuscriptId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .limit(1);
+    if (!owned || owned.length === 0) return null;
+
+    const { data } = await supabase
+      .from(READINGS_TABLE)
+      .select('sequence_index')
+      .eq('user_id', userId)
+      .eq('manuscript_id', manuscriptId)
+      .not('sequence_index', 'is', null)
+      .order('sequence_index', { ascending: false })
+      .limit(1);
+
+    const highest = (data as unknown as Array<{ sequence_index: number }> | null)?.[0]
+      ?.sequence_index;
+    return { manuscriptId, sequenceIndex: (highest ?? 0) + 1 };
+  } catch {
+    return null;
+  }
+}
+
 /** Detach a reading from its manuscript — the undo for a wrong grouping (§2). */
 export async function detachReading(userId: string, readingId: string): Promise<boolean> {
   if (!isSupabaseConfigured()) return false;
