@@ -147,6 +147,24 @@ export default function AppHomePage() {
     }
   }, [running, stage, analystThinking]);
 
+  /**
+   * Continuity-ledger grouping (§2, ruling 2 — a single lightweight
+   * confirm/adjust step, never a form). The suggestion is deterministic and
+   * local on the server, so asking for it costs nothing and can happen while
+   * the writer is still looking at the page.
+   *
+   * `null` for `chosen` means "standalone piece", which stays the default:
+   * nothing is grouped unless the writer says so, because §2's risk table
+   * makes silent wrong grouping the failure that poisons every later flag.
+   */
+  const [grouping, setGrouping] = useState<{
+    suggestion: { manuscriptId: string; title: string | null; sharedEntities: string[] } | null;
+    manuscripts: Array<{ manuscriptId: string; title: string | null; chapters: number }>;
+  } | null>(null);
+  const [chosenManuscript, setChosenManuscript] = useState<string | null>(null);
+  const [groupingOpen, setGroupingOpen] = useState(false);
+  const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
+
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
   const overCap = wordCount > TESTER_WORD_CAP;
@@ -158,6 +176,66 @@ export default function AppHomePage() {
     !running &&
     !uploading &&
     !overCap;
+
+  // Ask once the text has settled. Debounced because `effectiveText` changes
+  // on every keystroke in the paste box, and this is a courtesy question, not
+  // something worth a request per character.
+  useEffect(() => {
+    if (isSignedIn !== true || wordCount === 0 || running) return;
+    const t = setTimeout(() => {
+      fetch('/api/ledger/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: effectiveText }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d) return;
+          setGrouping(d);
+          // Pre-select the proposal so confirming is a no-op click, but never
+          // apply it silently — the writer still has to leave it selected.
+          if (d.suggestion && chosenManuscript === null) {
+            setChosenManuscript(d.suggestion.manuscriptId);
+          }
+        })
+        .catch(() => {
+          /* grouping is an enhancement; never surface its failure */
+        });
+    }, 800);
+    return () => clearTimeout(t);
+    // chosenManuscript deliberately omitted: re-running on the writer's own
+    // choice would fight them for control of the control.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveText, isSignedIn, wordCount, running]);
+
+  async function createManuscriptAndSelect() {
+    const title = newManuscriptTitle.trim();
+    if (!title) return;
+    try {
+      const res = await fetch('/api/ledger/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', title, format: mode }),
+      });
+      if (!res.ok) return;
+      const d = (await res.json()) as { manuscriptId: string };
+      setChosenManuscript(d.manuscriptId);
+      setGrouping((g) => ({
+        suggestion: g?.suggestion ?? null,
+        manuscripts: [
+          { manuscriptId: d.manuscriptId, title, chapters: 0 },
+          ...(g?.manuscripts ?? []),
+        ],
+      }));
+      setNewManuscriptTitle('');
+      setGroupingOpen(false);
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  const chosenTitle =
+    grouping?.manuscripts.find((m) => m.manuscriptId === chosenManuscript)?.title ?? null;
 
   /**
    * Every failure below surfaces here, on the upload screen, with a message
@@ -248,6 +326,7 @@ export default function AppHomePage() {
           text: effectiveText,
           submissionType,
           ...(forceRefresh ? { forceRefresh: true } : {}),
+          ...(chosenManuscript ? { manuscriptId: chosenManuscript } : {}),
           ...(bibleSkip ? { skipBible: true } : bibleInput.trim() ? { bible: bibleInput.trim() } : {}),
         }),
         signal: ctrl.signal,
@@ -745,6 +824,99 @@ export default function AppHomePage() {
                   // read. The red border and tint carry the semantics instead.
                   color: 'var(--paper)',
                 }} role="alert">{uploadError}</div>
+              )}
+
+              {/* Continuity grouping — §2 option C. One line, one control:
+                  ruling 2 was explicit that this must be a single lightweight
+                  confirm/adjust, not a form. Only appears once there is
+                  something to group against. */}
+              {grouping !== null && (grouping.manuscripts.length > 0 || grouping.suggestion) && (
+                <div
+                  style={{
+                    marginTop: '.75rem', padding: '.6rem .8rem',
+                    background: 'var(--cream)', borderLeft: '3px solid var(--amber)',
+                    fontSize: '.82rem', color: 'var(--ink-mid)',
+                  }}
+                >
+                  {!groupingOpen ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
+                      <span>
+                        {chosenManuscript && chosenTitle ? (
+                          <>
+                            Part of <strong>{chosenTitle}</strong>
+                            {grouping.suggestion?.manuscriptId === chosenManuscript &&
+                              grouping.suggestion.sharedEntities.length > 0 && (
+                                <span style={{ color: 'var(--ink-soft)' }}>
+                                  {' '}— same {grouping.suggestion.sharedEntities.slice(0, 3).join(', ')}
+                                </span>
+                              )}
+                          </>
+                        ) : (
+                          <>A standalone piece</>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setGroupingOpen(true)}
+                        style={{
+                          background: 'transparent', border: 'none', padding: 0,
+                          color: 'var(--amber-d)', cursor: 'pointer',
+                          fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                          letterSpacing: '.1em', textTransform: 'uppercase',
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                        <input
+                          type="radio"
+                          checked={chosenManuscript === null}
+                          onChange={() => { setChosenManuscript(null); setGroupingOpen(false); }}
+                        />
+                        A standalone piece
+                      </label>
+                      {grouping.manuscripts.map((ms) => (
+                        <label key={ms.manuscriptId} style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                          <input
+                            type="radio"
+                            checked={chosenManuscript === ms.manuscriptId}
+                            onChange={() => { setChosenManuscript(ms.manuscriptId); setGroupingOpen(false); }}
+                          />
+                          {ms.title || 'Untitled manuscript'}
+                          <span style={{ color: 'var(--ink-soft)' }}>
+                            ({ms.chapters} {ms.chapters === 1 ? 'chapter' : 'chapters'})
+                          </span>
+                        </label>
+                      ))}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginTop: '.2rem' }}>
+                        <input
+                          placeholder="Start a new book…"
+                          value={newManuscriptTitle}
+                          onChange={(e) => setNewManuscriptTitle(e.target.value)}
+                          style={{
+                            fontSize: '.8rem', padding: '.25rem .4rem',
+                            border: '1px solid var(--border-dark)', background: 'var(--paper)',
+                          }}
+                        />
+                        <button
+                          type="button"
+                          disabled={newManuscriptTitle.trim() === ''}
+                          onClick={createManuscriptAndSelect}
+                          style={{
+                            fontSize: '.7rem', padding: '.25rem .5rem', cursor: 'pointer',
+                            border: '1px solid var(--border-dark)', background: 'var(--paper)',
+                            opacity: newManuscriptTitle.trim() === '' ? 0.4 : 1,
+                          }}
+                        >
+                          Create
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Step 3 — Analyse */}
