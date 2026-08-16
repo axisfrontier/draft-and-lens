@@ -204,7 +204,14 @@ Data was intact — Supabase's own pause screen confirms nothing is lost — but
 
 **Beta-completion list (Nenad, 2026-08-16, revised same day after the two blockers below were ruled on):**
 1. Ledger phase 2 — view + locks. **DONE.**
-1b. **Grouping confirm step at upload** (ruling 2) — not new scope, just never wired in. Nenad: "go ahead." **IN PROGRESS.**
+1b. ~~**Grouping confirm step at upload**~~ — **DONE and VERIFIED LIVE 2026-08-16.**
+
+**Grouping/ledger feature verified end-to-end on production, 2026-08-16.** All three paths confirmed by live test, not by inspection:
+- **Auto-grouping** — a third piece sharing 3+ distinctive names grouped silently, no prompt shown, filed as a new chapter of "Home", report showed the "Added to X" trace with Undo, and the sidebar gained its Continuity ledger link.
+- **Confirm fallback** — shown when the match is ambiguous; and the earlier bug where it appeared then cancelled itself is fixed (cause: classification ran before the submission type was known, so criterion 5 failed closed on format and the band flipped from `confirm` to `auto` once a type was picked).
+- **Manual detach** — "Not part of this book" removed a chapter, count dropped 4→3, all stored versions of that work detached while the readings themselves survived.
+
+**Known cosmetic wart, confirmed in real use and NOT fixed:** chapter numbering leaves gaps after a detach (a writer now sees chapters "2, 3, 5"), because `resolveAttachment` assigns "highest + 1" and never reuses a freed index. Deliberate — reusing indices would silently renumber chapters the writer may have referred to elsewhere — but it looks broken. If it needs fixing, the options are renumber-on-detach (cheap, mutates existing rows) or display-position-instead-of-index (cosmetic only). Nenad's call.
 2. **Extraction (§9 Stage 1)** — populates the ledger. **IN scope for beta**, added 2026-08-16.
 3. **Detection** — the actual contradiction flagging. **IN scope for beta**, added 2026-08-16.
 4. Ledger phase 3 — timeline reasoning (ruling 7). Positioned after or alongside extraction, since it operates on extracted facts.
