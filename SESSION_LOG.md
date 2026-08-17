@@ -34,7 +34,22 @@ Commits `ee054b8` (gates), `250a7a4` (two-pass + test set). Test set: **`DraftAn
 ### ⚠️ NOT DONE — detection does not run on real submissions
 2a–2e asked for detection **built and tested**, and it is. It is **not called from `/api/analyse`** and produces no user-visible output. Surfacing it means the Continuity report section (§6a). ~~Blocked on the sidebar-count question~~ — **that is now resolved (base 25, → 27 with the Continuity section)**, so the remaining work is the section itself and its UI, not a blocked decision.
 
-### ⚠️ OPEN QUESTION from the test run — case A4
+### A4 / entity variance — RULED 2026-08-17, PARTIALLY IMPLEMENTED
+
+**Nenad's ruling, general principle for ALL entity-variance cases, not just A4:** do not treat extraction's entity match as authoritative, and do not distrust it by default either. **Read the surrounding text and use judgement, as a careful human reader would** — is this the same person under a nickname or a formal/informal variant, an inconsistency in how the narration refers to one person, or genuinely two distinct characters? *The extraction merge is one signal, not a verdict.*
+
+**Architectural consequence, and why this is more than a prompt tweak:** pass 2 currently receives only two quoted spans. It has no surrounding text to read, so it *cannot* apply this ruling as written — the judgement it is being asked to make requires context it is not given.
+
+**DONE:** `extractContext(sourceText, quote, radius)` in `src/lib/detection-gates.ts` — returns the passage around an evidence quote, anchoring through whitespace and smart-quote differences, and returning **null rather than a wrong window** when the quote cannot be located (context from the wrong place is worse than none). 6 tests.
+
+**NOT DONE — next step:**
+1. Thread `aContext`/`bContext` through `runDetection` into `buildVerifyPrompt`.
+2. Add the entity-identity principle to `DETECTION_VERIFY_SYSTEM`, worded as the ruling: the shared subject key is one signal, neither authoritative nor to be distrusted; read the passages and judge.
+3. Re-run the detection test set with context supplied for A4 and confirm it moves to `contradiction` — **and equally that no Group B case regresses into a false positive**, since more context cuts both ways.
+4. **Production wiring note:** detection will need each fact's `reading_id` → `readings.source_text` to build the context window. That lookup does not exist yet and is part of wiring detection into the pipeline.
+
+### ⚠️ SUPERSEDED — original open question, kept for the reasoning
+
 Should pass 2 treat extraction's **entity match as authoritative**? It currently does not, so "Katherine" vs "Kathryn" lands at `worth_checking` because pass 2 cannot confirm from two quotes that they are the same woman. Trusting the match propagates any wrong merge extraction made; distrusting it softens every name-variance case — the one category where spelling *is* the point. **Nenad's call.**
 
 ## LEVEL 3 — DONE

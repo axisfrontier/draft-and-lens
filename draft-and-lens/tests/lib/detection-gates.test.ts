@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  extractContext,
   findCandidatePairs,
   gatePair,
   type GateFact,
@@ -222,5 +223,41 @@ describe('findCandidatePairs', () => {
     const pairs = findCandidatePairs(facts, LINEAR);
     expect(pairs).toHaveLength(1);
     expect(pairs.every((p) => p.a.register !== 'dialogue' && p.b.register !== 'dialogue')).toBe(true);
+  });
+});
+
+describe('extractContext', () => {
+  const text = 'The hall was cold that morning. Katherine had never liked the house, not since the winter her mother died in it. She stood at the window a long while.';
+
+  it('returns the passage around the quote', () => {
+    const c = extractContext(text, 'Katherine had never liked the house', 40);
+    expect(c).toContain('Katherine had never liked the house');
+    expect(c).toContain('cold that morning');
+  });
+
+  it('marks truncation so the model knows it is a window, not the whole text', () => {
+    const c = extractContext(text, 'Katherine had never liked the house', 10);
+    expect(c?.startsWith('…')).toBe(true);
+    expect(c?.endsWith('…')).toBe(true);
+  });
+
+  it('does not mark truncation when the window covers the whole text', () => {
+    const c = extractContext(text, 'Katherine', 10_000);
+    expect(c?.startsWith('…')).toBe(false);
+  });
+
+  it('anchors through whitespace and smart-quote differences', () => {
+    expect(extractContext(text, 'Katherine   had  never liked', 20)).not.toBeNull();
+  });
+
+  it('returns null rather than a wrong window when the quote is absent', () => {
+    // Guessing an offset would give the model context from the wrong place,
+    // which is worse than giving it none.
+    expect(extractContext(text, 'a line that is not in the text', 40)).toBeNull();
+  });
+
+  it('returns null on empty input', () => {
+    expect(extractContext('', 'x')).toBeNull();
+    expect(extractContext(text, '')).toBeNull();
   });
 });

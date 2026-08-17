@@ -200,3 +200,38 @@ export function findCandidatePairs(
   }
   return out;
 }
+
+/**
+ * The passage around an evidence quote, for judging identity and context.
+ *
+ * Detection's second pass is asked to decide things a bare quote cannot
+ * settle — most importantly whether two differently-spelled names denote the
+ * same person. A careful reader answers that by reading around the line, not
+ * by trusting a key. This supplies what they would read.
+ *
+ * Returns null when the quote cannot be located: better to give the model no
+ * context than context from the wrong place, since a window anchored to the
+ * wrong offset would be actively misleading rather than merely absent.
+ */
+export function extractContext(
+  sourceText: string,
+  quote: string,
+  radius = 400
+): string | null {
+  if (!sourceText || !quote) return null;
+
+  // Match the extractor's own normalisation so a quote that differs only in
+  // whitespace or smart punctuation still anchors.
+  const norm = (s: string) =>
+    s.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"').replace(/\s+/g, ' ');
+  const haystack = norm(sourceText);
+  const needle = norm(quote).trim();
+  const at = haystack.indexOf(needle);
+  if (at === -1) return null;
+
+  const from = Math.max(0, at - radius);
+  const to = Math.min(haystack.length, at + needle.length + radius);
+  const prefix = from > 0 ? '…' : '';
+  const suffix = to < haystack.length ? '…' : '';
+  return `${prefix}${haystack.slice(from, to).trim()}${suffix}`;
+}
