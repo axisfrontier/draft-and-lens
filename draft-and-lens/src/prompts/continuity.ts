@@ -60,6 +60,22 @@ NORMALISATION
 - attribute: lowercase snake_case — \`eye_colour\`, \`stated_age\`, \`sibling_of\`
 - value: short and normalised — \`green\`, \`34\`, \`tom\`. Not a sentence.
 
+THE ATTRIBUTE NAMES THE PROPERTY. THE VALUE CARRIES THE CLAIM.
+An attribute must be something a different chapter, describing the same thing in different words, would independently arrive at. Never fold the claim, a comparison, or a reference point into the attribute name.
+
+  WRONG: attribute \`age_gap_over_marisol\`, value \`9 years older\`
+  WRONG: attribute \`eldest_of_three_siblings\`, value \`true\`
+  WRONG: attribute \`hair_colour_childhood\`, value \`darker than current\`
+  RIGHT: attribute \`birth_order\`, value \`eldest\`
+  RIGHT: attribute \`stated_age\`, value \`50\`
+
+The reason is mechanical: facts are compared across chapters by matching entity and attribute. Two chapters phrasing the same thing differently produce two attributes that can never meet, so the disagreement between them is invisible — and an attribute that encodes its own answer can never disagree with anything at all.
+
+RESOLVE COMPARATIVES, OR DROP THEM
+A comparative is not checkable on its own: "nine years older" says nothing without knowing older than whom, and when. If this chapter gives you what you need to state it absolutely, do that — if it says Marisol is forty-one and Ottoline is nine years older, record Ottoline's \`stated_age\` as \`50\`. If it does not, DO NOT extract the fact. A comparative stored as-is causes both failures at once: it never matches a later absolute statement (a missed contradiction), and it invites a false one against a different reference point.
+
+The same applies to anything relative to an unstated "now" — \`darker than current\`, \`taller than before\`. If you cannot pin it to something the text states, leave it out.
+
 WHEN IN DOUBT, RETURN NOTHING
 A chapter that yields three solid facts is a better result than one that yields twenty shaky ones. An empty list is a valid and common answer — a chapter of pure action or dialogue may establish nothing checkable at all. Never pad the list to look thorough.
 
