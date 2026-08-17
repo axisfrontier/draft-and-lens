@@ -42,6 +42,45 @@ Principle 1 of the corpus — and `analyst.ts`'s own prompt — make the traditi
 
 **4. The analyst has a sharp cliff at 3,000 words.** A 2,999-word story gets Sonnet at `low` effort; a 3,001-word story gets Opus at `medium`. Deliberate and documented, but worth knowing it is a step change rather than a ramp, and that most beta submissions so far sit below it.
 
+## MEASURED LATENCY (added at Nenad's request)
+
+Not estimates — aggregated from `submission_telemetry`, 40 real production runs. Median word count 695, range 97–3,927.
+
+| Stage | Model | n | Median | Min | Max | Avg output tokens |
+|---|---|---:|---:|---:|---:|---:|
+| analyst | opus-4-8 | 1 | **128.0 s** | 128.0 s | 128.0 s | 8,089 |
+| analyst | sonnet-4-6 | 20 | **60.6 s** | 7.6 s | 101.4 s | 2,539 |
+| bible | sonnet-4-6 | 19 | 25.6 s | 3.8 s | 30.8 s | 1,060 |
+| market | sonnet-4-6 | 21 | 25.0 s | 6.9 s | 29.0 s | 1,032 |
+| diagnostician | sonnet-4-6 | 21 | 16.1 s | 6.1 s | 24.9 s | 580 |
+| scorer | sonnet-4-6 | 21 | 8.6 s | 6.2 s | 14.2 s | 449 |
+| moderation | sonnet-4-6 | 31 | 1.9 s | 1.2 s | 9.1 s | 37 |
+| resolveRevision | (supabase) | 31 | 0.66 s | 0.32 s | 2.7 s | — |
+
+**Whole run:** median 49.1 s, range 0.5 s (cached/unchanged) – 153.2 s.
+
+Latency tracks output tokens closely, which matters for sizing detection: a brain producing a few hundred tokens costs seconds, not minutes, even at the expensive tier. The one Opus analyst run cost 128 s for 8,089 tokens — but that is a *long-form generative* call, not a comparator for a short adjudication.
+
+### Three brains are unreachable — they have never run, and cannot
+
+`TESTER_WORD_CAP = 4000` rejects any submission above 4,000 words server-side (HTTP 413). But `STRUCTURAL_READER_MIN_WORDS = 5000` gates three brains:
+
+- `structuralReader` (Brain 1b)
+- `narratorVerifier`
+- `narratorCorrector` — **the only other Opus-tier brain in the pipeline**
+
+Nothing can reach 5,000 words, so none of the three can ever execute. Confirmed by their total absence from 40 runs of telemetry. `FREE_WORD_LIMIT = 10000` is similarly unreachable for the same reason.
+
+This is dead code under current settings rather than a tier problem — and it means the narrator-pair inversion flagged above is currently **moot in practice**, though it would become live the moment the cap rises. Worth deciding deliberately: either the cap rises, or the gate drops to something below 4,000, or these three are acknowledged as dormant. Right now the pipeline silently contains three brains that no submission can trigger.
+
+### Extraction latency is not measured, and cannot currently be
+
+`continuityExtractor` does not appear in telemetry at all, despite having run today. It executes after the pipeline's `withCostTracking` scope has closed, so `recordBrainUsage` finds no active store and silently drops the entry — **the identical failure mode the code comments already describe for moderation** ("recordBrainUsage found no store and silently dropped it — which is exactly how a full LLM call gating every submission stayed invisible in the numbers").
+
+So extraction's latency and token cost are both currently invisible. Measured directly instead during the standalone brain test: a 97-word chapter took roughly 8–12 s wall clock end to end. That is a floor, not a representative figure — a 4,000-word chapter yielding 20–30 quoted facts will be substantially higher.
+
+**This should be fixed before detection ships**, or detection's cost will be equally invisible — and detection is the piece whose cost most needs watching, since it is two calls per candidate rather than one per submission.
+
 ## Two observations, not recommendations
 
 - **Model IDs are `claude-sonnet-4-6` and `claude-opus-4-8`.** These are not the current generation (Claude 5 family: `claude-opus-5`, `claude-sonnet-5`; plus `claude-haiku-4-5`). They may be deliberately pinned — but since this audit is explicitly about tiers, it is worth confirming the pinning is intentional rather than inherited from the June migration.
