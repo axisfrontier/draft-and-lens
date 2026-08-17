@@ -68,9 +68,25 @@ Before any analyst prompt change, verify maxTokens is high enough for a full rep
 **Distinguishing truncation from gating** — the two look identical mid-stream, because `ReportSkeleton` renders the *whole* expected section list as placeholders and fills each as its `## HEADING` arrives. Gaps during streaming mean nothing. The real test: reload the FINISHED report. A section still absent was never written; sections that populate were just streaming. Then check that the sections that DID appear are complete rather than cut off mid-sentence — that is what truncation actually looks like.
 
 ### Sidebar links — always verify after any ReportView change
-The fixed groups are Overview (3), Dashboard (2), Action (3), Reference (5) = 13 constant links. **The Analysis group is variable by design** — derived from `parsed.sections` in `ReportView.tsx`, so it tracks whatever the evidence-gated report contained.
+**This is the single source of truth for the count. Counted from `ReportView.tsx` on 2026-08-17 — any other document stating a different number is stale and defers to this one.**
 
-Story mode defines 13 sections, but `parseReport` lifts `WHAT TO REVISE` out into its own callout, so the Analysis maximum is **12** and the overall maximum is **25**. A count below that is not in itself a regression.
+The fixed groups are Overview (3), Dashboard (2), Action (3), Reference (5) = **13 constant links**. **The Analysis group is variable by design** — derived from `parsed.sections` in `ReportView.tsx`, so it tracks whatever the evidence-gated report contained.
+
+Story mode defines 13 sections, but `parseReport` lifts `WHAT TO REVISE` out into its own callout (`report.ts`, the `WHAT TO REVISE`/`REVISION PRIORITIES` branch), so the Analysis maximum is **12** and the base maximum is **25**.
+
+Two conditional links sit on top of that, so the ceiling depends on what the reading has:
+
+| State | Max links |
+|---|---|
+| Base — standalone reading | **25** |
+| + **Continuity ledger** link (Overview group; present only when the reading belongs to a grouped manuscript) | **26** |
+| + **Continuity section** (Analysis group; phase 4, not built — appears only when contradictions were found) | **27** |
+
+So Overview is 3 links, or 4 when the reading is grouped.
+
+**A count below the ceiling is not a regression** — evidence-gating (Principle 26) means a short piece legitimately earns fewer sections.
+
+*History: the ledger design v1.2 asserted 26 as the base and ruling 6 confirmed that figure without deriving it. Recounted from source 2026-08-17: the base is 25. 26 is correct only once the Continuity ledger link is present.*
 
 What to actually verify after a ReportView change: every sidebar link resolves to a section that exists, and no section rendered in the body is missing from the sidebar. Sidebar/body agreement is the invariant — not a magic total.
 

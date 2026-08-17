@@ -306,11 +306,11 @@ Three tiers. Tier is determined by *frame confidence*, not just fact confidence:
 
 Two quotes, the locations, one sentence. No score, no percentage, no verdict. Craft terms glossed in the same breath (Principle 27).
 
-**Sidebar impact:** a new section changes the sidebar link count, which the standing rule fixes at 26. Because this section is conditional, the count becomes 26 or 27. The rule needs restating as "26, plus Continuity when present" — flagging now so the check isn't read as a regression.
+**Sidebar impact:** a new section changes the sidebar link count. **Corrected 2026-08-17 by counting `ReportView.tsx` directly: the base maximum is 25, not 26.** 13 constant links (Overview 3, Dashboard 2, Action 3, Reference 5) plus an Analysis group capped at 12, because `parseReport` lifts `WHAT TO REVISE` into its own callout. The Continuity *ledger link* takes it to 26 when a reading is grouped, and this Continuity *section* would take it to 27. `CLAUDE.md` is the single source of truth for the count.
 
-**Ruling 6 (2026-08-15): "26, plus Continuity when present" confirmed as the standing rule.** Applies from phase 3, when the Continuity section first exists; phase 2 adds no report section and leaves the count untouched.
+**Ruling 6 (2026-08-15): "26, plus Continuity when present" — CORRECTED 2026-08-17.** The ruling confirmed a figure this document had asserted since v1.2 without ever deriving it. Counted from source, the base is **25**; 26 is the count once the Continuity ledger link is present, and 27 once the Continuity section exists. The ruling's *shape* was right — a conditional section moves the count and that is not a regression — only its arithmetic was wrong.
 
-> ⚠️ **Unresolved conflict with `CLAUDE.md`, surfaced 2026-08-15.** `draft-and-lens/CLAUDE.md` currently states the fixed groups as Overview (3) + Dashboard (2) + Action (3) + Reference (5) = **13 constant links**, with Analysis variable to a maximum of 12, giving an **overall maximum of 25** — not 26. Ruling 6 confirms 26 against a figure `CLAUDE.md` does not agree with, so one of the two is wrong and neither should be treated as authoritative until reconciled against the rendered sidebar. Not reconciled here: it is a documentation-consistency question, not a ledger question, and phase 2 does not touch the sidebar. **Reconcile before building phase 3.**
+> ✅ **Resolved 2026-08-17.** The conflict with `CLAUDE.md` is settled by counting the component: `CLAUDE.md`'s 25 was correct, this document's 26 was not. Both now agree, and `CLAUDE.md` is the single source of truth.
 
 ### Between readings — the ledger view
 
