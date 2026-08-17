@@ -350,12 +350,27 @@ export async function POST(req: NextRequest): Promise<Response> {
           // nothing simply contributes nothing.
           if (cleanSubmissionType === 'complete') {
             try {
-              const known = await listKnownEntities(userId, attachment.manuscriptId);
-              const extracted = await runContinuityExtractor({
-                text: clean,
-                chapterLabel: result.diagnostic.title || `Chapter ${attachment.sequenceIndex}`,
-                knownEntities: known,
-              });
+              // Wrapped in withCostTracking so the extractor's tokens and
+              // latency actually land in telemetry. Without it this call runs
+              // outside any AsyncLocalStorage scope, recordBrainUsage finds no
+              // store and silently drops the entry — the same way a full LLM
+              // call gating every submission once stayed invisible in the
+              // numbers (see the moderation note above). The pipeline's own
+              // scope has already closed by this point, so extraction needs
+              // its own rather than inheriting one.
+              const { result: extracted, entries: extractionEntries } = await withCostTracking(
+                async () => {
+                  const known = await listKnownEntities(userId, attachment.manuscriptId);
+                  return runContinuityExtractor({
+                    text: clean,
+                    chapterLabel: result.diagnostic.title || `Chapter ${attachment.sequenceIndex}`,
+                    knownEntities: known,
+                  });
+                }
+              );
+              // Merge into the run's entries so extraction appears in the
+              // per-stage telemetry breakdown alongside every other brain.
+              collectedEntries = [...collectedEntries, ...extractionEntries];
               // Retire the previous draft's facts BEFORE storing the new ones,
               // so the ledger never briefly holds both. A revision replaces
               // what that chapter established; it does not add to it.

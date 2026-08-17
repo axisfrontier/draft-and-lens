@@ -8,6 +8,19 @@ Format per entry: date, source (Claude Code session / relayed from claude.ai cha
 
 ## Pending Decisions
 
+### ⚠️ DEAD BRAINS — needs Nenad's product decision, flagged 2026-08-17, NOT fixed
+`TESTER_WORD_CAP = 4000` rejects any submission above 4,000 words (HTTP 413), but three brains are gated at `STRUCTURAL_READER_MIN_WORDS = 5000`:
+- `structuralReader` (Brain 1b)
+- `narratorVerifier`
+- `narratorCorrector` — **the only Opus-tier brain besides the analyst**
+
+**Nothing can reach 5,000 words, so none of the three has ever executed.** Confirmed by their total absence from 40 runs of `submission_telemetry`. `FREE_WORD_LIMIT = 10000` is unreachable for the same reason.
+
+Two ways to resolve it and they are genuinely different products: **bring the 5,000 gate down** to something under the cap (these brains start running on ordinary submissions — better readings, more latency and cost on every long-ish piece), or **raise the cap to 5,000+** (longer submissions allowed, which interacts with the long-form chunking architecture that is currently out of scope). Nenad's call — explicitly not decided here.
+
+Consequence worth knowing meanwhile: the narrator-pair tier inversion noted in the Level 1 audit (judgement at Sonnet, execution at Opus) is **moot in practice** until this is resolved.
+
+
 - **Continuity ledger (item 1): design at v1.3, REVIEWED AND CLEARED TO BUILD, 2026-08-15.** Supersedes the previous "AWAITING FINAL REVIEW — do not start building" entry. All eight §11 questions answered by Nenad; answers recorded verbatim in the design doc's §11 and reflected in §2, §5.1, §6, §7, §10, §12. Build order is phase 1 (manuscript grouping — a prerequisite, not a sub-task, per §0.1) then phase 2 (extraction + ledger view at its own route + locks). **Two things still open and both block phase 3 only, not phase 2:** sub-question 1a (what to assume about a frame that has not yet been inferred) and the sidebar-count conflict below.
 - **Sidebar link count: `CLAUDE.md` says 25 max, ledger design + ruling 6 say 26. Unresolved.** `draft-and-lens/CLAUDE.md` states 13 constant links + Analysis variable to 12 = 25 overall maximum. The ledger design has said 26 since v1.2 and Nenad's ruling 6 confirmed "26, plus Continuity when present." One of the two is wrong; neither should be trusted until counted against the rendered sidebar. Not urgent — phase 2 adds no report section — but **reconcile before phase 3.**
 - **Two findings from Nenad reviewing the live report page, 2026-08-12 — QUEUED, lower priority than `spelling.ts` and the ledger §11 review. Do not start until both of those are done.**
