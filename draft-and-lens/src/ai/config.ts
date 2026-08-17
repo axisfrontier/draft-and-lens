@@ -20,6 +20,13 @@ export const MODELS = {
   // check behind it, so the cheap tier is the right fit: a weaker extractor
   // fails by returning fewer facts, not worse ones.
   continuityExtractor: 'claude-sonnet-4-6',
+  // Detection runs at the ANALYST's tier, not the extractor's (ruling 2d).
+  // Extraction is mechanical with a hard verbatim-quote check behind it, so a
+  // weaker model fails by finding fewer facts. Detection is comparative
+  // judgement, and its failure mode is far worse: a weak craft note is an
+  // opinion the writer can shrug off, but a false contradiction is a factual
+  // claim about their own book delivered with confidence.
+  detection: 'claude-opus-4-8',
 } as const;
 
 /** Analyst adaptive thinking effort — tunable (prototype default: medium). */
@@ -78,4 +85,8 @@ export const TOKEN_LIMITS = {
   // quote — the quotes dominate the budget. Sized above structuralReader
   // (2500) for that reason; truncation here silently loses facts.
   continuityExtractor: 3000,
+  // Both detection passes emit a short verdict plus one or two sentences of
+  // reasoning — the reasoning is shown to the writer, so it needs room to be
+  // a sentence rather than a label, but nothing here is long-form.
+  detection: 600,
 } as const;
