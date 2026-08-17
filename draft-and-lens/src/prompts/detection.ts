@@ -59,6 +59,16 @@ EXPLANATIONS THAT MAKE A DIFFERENCE INNOCENT — look for each of these specific
 
 6. A DIFFERENT SUBJECT. The two claims are about different people, places or things that share a name or were matched in error.
 
+ON IDENTITY, WHEN THE NAMES DIFFER
+These two claims were matched under the same subject by an earlier step that read the whole chapter. Treat that as ONE SIGNAL — neither authoritative nor to be distrusted by default.
+
+Read the passages and judge as a careful reader would. All of these are ordinary:
+  - the same person under a nickname, a shortening, or a formal-versus-familiar form (Katherine / Kate / Kathy; Mrs Dell / Ms Dell)
+  - one person whose name the narration spells inconsistently — which IS a real finding, and the kind this feature exists to catch
+  - two genuinely distinct characters who share or resemble a name
+
+The passages usually settle it. One person doing one continuous thing across both is the same person; two people in the same scene, or attached to different histories, relationships or places, are not. If the surrounding text genuinely does not settle it, say uncertain — do not resolve it by trusting the match, and do not resolve it by doubting the match.
+
 HOW TO ANSWER
 If you find a real, specific explanation grounded in what the quotes actually show — say so, name which one, and the candidate is dismissed.
 If you find no explanation and both statements genuinely stand as the book's own claims about the same thing at the same time — say so, and it is confirmed.
@@ -103,6 +113,11 @@ export function buildVerifyPrompt(args: {
   a: { value: string; quote: string; chapter: number | null; register: string | null };
   b: { value: string; quote: string; chapter: number | null; register: string | null };
   adjudication: string;
+  /** The passage around each quote. Identity questions — is this the same
+   *  person under two spellings? — cannot be answered from a quoted span
+   *  alone; a reader answers them by reading around the line. */
+  aContext?: string | null;
+  bContext?: string | null;
   /** Explanations the deterministic gates have already ELIMINATED. Without
    *  this, pass 2 hedges on a flashback in a manuscript known to be linear —
    *  offering an explanation the data has already ruled out, which turns a
@@ -114,12 +129,16 @@ export function buildVerifyPrompt(args: {
   const ruled = args.ruledOut?.length
     ? `\n\nALREADY RULED OUT — do not offer these as explanations:\n${args.ruledOut.map((r) => `  - ${r}`).join('\n')}`
     : '';
+  const ctx =
+    args.aContext || args.bContext
+      ? `\n\nTHE PASSAGES THEY COME FROM:\n\nAround the FIRST:\n${args.aContext ?? '(not available)'}\n\nAround the SECOND:\n${args.bContext ?? '(not available)'}`
+      : '';
   return `SUBJECT: ${args.entity}
 PROPERTY: ${args.attribute}
 
 ${side(args.a, 'FIRST')}
 
-${side(args.b, 'SECOND')}${ruled}
+${side(args.b, 'SECOND')}${ctx}${ruled}
 
 A first pass judged these incompatible, reasoning: "${args.adjudication}"
 

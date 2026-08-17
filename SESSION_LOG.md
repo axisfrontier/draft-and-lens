@@ -42,11 +42,15 @@ Commits `ee054b8` (gates), `250a7a4` (two-pass + test set). Test set: **`DraftAn
 
 **DONE:** `extractContext(sourceText, quote, radius)` in `src/lib/detection-gates.ts` — returns the passage around an evidence quote, anchoring through whitespace and smart-quote differences, and returning **null rather than a wrong window** when the quote cannot be located (context from the wrong place is worse than none). 6 tests.
 
-**NOT DONE — next step:**
-1. Thread `aContext`/`bContext` through `runDetection` into `buildVerifyPrompt`.
-2. Add the entity-identity principle to `DETECTION_VERIFY_SYSTEM`, worded as the ruling: the shared subject key is one signal, neither authoritative nor to be distrusted; read the passages and judge.
-3. Re-run the detection test set with context supplied for A4 and confirm it moves to `contradiction` — **and equally that no Group B case regresses into a false positive**, since more context cuts both ways.
-4. **Production wiring note:** detection will need each fact's `reading_id` → `readings.source_text` to build the context window. That lookup does not exist yet and is part of wiring detection into the pipeline.
+**DONE (code, `58638ae` + follow-up): steps 1 and 2.** `aContext`/`bContext` thread through `runDetection` into `buildVerifyPrompt`, and `DETECTION_VERIFY_SYSTEM` carries the identity principle worded as the ruling — the shared subject key is one signal, neither authoritative nor to be distrusted; read the passages and judge. It names the three ordinary cases (nickname/formal variant, one person the narration spells inconsistently — which *is* a real finding — and two genuinely distinct characters) and says to answer uncertain rather than resolve by trusting or by doubting the match.
+
+**⚠️ NOT YET VERIFIED BEHAVIOURALLY — this is the first thing to do on resume.**
+`tsc` is clean and the change is additive to a prompt, but the detection test set has **not** been re-run against it. Committed but **not deployed**, and detection is not wired into the pipeline, so nothing user-facing is affected. Re-run before relying on it, and check BOTH directions:
+- A4 should move to `contradiction` now that pass 2 can read the passages;
+- **and no Group B case may regress into a false positive** — more context cuts both ways, and B1/B3/B5 are the cases that would suffer.
+
+**Still to do:**
+- **Production wiring:** detection needs each fact's `reading_id` → `readings.source_text` to build context windows. That lookup does not exist yet and is part of wiring detection into the pipeline.
 
 ### ⚠️ SUPERSEDED — original open question, kept for the reasoning
 

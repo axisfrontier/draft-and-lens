@@ -106,6 +106,11 @@ export async function runDetection(args: {
   /** What the manuscript is KNOWN to be doing. Passed to pass 2 so it does not
    *  offer an explanation the data has already eliminated. */
   frame?: { nonLinear: boolean | null; unreliableNarrator: boolean | null };
+  /** Passage around each quote, from extractContext. Pass 2 needs these to
+   *  judge identity when names differ — the ruling is to read and judge, not
+   *  to trust or doubt the upstream match. */
+  aContext?: string | null;
+  bContext?: string | null;
 }): Promise<DetectionResult> {
   const { a, b, ceiling } = args;
   const unknowns = (args.demotions ?? []).map((d) => GATE_UNKNOWNS[d]).filter((x): x is string => !!x);
@@ -180,7 +185,13 @@ export async function runDetection(args: {
     maxTokens: TOKEN_LIMITS.detection,
     brain: 'detectionVerify',
     system: DETECTION_VERIFY_SYSTEM,
-    user: buildVerifyPrompt({ ...shared, adjudication: first.reasoning ?? '', ruledOut }),
+    user: buildVerifyPrompt({
+      ...shared,
+      adjudication: first.reasoning ?? '',
+      ruledOut,
+      aContext: args.aContext ?? null,
+      bContext: args.bContext ?? null,
+    }),
   });
   const verifyMs = Date.now() - t1;
   const timings = { adjudicateMs, verifyMs };
