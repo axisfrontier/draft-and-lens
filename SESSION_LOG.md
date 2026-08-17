@@ -8,6 +8,43 @@ Format per entry: date, source (Claude Code session / relayed from claude.ai cha
 
 ## Pending Decisions
 
+---
+
+# SESSION STATUS — 2026-08-17, by Level (read this first when resuming)
+
+## LEVEL 1 — DONE, findings only, nothing changed
+
+Full report: **`DraftAndLens_Level1_Audit_2026-08-17.md`**.
+
+- **1a tier audit** — complete, including measured latency from 40 production runs. Four candidate mismatches await Nenad's review; **no tier was changed**.
+- **1b corpus review** — complete. Five gaps identified, **no edit made**. Headline: the corpus's "teaching the move" rule is scoped to notes naming a *problem*, so it states only half the rule the product implements; SCOPE never mentions Brain 4, so the brain behind Noel's A24 complaint is governed by nothing.
+
+**Fixed since (both explicitly authorised):** extraction is now inside a `withCostTracking` scope, so its tokens and latency reach telemetry (`5f12c56`).
+
+## LEVEL 2 — DETECTION BUILT AND TESTED, **NOT WIRED INTO THE PIPELINE**
+
+Commits `ee054b8` (gates), `250a7a4` (two-pass + test set). Test set: **`DraftAndLens_Detection_Test_Set.md`**, results appended.
+
+- **2a scope** — mechanical facts only, stated at the top of `src/lib/detection-gates.ts` with the reasoning for why it is an honest limit rather than a v1 compromise.
+- **2b two-pass** — pass 1 asks whether claims are incompatible; pass 2 is given the *opposite* job, to excuse them. **Measured: pass 1 median 2.05 s, pass 2 4.72 s**, and pass 2 runs on only half the cases. **It earns its cost** — it changed the outcome in 3 of the 5 cases it ran, every one a downgrade from `contradiction` to `worth_checking`.
+- **2c severity** — three outcomes, `not_a_candidate` always carries a reason so "correctly not flagged" and "silently dropped" stay distinguishable. Enforced by the return type, not convention.
+- **2d tier** — `claude-opus-4-8`, the analyst's tier, per the ruling.
+- **2e test set** — **9 of 10 pass.** Three bugs found and fixed by the run; two "failures" were my own faulty test data, recorded rather than quietly corrected.
+
+### ⚠️ NOT DONE — detection does not run on real submissions
+2a–2e asked for detection **built and tested**, and it is. It is **not called from `/api/analyse`** and produces no user-visible output. Surfacing it means the Continuity report section (§6a), which **collides with the unresolved sidebar-count question** (`CLAUDE.md` says 25, ruling 6 says 26) — that must be settled first. Deliberately not started.
+
+### ⚠️ OPEN QUESTION from the test run — case A4
+Should pass 2 treat extraction's **entity match as authoritative**? It currently does not, so "Katherine" vs "Kathryn" lands at `worth_checking` because pass 2 cannot confirm from two quotes that they are the same woman. Trusting the match propagates any wrong merge extraction made; distrusting it softens every name-variance case — the one category where spelling *is* the point. **Nenad's call.**
+
+## LEVEL 3 — DONE
+
+**`AUDIT_CHECKLIST.md`** written. 15–30 minutes, triggered **before starting any major new feature** rather than on a session count. Five sections (dead code, duplicated logic patterns, unused exports, stale docs, test hygiene), each with a grep to run and a worked example drawn from a real finding of this session. Proposed home: its own file, linked from `CLAUDE.md` — deliberately not inside it, since `CLAUDE.md` is loaded every session and should stay short enough to actually be read.
+
+**Not run.** Producing the checklist was the task; running it was explicitly not.
+
+
+
 ### ⚠️ DEAD BRAINS — needs Nenad's product decision, flagged 2026-08-17, NOT fixed
 `TESTER_WORD_CAP = 4000` rejects any submission above 4,000 words (HTTP 413), but three brains are gated at `STRUCTURAL_READER_MIN_WORDS = 5000`:
 - `structuralReader` (Brain 1b)

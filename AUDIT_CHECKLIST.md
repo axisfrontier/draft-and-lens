@@ -1,0 +1,71 @@
+# Draft & Lens — Periodic Audit Checklist
+
+**Time budget: 15–30 minutes.** If it takes longer, something on it is too broad and should be cut or split — a checklist that gets skipped because it is daunting protects nothing.
+
+**Trigger: before starting any major new feature.** Not on a session count. The point is to enter a build with a clean floor, and a feature boundary is the moment when stale assumptions are most likely to be inherited into new code. (Every finding in the worked examples below was discovered *during* a build, when it was expensive; each would have been cheap to catch at this checkpoint.)
+
+**Where this lives:** its own file rather than inside `CLAUDE.md`. `CLAUDE.md` is loaded into every session and should stay short enough to be read every time; a checklist is consulted deliberately, at a known moment. `CLAUDE.md` links to it.
+
+---
+
+## 1 — Dead code (5 min)
+
+Code that cannot execute is worse than unused code: it reads as covered ground and is maintained as if it runs.
+
+- [ ] **Gate vs cap contradictions.** Any threshold that gates a code path — does another limit make it unreachable?
+      `grep -rn "MIN_\|_CAP\|_LIMIT\|>= *[0-9]\{3,\}" src/ --include="*.ts" | grep -v test`
+      Then check each gate against every cap that could prevent reaching it.
+- [ ] **Brains and stages that never appear in telemetry.** If `submission_telemetry` has no rows for a stage across recent runs, either it never fires or it is not instrumented — both need explaining.
+- [ ] **Feature flags and env switches** still referenced but always one value in practice.
+
+> **Worked example (2026-08-17):** `TESTER_WORD_CAP = 4000` rejects any submission above 4,000 words, but `structuralReader`, `narratorVerifier` and `narratorCorrector` are gated at `STRUCTURAL_READER_MIN_WORDS = 5000`. Three brains — one of them the only Opus-tier call besides the analyst — could never execute. Confirmed by their total absence from 40 telemetry runs. Nothing in the code looked wrong; the contradiction was only visible when the two constants were read together.
+
+## 2 — Duplicated logic patterns (10 min)
+
+Not duplicated *text* — duplicated *reasoning*. The dangerous kind is a subtle mistake copied to several places, where fixing one instance feels like fixing the bug.
+
+- [ ] **Supabase writes that return `!error` without checking rows changed.**
+      `grep -rn "return !error" src/lib/`
+      An update matching zero rows succeeds with no error. If the boolean means "it worked" to a caller, it must `.select()` and check length.
+- [ ] **`window.close()` without a fallback.** Browsers ignore it for tabs the user opened; a bare call is a dead control.
+      `grep -rn "window.close()" src/`
+- [ ] **The same guard written twice.** When a rule appears in two files, ask which is authoritative — and whether both are still enforced.
+- [ ] **New helper duplicating an existing one.** Before adding to `src/lib/`, scan the directory listing; it is short enough to read in full.
+
+> **Worked examples (2026-08-17):** the `return !error` pattern appeared in `attachReading`, and the same shape was found in three further functions in `readings.ts`. Separately, seven pages each had a `window.close()` "Close" control that could not work when the page was opened directly — one bug in seven places, fixed once as `closeOrGoBack()`.
+
+## 3 — Unused exports (3 min)
+
+- [ ] For each `export` in `src/lib/` and `src/ai/`, confirm at least one non-test caller:
+      `for s in $(grep -rhoE "^export (async )?function [a-zA-Z0-9_]+" src/lib src/ai | awk '{print $NF}'); do n=$(grep -rl "\b$s\b" src --include="*.ts" --include="*.tsx" | grep -v "$(grep -rl "export.*$s" src)" | wc -l); [ "$n" -eq 0 ] && echo "UNUSED? $s"; done`
+- [ ] An export used *only* by tests is either dead, or a sign the test is testing an internal it should not reach.
+
+## 4 — Stale documentation contradicting behaviour (10 min)
+
+The most expensive category, because docs are trusted and code is checked.
+
+- [ ] **Every number stated in a doc, verified against code.** Counts, thresholds, tiers, limits.
+- [ ] **Every filename referenced in `CLAUDE.md`, confirmed to exist on disk.**
+- [ ] **Version numbers agree** between a document's filename, its own header, and anything that references it.
+- [ ] **Rules stated in prose vs rules enforced in prompts.** Where a corpus or design doc states a principle, confirm the prompt actually contains it — and the reverse, that prompt rules with real editorial weight are written down somewhere durable.
+- [ ] **Status claims.** Anything marked done in a checklist or log — spot-check two at random against the repo.
+
+> **Worked examples (2026-08-17):** `CLAUDE.md` gave the sidebar link count as 25 while the ledger design and a standing ruling said 26 — one of them wrong, neither trustworthy until counted. `CLAUDE.md` referenced `DraftAndLens_LearnedCorpus_v2.7.md`, which does not exist; the file on disk is `_v2.9.md` and its own header says `Version 2.11`. And the corpus's "teaching the move" rule was scoped to notes naming a *problem*, while the product had implemented the strengths half months earlier — the doc stated half a rule.
+
+## 5 — Test hygiene (2 min)
+
+- [ ] **Any test that has been failing for more than one session.** Either fix it or delete it — a permanently red test trains everyone to ignore the suite.
+- [ ] **Tautological assertions.** Grep for `|| true`, `=== false || `, `expect(true)`.
+
+> **Worked example (2026-08-17):** an assertion written as `(await attachReading(...)) === false || true` could not fail. Removing the tautology immediately exposed a real bug — `attachReading` returned `true` after attaching nothing. Separately, `client-ip-guard.test.ts` asserted 27 lens voices against an actual 35 and had been failing for the whole session.
+
+---
+
+## Recording the outcome
+
+Append findings to `SESSION_LOG.md` under the date, split into:
+
+- **Fixed now** — mechanical, obvious, low-risk.
+- **Flagged** — needs a product decision. Record *why* it is a decision rather than a fix, or the next session will treat it as a fix and guess.
+
+An audit that finds nothing is a valid result and worth recording as such — but check the checklist itself is still pointed at where the code has actually moved.
