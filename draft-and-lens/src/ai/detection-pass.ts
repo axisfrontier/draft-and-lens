@@ -81,6 +81,38 @@ export function deriveFrame(diagnostic: DiagnosticResult | undefined): Narrative
   return { nonLinear, unreliableNarrator: null, multiplePov: null };
 }
 
+/**
+ * Is this a multi-POV manuscript? Read off the ledger's own facts.
+ *
+ * Two or more distinct POV characters across a manuscript is direct evidence
+ * of the §5.3 condition, and it needs no model call and no stored state — the
+ * facts are already loaded to be paired. `gatePair` consumes `multiplePov ===
+ * true` to demote a cross-POV clash, so this activates a gate that has been
+ * inert since it was written rather than adding a new one.
+ *
+ * Returns null rather than false below the threshold, and the distinction is
+ * real even though gatePair only tests for `true`: one POV character, or none
+ * recorded, is not evidence of a single-POV book — it is equally the shape of
+ * a manuscript one chapter long, or one whose extractor could not attribute
+ * POV. Saying "unknown" keeps this honest against a later reader that does
+ * treat `false` as meaningful, which is the trap the narrative_frame column
+ * header warns about.
+ *
+ * Names are compared case- and whitespace-insensitively so `Sarah` and `sarah`
+ * from two chapters are one POV character, not two — that alone would
+ * manufacture a multi-POV verdict for a single-POV book.
+ */
+export function deriveMultiplePov(
+  facts: readonly { povCharacter: string | null }[]
+): boolean | null {
+  const povs = new Set(
+    facts
+      .map((f) => f.povCharacter?.trim().toLowerCase())
+      .filter((p): p is string => Boolean(p))
+  );
+  return povs.size >= 2 ? true : null;
+}
+
 function toGateFact(f: {
   factId: string;
   entity: string;
@@ -133,7 +165,14 @@ export async function runDetectionPass(args: {
   const quoteByFact = new Map(facts.map((f) => [f.factId, f.evidenceQuote]));
   const readingByFact = new Map(facts.map((f) => [f.factId, f.readingId]));
 
-  const frame = deriveFrame(args.diagnostic);
+  // Structural evidence comes from this submission; POV evidence comes from
+  // the whole manuscript's accumulated facts, which is the stronger source —
+  // a book is multi-POV because of what it contains overall, not because of
+  // the chapter that happens to be in front of us.
+  const frame: NarrativeFrame = {
+    ...deriveFrame(args.diagnostic),
+    multiplePov: deriveMultiplePov(facts),
+  };
   const candidates = findCandidatePairs(facts.map(toGateFact), frame);
   if (candidates.length === 0) return empty;
 

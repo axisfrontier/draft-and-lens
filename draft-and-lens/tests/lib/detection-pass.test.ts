@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { deriveFrame } from '../../src/ai/detection-pass';
+import { deriveFrame, deriveMultiplePov } from '../../src/ai/detection-pass';
 import { pairKey } from '../../src/lib/continuity-flags';
 import type { DiagnosticResult } from '../../src/prompts/types';
 
@@ -67,5 +67,38 @@ describe('pairKey', () => {
 
   it('distinguishes genuinely different pairs', () => {
     expect(pairKey('a', 'b')).not.toBe(pairKey('a', 'c'));
+  });
+});
+
+/**
+ * gatePair demotes a cross-POV clash only on `multiplePov === true`, so this
+ * derivation is the difference between that safety gate running and sitting
+ * inert — which is what it did from the day it was written until now.
+ */
+describe('deriveMultiplePov', () => {
+  const f = (povCharacter: string | null) => ({ povCharacter });
+
+  it('reports multi-POV on two or more distinct POV characters', () => {
+    expect(deriveMultiplePov([f('Sarah'), f('Marcus')])).toBe(true);
+  });
+
+  it('treats the same name in different case or spacing as ONE character', () => {
+    // Without normalising, a single-POV book whose chapters record 'Sarah' and
+    // 'sarah' would be declared multi-POV and start demoting its own findings.
+    expect(deriveMultiplePov([f('Sarah'), f(' sarah '), f('SARAH')])).toBeNull();
+  });
+
+  it('is UNKNOWN, not false, on one POV character or none', () => {
+    // One POV is equally the shape of a one-chapter manuscript or an extractor
+    // that could not attribute POV. Claiming `false` would assert single-POV
+    // on no evidence — the permissive default the narrative_frame column
+    // header warns against.
+    expect(deriveMultiplePov([f('Sarah'), f('Sarah')])).toBeNull();
+    expect(deriveMultiplePov([f(null), f(null)])).toBeNull();
+    expect(deriveMultiplePov([])).toBeNull();
+  });
+
+  it('ignores blank and whitespace-only attributions', () => {
+    expect(deriveMultiplePov([f('Sarah'), f('   '), f('')])).toBeNull();
   });
 });
