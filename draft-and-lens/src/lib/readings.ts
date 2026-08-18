@@ -289,6 +289,7 @@ export function newWorkId(): string {
  */
 const MANUSCRIPTS_TABLE = 'manuscripts';
 const FACTS_TABLE = 'continuity_facts';
+const FLAGS_TABLE = 'continuity_flags';
 
 /**
  * True when an error means only "that table does not exist yet".
@@ -373,10 +374,10 @@ export async function deleteAllUserData(userId: string): Promise<boolean> {
   try {
     const supabase = getServiceClient();
 
-    // Facts before manuscripts: continuity_facts.manuscript_id references
-    // manuscripts, so this order holds even if that FK is ever tightened from
+    // Flags before facts before manuscripts: each references the next, so
+    // this order holds even if those FKs are ever tightened from
     // `on delete cascade` to something restrictive.
-    for (const table of [FACTS_TABLE, MANUSCRIPTS_TABLE]) {
+    for (const table of [FLAGS_TABLE, FACTS_TABLE, MANUSCRIPTS_TABLE]) {
       const { error } = await supabase.from(table).delete().eq('user_id', userId);
       if (error && !isMissingTable(error)) return false;
     }
@@ -456,7 +457,7 @@ export async function purgeExpiredDeletions(userId: string): Promise<void> {
     // Ledger first, then readings — the same order as deleteAllUserData, and
     // for the same reason. Each table is swept independently: the retention
     // promise covers everything stored, not just the readings (§8).
-    for (const table of [FACTS_TABLE, MANUSCRIPTS_TABLE, TABLE]) {
+    for (const table of [FLAGS_TABLE, FACTS_TABLE, MANUSCRIPTS_TABLE, TABLE]) {
       await supabase
         .from(table)
         .delete()
@@ -495,6 +496,10 @@ export interface UserDataExport {
     deletedAt: string | null;
   }>;
   continuityFacts: Array<Record<string, unknown>>;
+  /** Detection results (§9 Stage 3). Included for the same reason the facts
+   *  are: a flag is a statement this service has stored about the writer's
+   *  book, so it is theirs to export. */
+  continuityFlags: Array<Record<string, unknown>>;
 }
 
 export async function exportUserData(userId: string): Promise<UserDataExport> {
@@ -504,6 +509,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     works: [],
     manuscripts: [],
     continuityFacts: [],
+    continuityFlags: [],
   };
   if (!isSupabaseConfigured()) return base;
   try {
@@ -533,6 +539,9 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
 
     const facts = await supabase.from(FACTS_TABLE).select('*').eq('user_id', userId);
     if (facts.data) base.continuityFacts = facts.data as unknown as Array<Record<string, unknown>>;
+
+    const flags = await supabase.from(FLAGS_TABLE).select('*').eq('user_id', userId);
+    if (flags.data) base.continuityFlags = flags.data as unknown as Array<Record<string, unknown>>;
 
     const { data, error } = await supabase
       .from(TABLE)
