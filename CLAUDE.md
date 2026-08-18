@@ -1,3 +1,6 @@
+## Session start protocol — read this first, every session
+Before doing anything else in this repo, read DL_ONLY_ReadFirst.md in full. This is not optional and not conditional on the task.
+
 # CLAUDE.md — Draft & Lens
 
 ## Standing rules (apply every session, no exceptions)
