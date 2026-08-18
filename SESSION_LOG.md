@@ -497,3 +497,18 @@ Ran `AUDIT_CHECKLIST.md` in full. It had never been run; the handover called the
 4. **Corpus filename lags its content** — `DraftAndLens_LearnedCorpus_v2.9.md` header reads "Version 2.11". Already a worked example in the checklist itself and still unfixed; renaming touches every doc that references it, so it wants doing deliberately.
 
 **Checklist itself:** still pointed where the code is. §1 and §2 both found live defects on this run.
+
+### Deployed and verified live, 2026-08-18 (end of session)
+
+Six commits shipped: the two grouping fixes, the works zero-rows fix, the two test repairs, the audit outcome. Build ✓, 93 tests green, bundle IP grep exit 1, `origin/main..HEAD` empty before the hook fired.
+
+Live functional check on the entity fix — the exact chapter text that previously returned `band: "confirm"` with `sharedEntities: ["one","the"]`, proposing to group into the real manuscript "Home", now returns `band: "none"` with no suggestion at all. Test data confirmed gone: "Home" is the only manuscript.
+
+**Beta-completion list now stands at:**
+1. ~~Ledger phase 2~~ — done
+2. ~~Extraction / detection~~ — **done and verified live today**
+3. **Timeline reasoning (ledger phase 3) — BLOCKED, needs Nenad.** The handover gated it on "detection being solid and tested", which it now is, so the gate is lifted. But there is no build spec: the ledger design promotes it to next priority and resolves sub-question 1a as "unknown-and-demote, promote once dismissal behaviour establishes the frame" — and that mechanism needs a dismissal UI (a writer marking a flag intentional) that does not exist. `continuity_facts.reconciled_at` is the column for it and `gatePair` already reads it, so the data side is ready and the interaction is not. What phase 3 actually consists of is a product decision.
+4. **Mentor mode — BLOCKED, needs Nenad.** Only `DraftAndLens_CodePrompt_MentorRegister_Addendum.md` exists (register/disposition), not a feature spec.
+5. **Differentiator messaging — blocked behind 4** by its own stated dependency.
+
+Everything not requiring a product decision is done. Deliberately not started: anything in the pre-paid-launch checklist or the legal cluster, and the UI exploration (whose own file sequences it after the audit, which has now run).
