@@ -512,3 +512,19 @@ Live functional check on the entity fix — the exact chapter text that previous
 5. **Differentiator messaging — blocked behind 4** by its own stated dependency.
 
 Everything not requiring a product decision is done. Deliberately not started: anything in the pre-paid-launch checklist or the legal cluster, and the UI exploration (whose own file sequences it after the audit, which has now run).
+
+### Resume note — timeline reasoning (ledger phase 3), 2026-08-18
+
+Stopped at a usage checkpoint while scoping phase 3. **No code written, nothing in flight, tree clean.** Items 1 (detection) is done and verified live; 2–4 remain. What the design read established, so the next session does not re-derive it:
+
+**Phase 3 is not one feature. It is three separable pieces, and only one of them is genuinely blocked.**
+
+1. **Frame storage and accumulation — buildable now, no decision needed.** `deriveFrame` (`src/ai/detection-pass.ts`) reads linearity off *this submission's* `structuralMap` only, and leaves `unreliableNarrator`/`multiplePov` null always. Two consequences: the §5.1 and §5.3 gates are inert, and because the structural reader is gated at the word cap the map is almost never produced, so the frame is unknown on essentially every real submission and everything demotes. The design says the frame is "inferred silently" (ruling 1) — inference accumulated across a manuscript's chapters and stored on `manuscripts` is implied by that and needs no new ruling. This is the highest-value unblocked piece.
+
+2. **Promotion on established frame — blocked on an interaction that does not exist.** Sub-question 1a resolved 2026-08-15 as *unknown-and-demote, then promote once dismissal behaviour establishes the frame*. `continuity_facts.reconciled_at` is the column, and `gatePair` already reads it — the data side is ready. What is missing is the writer marking a flag as intentional, i.e. §6a needs a dismissal control. Whether that control exists, and what it says, is a product decision.
+
+3. **State locks (§5.7) — the actual driver of ruling 7,** which promoted timeline reasoning precisely because state locks are not honestly checkable without it. §5.7 already specifies the violation condition concretely: the character must appear as a **live participant in present-tense narration** at a later sequence position with no flashback or dream marker; where that cannot be established it demotes to worth-checking and names the likely explanation first. That is implementable prose, but it needs the frame from (1) to be worth anything.
+
+**Boundary to hold, from §3:** *compare assertions, never compute chronology.* "Born in 1971" vs "born in 1968" is in scope; working out whether chapter 9 precedes chapter 2 is not. Phase 3 must not quietly cross that line — §5.4 says the boundary is load-bearing, and the design is explicit that death locks are the most intuitive lock and the least checkable, so copy must not over-promise.
+
+**Suggested order next session:** (1) frame storage + accumulation, then (3) state locks on top of it, and raise (2) with Nenad as the one real decision.
