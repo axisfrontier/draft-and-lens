@@ -37,7 +37,7 @@ Every bash command must be prefixed with:
 
 ### Governing docs (read these, don't act on them as build instructions)
 - `DraftAndLens_Architecture_v6.md`
-- `DraftAndLens_LearnedCorpus_v2.7.md`
+- `DraftAndLens_LearnedCorpus_v2.9.md` (the file's own header says Version 2.11 — the filename lags the content; the file on disk is the current corpus)
 - `ThinkingDiscipline.md`
 - `DraftAndLens.html` (prototype — IP source of truth)
 

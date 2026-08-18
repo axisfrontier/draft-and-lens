@@ -476,3 +476,24 @@ Migration applied by Nenad; deploy hook fired; verified on real submissions via 
 - manuscript **"The Hollow Year"** (`9b444631-cae1-49e7-9294-ff5c78d02042`) with 2 chapters and 1 continuity flag;
 - a standalone work from the first, ungrouped "Chapter One" submission.
 Nothing was written to the real "Home" manuscript — the test deliberately created its own book.
+
+### Level 3 periodic audit — first run, 2026-08-18
+
+Ran `AUDIT_CHECKLIST.md` in full. It had never been run; the handover called the three-dead-brains incident "the strongest possible justification" for actually using it. It found real defects on its first outing, so the practice pays for itself.
+
+**Fixed now**
+
+- **§2 — `renameWork`, `softDeleteWork`, `restoreWork` reported success on zero rows.** A Supabase update matching nothing succeeds with no error, so all three returned `true` for a work that does not exist, belongs to another user, or is already in the target state; `api/works/[workId]` turns that straight into `ok:true`. The two delete/restore functions also ran their ledger cascade on that false success. **The 2026-08-17 entry already records finding this shape "in three further functions in readings.ts" — these are those three, and they were never fixed.** A finding recorded but not applied is indistinguishable, a session later, from one that was handled.
+- **§5 — the two long-red `client-ip-guard` tests.** Lens count stale at 27 against an actual 35 (now also asserts every id has meta + a prompt, so it cannot rot the same way); the layering check flagged a *type-only* import, which emits no JavaScript and cannot carry prompt IP — the guard now strips type imports, verified still red for a value import.
+- **§3 — removed `listFlagsForManuscript`,** an export I added earlier today with no caller. My own debt, introduced in the flags-store commit against the standing rule to check the module for dead code in the same commit. §6b will need it and can re-add it.
+- **§4 — `CLAUDE.md` pointed at `DraftAndLens_LearnedCorpus_v2.7.md`,** deleted earlier today. Now points at v2.9 and notes the filename/header mismatch.
+- **§4 — verified rather than assumed:** the stated 16000-token analyst target is correct at every tier in `adaptiveAnalystConfig`.
+
+**Flagged — decisions, not fixes**
+
+1. **`FREE_WORD_LIMIT = 10_000` is unreachable.** It is passed as the pipeline's `wordLimit`, but `TESTER_WORD_CAP` rejects anything over 4,000 first, so the whole 4k–10k coverage/truncation path is dead in production — the *same* gate-vs-cap family as the three dead brains, found by the same §1 check. Which number is wrong is a product call.
+2. **`lens.ts` and `conversation.ts` are entire brain modules that never execute.** `api/lens` and `api/converse` each build their own model call inline from the prompt modules, bypassing `runLens` / `runConversation` completely. This is duplicated *reasoning* (§2) and dead code (§3) at once: two places know how to call the model for a lens, and the one under `src/ai/brains/` is not the one that runs. A bug fixed in the brain would change nothing live. Deciding which side is canonical is architectural — Architecture §03 says brains own orchestration, which suggests the routes drifted, but collapsing them is not a mechanical edit.
+3. **Also dead, lower stakes:** `detachReading` (the detach route uses `detachWork`), `listLocks`, `traceMark`.
+4. **Corpus filename lags its content** — `DraftAndLens_LearnedCorpus_v2.9.md` header reads "Version 2.11". Already a worked example in the checklist itself and still unfixed; renaming touches every doc that references it, so it wants doing deliberately.
+
+**Checklist itself:** still pointed where the code is. §1 and §2 both found live defects on this run.

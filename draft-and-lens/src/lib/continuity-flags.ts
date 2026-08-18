@@ -217,28 +217,3 @@ export async function listFlagsForReading(
     return [];
   }
 }
-
-/** Every surviving flag for a manuscript — the §6b ledger view. */
-export async function listFlagsForManuscript(
-  userId: string,
-  manuscriptId: string
-): Promise<ContinuityFlag[]> {
-  if (!isSupabaseConfigured()) return [];
-  try {
-    const supabase = getServiceClient();
-    if (!(await ownsManuscript(supabase, userId, manuscriptId))) return [];
-
-    const { data, error } = await supabase
-      .from(FLAGS_TABLE)
-      .select(SELECT_COLUMNS)
-      .eq('manuscript_id', manuscriptId)
-      .eq('user_id', userId)
-      .neq('outcome', 'dismissed')
-      .is('deleted_at', null)
-      .order('entity', { ascending: true });
-    if (error || !data) return [];
-    return (data as unknown as FlagRow[]).map(toFlag);
-  } catch {
-    return [];
-  }
-}
