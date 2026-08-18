@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { recordStageTiming, withCostTracking, type CostEntry } from '../../../ai/cost-tracker';
 import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor';
+import { runDetectionPass } from '../../../ai/detection-pass';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
@@ -395,6 +396,34 @@ export async function POST(req: NextRequest): Promise<Response> {
               // channel shaped for it rather than a misused one. Flagged in
               // SESSION_LOG rather than bodged in here.
               void stored;
+
+              // ── Detection (§9 Stage 3) ─────────────────────────────────
+              // Runs only when this submission actually contributed facts:
+              // with nothing new in the ledger, every pair was adjudicated on
+              // an earlier pass and this would be a round trip to learn that.
+              //
+              // Its own withCostTracking scope for the same reason extraction
+              // has one — the pipeline's scope has long since closed, and
+              // without a store recordBrainUsage silently drops every entry.
+              //
+              // Deliberately last in the block: detection reads the facts
+              // extraction just wrote, and the reading has already been
+              // delivered, so its latency is invisible and its failure costs
+              // the writer nothing.
+              if (stored > 0) {
+                const { result: detected, entries: detectionEntries } = await withCostTracking(
+                  async () =>
+                    runDetectionPass({
+                      userId,
+                      manuscriptId: attachment.manuscriptId,
+                      readingId,
+                      diagnostic: result.diagnostic,
+                      currentText: clean,
+                    })
+                );
+                collectedEntries = [...collectedEntries, ...detectionEntries];
+                void detected;
+              }
             } catch {
               /* extraction is best-effort; the reading is already delivered */
             }

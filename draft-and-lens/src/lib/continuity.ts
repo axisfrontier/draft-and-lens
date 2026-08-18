@@ -39,6 +39,9 @@ export interface LedgerFact {
   register: string | null;
   povCharacter: string | null;
   evidenceQuote: string | null;
+  /** Which submission this fact came from. Provenance, and what detection
+   *  uses to read back the passage around the quote. */
+  readingId: string | null;
   sequenceIndex: number | null;
   confidence: number | null;
   source: string;
@@ -64,6 +67,7 @@ interface FactRow {
   register: string | null;
   pov_character: string | null;
   evidence_quote: string | null;
+  reading_id: string | null;
   sequence_index: number | null;
   confidence: number | null;
   source: string;
@@ -75,7 +79,7 @@ interface FactRow {
 
 const SELECT_COLUMNS =
   'id, entity, category, attribute, value, mutability, register, pov_character, ' +
-  'evidence_quote, sequence_index, confidence, source, lock_kind, lock_from_sequence, ' +
+  'evidence_quote, reading_id, sequence_index, confidence, source, lock_kind, lock_from_sequence, ' +
   'reconciled_at, created_at';
 
 function toFact(r: FactRow): LedgerFact {
@@ -89,6 +93,7 @@ function toFact(r: FactRow): LedgerFact {
     register: r.register,
     povCharacter: r.pov_character,
     evidenceQuote: r.evidence_quote,
+    readingId: r.reading_id,
     sequenceIndex: r.sequence_index,
     confidence: r.confidence,
     source: r.source,

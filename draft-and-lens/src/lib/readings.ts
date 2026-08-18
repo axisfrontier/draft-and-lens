@@ -470,6 +470,44 @@ export async function purgeExpiredDeletions(userId: string): Promise<void> {
   }
 }
 
+/**
+ * Submitted text for a set of readings, keyed by reading id.
+ *
+ * Detection's second pass judges a candidate by reading AROUND each evidence
+ * quote, not from the quote alone — measurably so: on the eye-colour case a
+ * bare quote pair resolved to a soft "worth checking" where the same pair with
+ * its passages resolved to a contradiction. The two facts in a pair usually
+ * come from different chapters, so the submitting request only ever holds one
+ * side's text and the other has to be read back.
+ *
+ * Silently omits readings that no longer exist. Facts outlive the readings
+ * they came from (MAX_VERSIONS hard-prunes), so a missing entry is the normal
+ * case rather than an error — and no context is strictly better than context
+ * fetched from the wrong place.
+ */
+export async function getSourceTexts(
+  userId: string,
+  readingIds: readonly string[]
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!isSupabaseConfigured() || readingIds.length === 0) return out;
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('id, source_text')
+      .eq('user_id', userId)
+      .in('id', [...new Set(readingIds)]);
+    if (error || !data) return out;
+    for (const row of data as unknown as Array<{ id: string; source_text: string | null }>) {
+      if (row.source_text) out.set(row.id, row.source_text);
+    }
+    return out;
+  } catch {
+    return out;
+  }
+}
+
 /** Complete, portable export of everything stored for a user (GDPR §20). */
 export interface UserDataExport {
   exportedAt: string;
