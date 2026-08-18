@@ -398,14 +398,21 @@ export async function softDeleteWork(userId: string, workId: string): Promise<bo
   if (!isSupabaseConfigured()) return false;
   try {
     const supabase = getServiceClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from(TABLE)
       .update({ deleted_at: new Date().toISOString() })
       .eq('user_id', userId)
       .eq('work_id', workId)
-      .is('deleted_at', null);
-    if (error) return false;
+      .is('deleted_at', null)
+      // An update matching zero rows succeeds with no error, so `!error` alone
+      // would report success for a work that does not exist, belongs to
+      // another user, or is already deleted. The caller turns this boolean
+      // straight into an ok/500 for the browser.
+      .select('id');
+    if (error || !Array.isArray(data) || data.length === 0) return false;
     // Ledger facts extracted from this work stop counting while it is deleted.
+    // Only reached once a row actually changed, so the cascade cannot run for
+    // a work this call did not touch.
     await cascadeFactsForWork(supabase, userId, workId, new Date().toISOString());
     return true;
   } catch {
@@ -419,13 +426,16 @@ export async function renameWork(userId: string, workId: string, title: string):
   try {
     const clean = title.trim().slice(0, 200) || 'Untitled';
     const supabase = getServiceClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from(TABLE)
       .update({ work_title: clean })
       .eq('user_id', userId)
       .eq('work_id', workId)
-      .is('deleted_at', null);
-    return !error;
+      .is('deleted_at', null)
+      // See softDeleteWork: without this the route answers ok:true for a
+      // rename that changed nothing.
+      .select('id');
+    return !error && Array.isArray(data) && data.length > 0;
   } catch {
     return false;
   }
@@ -436,13 +446,16 @@ export async function restoreWork(userId: string, workId: string): Promise<boole
   if (!isSupabaseConfigured()) return false;
   try {
     const supabase = getServiceClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from(TABLE)
       .update({ deleted_at: null })
       .eq('user_id', userId)
       .eq('work_id', workId)
-      .not('deleted_at', 'is', null);
-    if (error) return false;
+      .not('deleted_at', 'is', null)
+      // Zero rows matched means there was nothing to restore — see the note in
+      // softDeleteWork.
+      .select('id');
+    if (error || !Array.isArray(data) || data.length === 0) return false;
     // Bring this work's ledger facts back with it.
     await cascadeFactsForWork(supabase, userId, workId, null);
     return true;
