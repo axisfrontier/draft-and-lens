@@ -80,7 +80,7 @@ Two conditional links sit on top of that, so the ceiling depends on what the rea
 |---|---|
 | Base — standalone reading | **25** |
 | + **Continuity ledger** link (Overview group; present only when the reading belongs to a grouped manuscript) | **26** |
-| + **Continuity section** (Analysis group; phase 4, not built — appears only when contradictions were found) | **27** |
+| + **Continuity section** (Analysis group; §6a, built 2026-08-18 — appears only when detection surfaced something) | **27** |
 
 So Overview is 3 links, or 4 when the reading is grouped.
 
