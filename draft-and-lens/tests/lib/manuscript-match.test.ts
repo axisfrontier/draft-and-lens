@@ -20,6 +20,40 @@ describe('extractEntities', () => {
     expect(e.has('marcus')).toBe(true);
   });
 
+  /**
+   * Dialogue defeats the not-first-word rule: the word opening a quoted line
+   * is capitalised and, to a crude sentence split, not sentence-initial. Live,
+   * this proposed grouping an unrelated chapter into a real manuscript on
+   * sharedEntities ["one","the"] — shown to the writer as "both mention one,
+   * the".
+   */
+  it('does not mistake function words in dialogue for names', () => {
+    const e = extractEntities(
+      `Sarah stood aside. "The slates are the least of it," he said. "It's that kind of lane."\n` +
+        `"One more thing," said Eileen. "There is no roof left to speak of."`
+    );
+    for (const noise of ['the', 'it', 'one', 'there', 'no']) {
+      expect(e.has(noise), `"${noise}" was counted as a name`).toBe(false);
+    }
+    // The real names in the same passage must survive the filter.
+    expect(e.has('eileen')).toBe(true);
+  });
+
+  it('does not mistake contractions for names', () => {
+    const e = extractEntities(`He waited. "You'll see," said Mallory. "It'll keep. I'm certain. Don't ask."`);
+    for (const noise of ["you'll", "it'll", "i'm", "don't"]) {
+      expect(e.has(noise), `"${noise}" was counted as a name`).toBe(false);
+    }
+    expect(e.has('mallory')).toBe(true);
+  });
+
+  it('keeps apostrophe names, which the contraction rule must not eat', () => {
+    const e = extractEntities("She met O'Connor at the gate. Later D'Arcy arrived with O'Brien.");
+    expect(e.has("o'connor")).toBe(true);
+    expect(e.has("d'arcy")).toBe(true);
+    expect(e.has("o'brien")).toBe(true);
+  });
+
   it('ignores sentence-initial capitals — the whole point of the guard', () => {
     const e = extractEntities('The house was cold. Behind it, nothing. However, she waited.');
     expect(e.has('the')).toBe(false);

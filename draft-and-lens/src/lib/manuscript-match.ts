@@ -42,6 +42,35 @@ const NOT_A_NAME: ReadonlySet<string> = new Set([
   'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
   'september', 'october', 'november', 'december',
   'i', 'god', 'christmas', 'easter', 'english', 'french', 'american', 'british',
+
+  // Function words, which reach here because the not-first-word rule is
+  // defeated by dialogue. The sentence split is crude by design, so the word
+  // opening a quoted line — `"The slates are the least of it."` — is not
+  // sentence-initial by its reckoning and arrives capitalised. In a
+  // dialogue-heavy chapter that is enough to make "the" and "one" look like
+  // recurring names.
+  //
+  // Observed live: an unrelated chapter was proposed for grouping into a real
+  // manuscript on sharedEntities ["one","the"], shown to the writer as
+  // "both mention one, the". The confirm step held, so nothing was grouped
+  // wrongly — but evidence a reader can see is nonsense undermines the
+  // question being asked.
+  //
+  // Dropping a real name is the safe direction here and losing one costs
+  // little: a missed grouping leaves the ledger doing less, while a wrong one
+  // reports contradictions between unrelated books (see the asymmetry note on
+  // the AUTO_MIN_* thresholds below).
+  'the', 'a', 'an', 'and', 'but', 'or', 'if', 'so', 'then', 'than', 'that',
+  'this', 'these', 'those', 'there', 'here', 'it', 'its', 'he', 'him', 'his',
+  'she', 'her', 'hers', 'they', 'them', 'their', 'we', 'us', 'our', 'you',
+  'your', 'me', 'my', 'mine', 'who', 'whom', 'whose', 'what', 'when', 'where',
+  'why', 'how', 'which', 'one', 'two', 'three', 'no', 'not', 'yes', 'oh',
+  'well', 'now', 'just', 'only', 'as', 'at', 'by', 'for', 'from', 'in', 'into',
+  'of', 'on', 'to', 'up', 'with', 'is', 'was', 'be', 'been', 'do', 'does',
+  'did', 'have', 'has', 'had', 'will', 'would', 'can', 'could', 'should',
+  'shall', 'may', 'might', 'must', 'because', 'before', 'after', 'about',
+  'over', 'under', 'again', 'still', 'even', 'never', 'always', 'nothing',
+  'something', 'anything', 'everything', 'someone', 'anyone', 'everyone',
 ]);
 
 /**
@@ -90,6 +119,23 @@ function stripPossessive(word: string): string {
 }
 
 /**
+ * A contraction, not a name — `You've`, `It'll`, `Don't`, `I'm`.
+ *
+ * These reach the extractor by the same route as the function words above: the
+ * word opening a line of dialogue is capitalised and, to a crude sentence
+ * split, not sentence-initial. Listing each one is whack-a-mole, so the SHAPE
+ * is matched instead.
+ *
+ * Anchored to a contraction suffix specifically, which is why apostrophe names
+ * survive: O'Connor, D'Arcy and O'Brien carry the apostrophe near the start
+ * and end in no such suffix. `'s` is excluded — stripPossessive has already
+ * removed it, and a bare `'s` ending is far more often a possessive name.
+ */
+function isContraction(word: string): boolean {
+  return /['’](ve|ll|re|d|t|m)$/iu.test(word);
+}
+
+/**
  * Conservative proper-noun extraction.
  *
  * A word counts as an entity only when it is capitalised *and not the first
@@ -120,6 +166,7 @@ export function extractEntities(text: string): Set<string> {
       if (raw === undefined) continue;
       const word = stripPossessive(raw);
       if (word.length < 2) continue;
+      if (isContraction(word)) continue;
 
       const first = word[0];
       if (first === undefined || first !== first.toUpperCase() || first === first.toLowerCase()) {
