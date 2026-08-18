@@ -528,3 +528,16 @@ Stopped at a usage checkpoint while scoping phase 3. **No code written, nothing 
 **Boundary to hold, from §3:** *compare assertions, never compute chronology.* "Born in 1971" vs "born in 1968" is in scope; working out whether chapter 9 precedes chapter 2 is not. Phase 3 must not quietly cross that line — §5.4 says the boundary is load-bearing, and the design is explicit that death locks are the most intuitive lock and the least checkable, so copy must not over-promise.
 
 **Suggested order next session:** (1) frame storage + accumulation, then (3) state locks on top of it, and raise (2) with Nenad as the one real decision.
+
+### Frame storage — no migration needed, 2026-08-18
+
+Checkpointed before writing code. **Nothing in flight, tree clean.** One finding that changes the plan in the previous resume note:
+
+**`manuscripts.narrative_frame jsonb` already exists** (`continuity_ledger.sql`), with a header stating exactly the semantics phase 3 needs: the three §5.1 frame properties, "inferred from behaviour, never asked (ruling 1)", and NULL means UNKNOWN and must never be read as a permissive default. So frame storage needs **no migration** — the column was provisioned in phase 2 and has never been written to. The previous note's plan to add columns is superseded.
+
+**Accumulation semantics worked out, for whoever picks this up:**
+- `nonLinear` must be **sticky true**. One mapped chapter reading as linear does not make the book linear — chapter 1 linear plus chapter 9 a flashback is the ordinary case, and letting an early chapter's evidence set `false` would hand hard tier to exactly the age/date clashes §5.4 names as the exposed edge. So: any chapter non-linear → true, permanently; false only once at least one chapter has produced structural evidence and none was non-linear; NULL until any evidence exists at all.
+- `multiplePov` is **derivable today with no model call and no new storage** — two or more distinct non-null `pov_character` values across the manuscript's stored facts is direct evidence. `gatePair` already consumes `multiplePov === true` to demote cross-POV clashes, so this activates a dormant safety gate rather than adding one. Deriving it live from the ledger each run beats storing it: no denormalisation, no drift.
+- `unreliableNarrator` has **no evidence source in the pipeline**. It stays null and the §5.1 gate stays inert. Do not infer it from `narrativeStructure` or register — neither means it, and a wrong `false` promotes narration to the book's own voice, which is the §5.2 failure.
+
+**Caveat that limits the value of all of this:** `structuralMap` is the only linearity signal and the structural reader is gated at the word cap, so in practice almost no submission produces one. Frame accumulation is correct to build, but `nonLinear` will stay NULL on real beta traffic until that gate is resolved — which is the flagged `FREE_WORD_LIMIT` / `TESTER_WORD_CAP` decision. `multiplePov` is the piece that will actually fire today.
