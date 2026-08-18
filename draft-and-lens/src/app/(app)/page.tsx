@@ -7,6 +7,7 @@ import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
 import { TermTooltip } from '@/components/glossary/TermTooltip';
 import type {
+  ContinuityFlag,
   Coverage,
   Diagnostic,
   Market,
@@ -59,6 +60,10 @@ type StreamEvent =
     }
   // Sent after `done`, only when the reading was grouped into a manuscript.
   | { type: 'grouped'; workId: string; manuscriptId: string; sequenceIndex: number | null }
+  // Sent after `grouped`, only when detection found something worth showing.
+  // Read back from the store server-side, so this carries exactly what a later
+  // view of the same reading would load.
+  | { type: 'continuity'; flags: ContinuityFlag[] }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -174,6 +179,7 @@ export default function AppHomePage() {
    *  `autoGrouped`, which exists only to show the undo trace and so is set for
    *  auto-groupings alone. */
   const [groupedManuscriptId, setGroupedManuscriptId] = useState<string | null>(null);
+  const [continuityFlags, setContinuityFlags] = useState<ContinuityFlag[]>([]);
   const [chosenManuscript, setChosenManuscript] = useState<string | null>(null);
   const [groupingOpen, setGroupingOpen] = useState(false);
   /** True once the grouping question has been put to the writer for this
@@ -258,6 +264,7 @@ export default function AppHomePage() {
     setAutoGrouped(null);
     setChosenManuscript(null);
     setGroupedManuscriptId(null);
+    setContinuityFlags([]);
   }
 
   async function createManuscriptAndSelect() {
@@ -439,6 +446,8 @@ export default function AppHomePage() {
                 title: grouping.suggestion.title || 'your manuscript',
               });
             }
+          } else if (evt.type === 'continuity') {
+            setContinuityFlags(evt.flags);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -1280,6 +1289,7 @@ export default function AppHomePage() {
           coverage={coverage}
           mode={mode ?? undefined}
           manuscriptId={groupedManuscriptId ?? undefined}
+          continuityFlags={continuityFlags}
           revisionStatus={revisionStatus ?? undefined}
           readAt={readAt ?? undefined}
           onFreshReadingRequest={() => analyse(true)}

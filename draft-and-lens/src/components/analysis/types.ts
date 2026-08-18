@@ -59,3 +59,21 @@ export interface DonePayload {
   market: Market | null;
   bible: string;
 }
+
+/**
+ * One surviving continuity flag (§6a). Client mirror of ContinuityFlag in
+ * src/lib/continuity-flags.ts, which is `server-only`.
+ *
+ * 'dismissed' is absent from this union on purpose: dismissals are stored for
+ * idempotency and audit and are filtered out at the store boundary, so a
+ * dismissed flag can never reach the browser and the UI has no branch for one.
+ */
+export interface ContinuityFlag {
+  flagId: string;
+  entity: string;
+  attribute: string;
+  outcome: 'contradiction' | 'worth_checking';
+  reasoning: string | null;
+  explanation: string | null;
+  confidence: number | null;
+}

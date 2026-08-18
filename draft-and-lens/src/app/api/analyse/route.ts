@@ -9,6 +9,7 @@ import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
+import { listFlagsForReading } from '../../../lib/continuity-flags';
 import { resolveAttachment } from '../../../lib/manuscripts';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
@@ -32,6 +33,7 @@ import type { AnalysisMode } from '../../../prompts/types';
  *   { type: 'stage', stage, title }   pipeline stage transitions (§15)
  *   { type: 'text',  delta }          live Brain 2 text deltas (anchors intact)
  *   { type: 'done',  report, diagnostic, coverage, scores, market, bible }
+ *   { type: 'continuity', flags }   §6a detection results, after `done`
  *   { type: 'error', message }
  * The final `report` is authoritative — it includes the post-stream narrator
  * correction, which the streamed deltas predate.
@@ -423,6 +425,18 @@ export async function POST(req: NextRequest): Promise<Response> {
                 );
                 collectedEntries = [...collectedEntries, ...detectionEntries];
                 void detected;
+
+                // Read the flags BACK from the store rather than sending the
+                // in-memory results. The ruling is that §6a renders from
+                // stored flags on every view; sourcing the live view from
+                // memory would give it a second, privileged path that no
+                // later view shares, and the first divergence between them
+                // would show up as a section that looks different on reload
+                // than it did when written.
+                if (readingId) {
+                  const flags = await listFlagsForReading(userId, readingId);
+                  if (flags.length > 0) send({ type: 'continuity', flags });
+                }
               }
             } catch {
               /* extraction is best-effort; the reading is already delivered */

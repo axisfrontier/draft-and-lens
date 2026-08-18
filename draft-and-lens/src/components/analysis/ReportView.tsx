@@ -8,6 +8,7 @@ import { countWords } from '@/lib/limits';
 
 import { AnchoredView } from './AnchoredView';
 import { BiblePanel } from './BiblePanel';
+import { ContinuitySection } from './ContinuitySection';
 import { CraftDirectives } from './CraftDirectives';
 import { MarketPanel } from './MarketPanel';
 import { PartialReadBanner } from './PartialReadBanner';
@@ -16,7 +17,7 @@ import { ScoresDashboard } from './ScoresDashboard';
 import { StoryArc } from './StoryArc';
 import { VerdictBand } from './VerdictBand';
 import { extractVerdict, parseReport } from './report';
-import type { Coverage, Diagnostic, Market, Scores } from './types';
+import type { ContinuityFlag, Coverage, Diagnostic, Market, Scores } from './types';
 
 /**
  * Dashboard/Story Arc render collapsed by default (native <details>). A plain
@@ -132,6 +133,7 @@ export function ReportView({
   readAt,
   onFreshReadingRequest,
   manuscriptId,
+  continuityFlags = [],
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -148,6 +150,10 @@ export function ReportView({
    *  link through to its continuity ledger. Absent for a standalone piece,
    *  where there is no ledger to point at. */
   manuscriptId?: string;
+  /** Surviving detection flags for this reading (§6a). Empty for a standalone
+   *  piece, for a first chapter with nothing to compare against, and whenever
+   *  detection surfaced nothing — all three render no section at all. */
+  continuityFlags?: readonly ContinuityFlag[];
 }) {
   const verdict = extractVerdict(report);
   const parsed = parseReport(report);
@@ -358,6 +364,14 @@ export function ReportView({
         {sidebarSections.map((s) => (
           <a key={s.id} href={`#${s.id}`} style={sidebarLink}>{s.label}</a>
         ))}
+        {/* Conditional on the same principle as every other section here
+            (Principle 26 — a link earns its place by there being something
+            behind it). Detection surfacing nothing is the common case, and a
+            link to an empty Continuity section would imply a check was run and
+            passed, which is more than detection can claim. */}
+        {continuityFlags.length > 0 && (
+          <a href="#sec-continuity" style={sidebarLink}>Continuity</a>
+        )}
 
         <div style={sidebarGroup}>Action</div>
         <a href="#sec-three" style={sidebarLink}>What to revise</a>
@@ -631,6 +645,11 @@ export function ReportView({
               </div>
             </>
           )}
+
+          {/* §6a — outside the report/anchored branch on purpose: these are
+              stated facts about the manuscript, not a reading of it, so they
+              belong in both views rather than only the prose one. */}
+          <ContinuitySection flags={continuityFlags} />
 
           {/* Lenses — Choose a Voice */}
           <div id="sec-lenses" style={{ marginTop: '0', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
