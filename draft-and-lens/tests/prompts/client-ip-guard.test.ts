@@ -45,6 +45,21 @@ describe('client-IP guard', () => {
     }
   });
 
+  /**
+   * `import type` is stripped before checking, and that is a narrowing of the
+   * guard rather than a hole in it.
+   *
+   * What this test defends is prompt IP reaching the browser. A type-only
+   * import emits NO JavaScript — TypeScript erases it — so it cannot carry a
+   * prompt string into a bundle even in principle. Matching on it flagged
+   * `lib/cost-log.ts` for `import type { CostEntry }`, a file that also
+   * declares `server-only` and therefore cannot be client-bundled at all.
+   *
+   * The real protections are unchanged and separately asserted: every
+   * prompts/ and ai/ module declares `server-only` (the two tests above), and
+   * the built bundle is grepped for prompt phrases (the test below). A VALUE
+   * import from prompts/ or ai/ still fails here.
+   */
   it('UI layers do not import prompts or ai directly', () => {
     const uiRoots = [
       path.join(root, 'src', 'components'),
@@ -52,11 +67,15 @@ describe('client-IP guard', () => {
       path.join(root, 'src', 'lib'),
     ];
     const forbidden = ['@/prompts', '@/ai', "from '../prompts", "from '../ai"];
+    // Drops `import type { X } from '...'` — including multi-line forms —
+    // while leaving every value import in place to be checked.
+    const stripTypeImports = (src: string) =>
+      src.replace(/^\s*import\s+type\s+[\s\S]*?from\s+['"][^'"]+['"];?\s*$/gm, '');
     for (const uiRoot of uiRoots) {
       if (!fs.existsSync(uiRoot)) continue;
       for (const file of walkTsFiles(uiRoot)) {
         if (file.includes(`${path.sep}api${path.sep}`)) continue;
-        const src = fs.readFileSync(file, 'utf8');
+        const src = stripTypeImports(fs.readFileSync(file, 'utf8'));
         for (const needle of forbidden) {
           expect(src.includes(needle), `${file} imports ${needle}`).toBe(false);
         }
@@ -81,12 +100,31 @@ describe('prompts integrity', () => {
     }
   });
 
-  it('has 27 lens voices', () => {
-    const types = fs.readFileSync(path.join(promptsDir, 'lenses', 'types.ts'), 'utf8');
+  /**
+   * The count is a tripwire against an accidental deletion, NOT the real
+   * check. It went stale once already — eight voices were added and this
+   * assertion kept asserting 27 — so the invariant below is what actually
+   * protects the feature: every advertised id must resolve to both a meta
+   * entry and a system prompt. An id in the list with no prompt behind it is
+   * a lens the UI offers and the API cannot serve.
+   *
+   * A deliberate change to the roster means updating this number in the same
+   * commit that changes LENS_IDS.
+   */
+  it('advertises 35 lens voices, each with meta and a system prompt', () => {
+    const lensDir = path.join(promptsDir, 'lenses');
+    const types = fs.readFileSync(path.join(lensDir, 'types.ts'), 'utf8');
     const match = types.match(/LENS_IDS = (\[[\s\S]*?\]) as const/);
     expect(match).not.toBeNull();
     const ids = JSON.parse(match![1]!.replace(/'/g, '"')) as string[];
-    expect(ids).toHaveLength(27);
+    expect(ids).toHaveLength(35);
+
+    const meta = fs.readFileSync(path.join(lensDir, 'meta.ts'), 'utf8');
+    const prompts = fs.readFileSync(path.join(lensDir, 'prompts.ts'), 'utf8');
+    const missingMeta = ids.filter((id) => !meta.includes(`"${id}":`));
+    const missingPrompt = ids.filter((id) => !prompts.includes(`"${id}":`));
+    expect(missingMeta, `lens ids with no meta entry: ${missingMeta.join(', ')}`).toEqual([]);
+    expect(missingPrompt, `lens ids with no system prompt: ${missingPrompt.join(', ')}`).toEqual([]);
   });
 
   it('Brain 2 never re-identifies the tradition', () => {
