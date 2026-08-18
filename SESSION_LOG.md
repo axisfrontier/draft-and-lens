@@ -425,3 +425,30 @@ Measured on A1 (green eyes ch.1 / brown eyes ch.7, linear, omniscient narration)
 **Two pre-existing failures in `tests/prompts/client-ip-guard.test.ts`, present at HEAD and unrelated to any change above.** Verified by stashing.
 - `src/lib/cost-log.ts` imports from `../ai`, which the guard forbids for UI layers. Either a real layering violation or the guard's file list is too broad — needs a decision, not a silent fix.
 - "has 27 lens voices" now finds 35. Eight voices were added (the eight new portraits sitting untracked in `Lens voices_images/`); the assertion was never updated. Stale test, not a code fault.
+
+### Resume note — detection wiring (§6a), 2026-08-18
+
+**State: built, type-clean, build-clean, unit-tested, visually verified. NOT deployed. Blocked on one manual step.**
+
+**THE BLOCKER — apply the migration by hand.** `draft-and-lens/supabase/migrations/continuity_flags.sql` has not been run. It cannot be applied from a session: `.env.local` holds only the Supabase REST keys (anon + service role) and no Postgres connection string, and PostgREST cannot execute DDL. Paste the file into the Supabase SQL editor, then confirm it took — the ledger migration records the run reporting success twice without the objects appearing:
+
+```sql
+select table_name from information_schema.tables
+ where table_schema = 'public' and table_name = 'continuity_flags';
+```
+
+**Then:** `npm run build` → `git push origin main` → fire the Vercel hook → submit two grouped chapters of a complete piece that disagree on a stated fact, and confirm the Continuity section and its sidebar link appear.
+
+Push and deploy were deliberately left undone rather than run autonomously. The feature cannot be verified live until the table exists, and CLAUDE.md forbids declaring a fix complete without visual confirmation — so shipping it first would put unverifiable code in production. Sequencing that is Nenad's call.
+
+**Verified without the table:**
+- `listAdjudicatedPairs`, `storeFlags`, `listFlagsForReading`, `listFlagsForManuscript` all degrade cleanly against the real table-less database — Set(0)/0/[]/[] , no throw. So deploying ahead of the migration is safe: detection contributes nothing and the reading is untouched.
+- §6a renders correctly (checked in Chrome against a local fixture route, since removed): tiers, colours, sort order, and the `character:sarah` → "Sarah — eye colour" humanisation.
+- Full build ✓ compiled successfully; bundle IP grep exit 1.
+
+**Two things detection needs that are NOT built, both flagged rather than decided:**
+
+1. **No flag can currently reach `contradiction` in production.** `deriveFrame` reads linearity off `structuralMap.narrativeStructure`, and the structural reader is gated at 4,000 words while `TESTER_WORD_CAP` rejects anything above 4,000 — so a map is produced only for a submission of exactly 4,000 words. With no map, `nonLinear` is null, ruling 1a demotes, and every `age_date` candidate lands on the soft tier. Other categories still reach hard tier, but the timeline-dependent ones cannot. This is the same gate/cap interaction `AUDIT_CHECKLIST.md` §1 already documents; lowering the gate to ~2,500–3,000 would fix it and is a cost call.
+2. **`unreliableNarrator` and `multiplePov` are always null** — nothing in the pipeline establishes either as a fact. They are left null rather than inferred, so they demote rather than mislead, but the §5.1/§5.3 gates are effectively inert until something sets them.
+
+**Also outstanding, unrelated to this work:** the two pre-existing `client-ip-guard` test failures (see the entry above) are still failing at HEAD.
