@@ -171,7 +171,11 @@ async function findBestMatch(
 }
 
 export type RevisionDecision =
-  | { kind: 'unchanged'; reading: ReadingPayload; readAt: string }
+  /** `workId` is carried so the caller can tell whether an unchanged
+   *  resubmission would nonetheless change the writer's GROUPING — serving the
+   *  cached reading is only correct when nothing else about the submission
+   *  differs. See the grouping check in api/analyse. */
+  | { kind: 'unchanged'; reading: ReadingPayload; readAt: string; workId: string }
   | { kind: 'revised'; workId: string; note: string }
   | { kind: 'refreshed'; workId: string }
   | { kind: 'new' };
@@ -199,7 +203,7 @@ export async function resolveRevision(
       // (or vice versa), that is NOT "unchanged": the correct reading differs.
       // Force a fresh pipeline run rather than serving the stale cached reading.
       if (match.submissionType === submissionType) {
-        return { kind: 'unchanged', reading: match.reading, readAt: match.createdAt };
+        return { kind: 'unchanged', reading: match.reading, readAt: match.createdAt, workId: match.workId };
       }
       const label = (t: string | null) => (t === 'excerpt' ? 'an excerpt' : 'a complete piece');
       return {

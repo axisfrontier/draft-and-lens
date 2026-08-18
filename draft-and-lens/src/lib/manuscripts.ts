@@ -393,6 +393,38 @@ export async function resolveAttachment(
   }
 }
 
+/**
+ * Is this work already filed in this manuscript?
+ *
+ * Distinct from resolveAttachment, which answers "what sequence index would
+ * this take" and cannot tell an existing chapter from a new one — both come
+ * back as a number. The caller that needs to know whether a writer's grouping
+ * choice is a CHANGE needs exactly this question and no side effects.
+ */
+export async function isWorkAttached(
+  userId: string,
+  manuscriptId: string,
+  workId: string
+): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const supabase = getServiceClient();
+    const { data } = await supabase
+      .from(READINGS_TABLE)
+      .select('id')
+      .eq('user_id', userId)
+      .eq('manuscript_id', manuscriptId)
+      .eq('work_id', workId)
+      .limit(1);
+    return Boolean(data && data.length > 0);
+  } catch {
+    // Unknown → treat as not attached. The caller falls through to a full run,
+    // which re-groups correctly; the opposite default would silently drop the
+    // writer's choice, which is the bug this exists to prevent.
+    return false;
+  }
+}
+
 /** Detach a reading from its manuscript — the undo for a wrong grouping (§2). */
 export async function detachReading(userId: string, readingId: string): Promise<boolean> {
   if (!isSupabaseConfigured()) return false;

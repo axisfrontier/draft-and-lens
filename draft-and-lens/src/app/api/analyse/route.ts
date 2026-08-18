@@ -10,7 +10,7 @@ import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
-import { resolveAttachment } from '../../../lib/manuscripts';
+import { isWorkAttached, resolveAttachment } from '../../../lib/manuscripts';
 import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
 import { logSubmissionTelemetry, type TraditionSource } from '../../../lib/telemetry-log';
@@ -215,7 +215,28 @@ export async function POST(req: NextRequest): Promise<Response> {
         // verbatim (no model call, no drift). A genuine revision → a fresh
         // reading that names it. Any storage problem degrades to an ordinary
         // fresh reading (see resolveRevision's own fail-open contract).
-        if (decision.kind === 'unchanged') {
+        // An unchanged resubmission may still be asking for something new.
+        //
+        // The cached-return below is correct only when NOTHING about the
+        // submission differs. If the writer has picked a manuscript this work
+        // is not yet filed in, the text is unchanged but the ledger outcome is
+        // not: short-circuiting here silently discarded an explicit choice —
+        // the panel said "Yes — part of <book>", the reading came back from
+        // cache in seconds, and the book still read "(0 so far)" afterwards,
+        // with nothing said to the writer.
+        //
+        // Falling through runs the full pipeline, which groups, extracts and
+        // adjudicates. That is the same trade resolveRevision already makes
+        // when a piece is re-read as an excerpt rather than a complete piece —
+        // a fresh run is accepted because the stored one answers a different
+        // question. Grouping cannot be honoured without extraction, and
+        // extraction only runs on the full path.
+        const groupingIsUnfiled =
+          decision.kind === 'unchanged' &&
+          manuscriptId !== null &&
+          !(await isWorkAttached(userId, manuscriptId, decision.workId));
+
+        if (decision.kind === 'unchanged' && !groupingIsUnfiled) {
           send({ type: 'done', ...decision.reading, revision: { status: 'unchanged', readAt: decision.readAt } });
           const now = Date.now();
           await logSubmissionTelemetry({
@@ -238,7 +259,11 @@ export async function POST(req: NextRequest): Promise<Response> {
         const revisionNote = decision.kind === 'revised' ? decision.note : undefined;
         const status =
           decision.kind === 'revised' ? 'revised' :
-          decision.kind === 'refreshed' ? 'refreshed' : 'new';
+          decision.kind === 'refreshed' ? 'refreshed' :
+          // Reached only via the grouping fall-through above: the text really
+          // is unchanged, and saying 'new' about a piece already read would be
+          // a plain falsehood to the writer.
+          decision.kind === 'unchanged' ? 'unchanged' : 'new';
 
         const result = await runAnalysisPipeline(
           {
@@ -305,8 +330,16 @@ export async function POST(req: NextRequest): Promise<Response> {
 
         // Persist the reading (best-effort) — stores the submitted text for
         // future diffing and the exact payload the client just received.
+        // 'unchanged' belongs here too, via the grouping fall-through. Minting
+        // a fresh id for text already filed under a work would duplicate the
+        // piece and file it as an ADDITIONAL chapter — the same bug the
+        // work_id keying in resolveAttachment exists to prevent.
         const workId =
-          decision.kind === 'revised' || decision.kind === 'refreshed' ? decision.workId : newWorkId();
+          decision.kind === 'revised' ||
+          decision.kind === 'refreshed' ||
+          decision.kind === 'unchanged'
+            ? decision.workId
+            : newWorkId();
         // Resolve grouping before the insert so the row is never written
         // ungrouped and then updated. Returns null when the manuscript is not
         // this writer's, which is also how a forged id is refused — best-effort
