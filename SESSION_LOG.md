@@ -400,3 +400,28 @@ Also flagged in the design: a new table creates real GDPR work — all four user
 The checklist and handover both list it as "exists, not auto-called." That is inaccurate. It is called at `src/app/api/works/route.ts:21`, on `GET /api/works`. Verified as the **only** call site by reading every route that imports from `readings.ts` (`analyse`, `works`, `works/[workId]`, `account`, `export`).
 *Why it still matters:* the sweep runs only when a signed-in writer loads their works list. A writer who soft-deletes a work and never returns keeps that data indefinitely, well past the 30-day `SOFT_DELETE_GRACE_DAYS` window — so the stated retention policy is not actually guaranteed. The fix is a scheduled sweep (Vercel cron) rather than on-access only.
 *Action:* correct the wording in `DraftAndLens_Launch_Checklist.md` and re-scope the item from "wire it up" to "make the existing sweep unconditional." Not done here — the launch checklist is planning material and editing it is Nenad's call, not a cleanup task.
+
+---
+
+## 2026-08-18 — Claude Code session
+
+**Decision (Nenad): detected continuity flags PERSIST from the first pass. Not show-until-reload.**
+A new store sits alongside `continuity_facts`; §6a renders from stored flags on every view rather than from a live in-memory result.
+Reasoning, from the code rather than preference:
+- Detection runs *after* the reading is delivered (`api/analyse/route.ts`, the post-stream extraction block, grouped + complete submissions only). A non-persisted flag would therefore exist only in a narrow window on the submitting tab.
+- Readings persist and are re-viewable at `/analysis/[id]`. Ephemeral flags mean reopening a saved reading shows a report whose Continuity section has silently vanished — the writer cannot tell that from "nothing was found."
+- `continuity_facts` already persists. Persistent facts with ephemeral flags is architecturally inconsistent, and leaves the §6b ledger view unable to show flags at all.
+- Detection costs two model calls per candidate pair. Without persistence every view either re-pays that or shows nothing.
+
+**Word-cap gate lowered 5,000 → 4,000 (`STRUCTURAL_READER_MIN_WORDS`, `ai/orchestrator.ts`).**
+Confirmed by Nenad as settled: 4,000 was always the intended beta cap and the 5,000 gate was stale leftover config. The gate transitively controls Brain 1b, the narrator verifier and the post-stream corrector; above `TESTER_WORD_CAP` it meant all three were unreachable on every submission the beta accepts.
+*Flagged, not actioned:* `api/analyse/route.ts` rejects `wordCount > TESTER_WORD_CAP`, so the largest accepted submission is exactly 4,000 words while the gate is `>= 4_000`. These three brains therefore now fire on precisely one input size. If the intent is that they run on ordinary beta submissions the gate wants to be lower (~2,500–3,000); that is a cost/product call and was left open. Nenad's instruction was explicit that the cap itself must not be raised.
+
+**Regression found and fixed in the detection pass-2 prompt (`prompts/detection.ts`).**
+The entity-identity block added in `d273037` is headed "WHEN THE NAMES DIFFER", but its closing instruction — say uncertain if the surrounding text does not settle identity — read as unconditional. Pass 2 applied it to *same-name* pairs and softened clear contradictions because it could not confirm the two Sarahs were one Sarah.
+Measured on A1 (green eyes ch.1 / brown eyes ch.7, linear, omniscient narration): contradiction 3/3 before `d273037`; 0/2 after it with no passage context; 2/3 with context. A scoping sentence restricting the block to differing names restores 10/10 across three consecutive full runs of the A1–C1 set.
+*Method note for future sessions:* the detection test set lives only in `scripts/.tmp-detect-test.mjs` (untracked) and makes real model calls. It has no recorded baseline, which is why "is this a regression or was it always marginal?" had to be answered by checking out the pre-change prompt and re-running. **That test set should become a tracked fixture with recorded expected outcomes**, or the same question costs a full investigation every time.
+
+**Two pre-existing failures in `tests/prompts/client-ip-guard.test.ts`, present at HEAD and unrelated to any change above.** Verified by stashing.
+- `src/lib/cost-log.ts` imports from `../ai`, which the guard forbids for UI layers. Either a real layering violation or the guard's file list is too broad — needs a decision, not a silent fix.
+- "has 27 lens voices" now finds 35. Eight voices were added (the eight new portraits sitting untracked in `Lens voices_images/`); the assertion was never updated. Stale test, not a code fault.
