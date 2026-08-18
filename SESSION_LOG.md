@@ -452,3 +452,27 @@ Push and deploy were deliberately left undone rather than run autonomously. The 
 2. **`unreliableNarrator` and `multiplePov` are always null** — nothing in the pipeline establishes either as a fact. They are left null rather than inferred, so they demote rather than mislead, but the §5.1/§5.3 gates are effectively inert until something sets them.
 
 **Also outstanding, unrelated to this work:** the two pre-existing `client-ip-guard` test failures (see the entry above) are still failing at HEAD.
+
+### Live verification PASSED — §6a on production, 2026-08-18
+
+Migration applied by Nenad; deploy hook fired; verified on real submissions via the Chrome extension.
+
+**Result.** A hard-tier contradiction rendered in the report and persisted:
+`character:sarah mallory / eye_colour`, `outcome=contradiction`, `ceiling=hard`, `demotions=[]`, `short_circuited=false`, `confidence=0.9`. Both passes ran and the adversarial second pass failed to find an innocent explanation, which is the design working as intended rather than a single model agreeing with itself. Sidebar carried both `CONTINUITY LEDGER` (Overview) and `CONTINUITY` (Editorial Analysis); every in-page sidebar link resolved to a real section.
+
+**Test shape that works, for whoever repeats this.** Two chapters grouped into one manuscript, both `story` + `complete piece`, contradiction on a NON-age attribute stated in narration. An age or date cannot reach `contradiction` while the structural-reader gate sits at the word cap (see the resume note), so testing with an age proves nothing.
+
+**HONEST CAVEAT on the persistence ruling.** The flag is provably in the database, but reload-survival cannot currently be demonstrated in the UI: `/analysis/[id]` is still a Stage-0/4 scaffold (`Analysis {id} — Stage 4.`), and reloading the home page discards the entire reading, not just the Continuity section. So the reason given for persisting — "a reopened reading would show no Continuity section" — describes a view that does not exist yet. The decision is still right (the flags are stored, cheaply, and will render the moment that view is built), but its user-visible benefit is not yet realised. Do not describe §6a as "survives reload" until `/analysis/[id]` renders stored readings.
+
+**Three findings, none from this build, all pre-existing:**
+
+1. **An `unchanged` resubmission silently discards the writer's grouping choice.** `resolveRevision` returns `unchanged` at `UNCHANGED_SIMILARITY = 0.97`, and that branch in `api/analyse/route.ts` sends `done` and returns *before* the attachment/extraction/detection block. Hit live: chapter 1 was submitted with "Yes — part of The Hollow Year" explicitly selected, came back in ~5s from cache, and was never attached — the manuscript still read "(0 so far)" afterwards. The writer is told nothing. Lightly edited resubmissions are the ordinary case for a writer, so this is not an edge case.
+
+2. **Grouping suggestions surface stopwords as evidence, in user-facing copy.** `/api/ledger/suggest` proposed grouping an unrelated chapter into the real manuscript "Home" on `sharedEntities: ["one","the"]`, rendered in the panel as "Yes — part of Home (both mention one, the)". It correctly landed in `confirm` rather than `auto` (`failedCriteria: shared-names, overlap`), so the §2 safety held and it asked instead of grouping silently — but the evidence shown to the writer is noise and undermines trust in the question being asked.
+
+3. **`/analysis/[id]` is still the Stage-0 placeholder.** Worth knowing before anything else is designed around re-viewing a reading.
+
+**Test data left on Nenad's production account — not deleted, since removing data is his call:**
+- manuscript **"The Hollow Year"** (`9b444631-cae1-49e7-9294-ff5c78d02042`) with 2 chapters and 1 continuity flag;
+- a standalone work from the first, ungrouped "Chapter One" submission.
+Nothing was written to the real "Home" manuscript — the test deliberately created its own book.
