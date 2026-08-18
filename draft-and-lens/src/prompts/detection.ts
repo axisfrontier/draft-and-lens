@@ -60,6 +60,8 @@ EXPLANATIONS THAT MAKE A DIFFERENCE INNOCENT — look for each of these specific
 6. A DIFFERENT SUBJECT. The two claims are about different people, places or things that share a name or were matched in error.
 
 ON IDENTITY, WHEN THE NAMES DIFFER
+This section applies ONLY when the two claims name the subject differently. If both name the subject the same way, identity is settled: it is not one of the explanations available to you, and it is not a reason to soften a verdict. Say nothing about whether they are the same person.
+
 These two claims were matched under the same subject by an earlier step that read the whole chapter. Treat that as ONE SIGNAL — neither authoritative nor to be distrusted by default.
 
 Read the passages and judge as a careful reader would. All of these are ordinary:
