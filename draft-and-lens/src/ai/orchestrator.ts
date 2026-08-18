@@ -18,7 +18,7 @@ import { withCostTracking, type CostEntry } from './cost-tracker';
 
 /**
  * Brain orchestration (Architecture §03). Sequence:
- *   Brain 1 (diagnostician) → Brain 1b (structural, ≥5k) → narrator verify (≥5k)
+ *   Brain 1 (diagnostician) → Brain 1b (structural, ≥4k) → narrator verify (≥4k)
  *   → Brain 2 (analyst, streaming) ‖ Brains 3/4/5 in parallel
  *   → post-stream narrator correction.
  *
@@ -30,7 +30,7 @@ import { withCostTracking, type CostEntry } from './cost-tracker';
 export const FREE_WORD_LIMIT = 10_000;
 
 /** Below this, Brain 1b + the narrator verifier are skipped (Brain 2 holds the full text). */
-const STRUCTURAL_READER_MIN_WORDS = 5_000;
+const STRUCTURAL_READER_MIN_WORDS = 4_000;
 
 const MODE_LABELS: Record<AnalysisMode, string> = {
   script: 'Script',
@@ -144,7 +144,7 @@ async function runPipelineBody(
   // blank-screen perception of slowness (Latency Diagnostic Brief, Q4/5A).
   cb.onDiagnostic?.(diagnostic);
 
-  // ── Brain 1b + narrator verify — only on works ≥ 5,000 words ────────────
+  // ── Brain 1b + narrator verify — only on works ≥ 4,000 words ────────────
   if (wordCount >= STRUCTURAL_READER_MIN_WORDS) {
     cb.onStage?.('structure', 'Mapping the structure');
     const structuralMap = await runStructuralReader(text, modeLabel, diagnostic).catch(
