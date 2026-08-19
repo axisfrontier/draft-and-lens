@@ -72,7 +72,7 @@ export interface ContinuityFlag {
   flagId: string;
   entity: string;
   attribute: string;
-  outcome: 'contradiction' | 'worth_checking';
+  outcome: 'contradiction' | 'worth_checking' | 'locked';
   reasoning: string | null;
   explanation: string | null;
   confidence: number | null;

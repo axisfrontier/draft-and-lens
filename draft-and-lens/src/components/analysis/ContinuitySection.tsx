@@ -43,11 +43,14 @@ function humaniseAttribute(attribute: string): string {
 export function ContinuitySection({ flags }: { flags: readonly ContinuityFlag[] }) {
   if (flags.length === 0) return null;
 
-  // Contradictions first: they are the ones a writer must act on, and burying
-  // them under a run of softer questions inverts the severity the two-pass
-  // design worked to establish.
+  // Locked first, then contradictions, then questions. A lock is the writer's
+  // own declaration about their book (§6) — one side carries no extraction
+  // risk at all — so it outranks anything the reader inferred. Burying either
+  // under a run of softer questions would invert the severity the two-pass
+  // design and the lock tier exist to establish.
   const ordered = [...flags].sort((a, b) => {
-    const rank = (f: ContinuityFlag) => (f.outcome === 'contradiction' ? 0 : 1);
+    const rank = (f: ContinuityFlag) =>
+      f.outcome === 'locked' ? 0 : f.outcome === 'contradiction' ? 1 : 2;
     return rank(a) - rank(b);
   });
 
@@ -102,8 +105,12 @@ export function ContinuitySection({ flags }: { flags: readonly ContinuityFlag[] 
       </div>
 
       {ordered.map((flag) => {
+        const locked = flag.outcome === 'locked';
         const hard = flag.outcome === 'contradiction';
-        const accent = hard ? 'var(--red)' : 'var(--amber)';
+        // Locked borrows the contradiction weight rather than inventing a
+        // third colour: it is the firm end of the scale, and a fourth hue
+        // would read as a fourth kind of problem rather than a firmer one.
+        const accent = locked || hard ? 'var(--red)' : 'var(--amber)';
         return (
           <div
             key={flag.flagId}
@@ -123,7 +130,7 @@ export function ContinuitySection({ flags }: { flags: readonly ContinuityFlag[] 
                 marginBottom: '.35rem',
               }}
             >
-              {hard ? 'Contradiction' : 'Worth checking'}
+              {locked ? 'Locked' : hard ? 'Contradiction' : 'Worth checking'}
             </div>
 
             <div
@@ -153,10 +160,15 @@ export function ContinuitySection({ flags }: { flags: readonly ContinuityFlag[] 
               </p>
             )}
 
-            {/* Shown only on the soft tier. On a confirmed contradiction the
-                second pass found no innocent explanation, so its text says so
-                and printing it under the reasoning would just repeat the
-                finding in weaker words. */}
+            {/* Shown on the soft tier and on locks, hidden on a confirmed
+                contradiction — there the second pass found no innocent
+                explanation, so printing its text would repeat the finding in
+                weaker words. A lock is the opposite case: §5.7 is explicit
+                that the innocent reading stays available even at the locked
+                tier, because the ledger cannot see a flashback and a
+                character's death is the lock it handles least confidently.
+                Suppressing that caveat is precisely the over-promise the
+                design warns against. */}
             {!hard && flag.explanation && (
               <p
                 style={{

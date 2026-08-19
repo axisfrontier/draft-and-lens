@@ -21,9 +21,15 @@ import { getServiceClient, isSupabaseConfigured } from './supabase-server';
 const FLAGS_TABLE = 'continuity_flags';
 const MANUSCRIPTS_TABLE = 'manuscripts';
 
-/** Outcomes as stored. 'dismissed' is recorded for idempotency and audit and
- *  is never rendered — see the migration header. */
-export type FlagOutcome = 'contradiction' | 'worth_checking' | 'dismissed';
+/**
+ * Outcomes as stored.
+ *
+ * 'dismissed' is recorded for idempotency and audit and is never rendered —
+ * see the migration header. 'locked' is §6's fourth tier, sitting above the
+ * ladder rather than on it because one side is writer-authored and carries no
+ * extraction risk; it requires continuity_locked_tier.sql to have been applied.
+ */
+export type FlagOutcome = 'contradiction' | 'worth_checking' | 'dismissed' | 'locked';
 
 export interface ContinuityFlag {
   flagId: string;

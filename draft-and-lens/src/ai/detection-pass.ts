@@ -15,6 +15,7 @@ import {
   type NarrativeFrame,
 } from '../lib/detection-gates';
 import { getSourceTexts } from '../lib/readings';
+import { findStateLockViolations } from '../lib/state-locks';
 import type { DiagnosticResult } from '../prompts/types';
 
 import { runDetection } from './brains/detection';
@@ -52,6 +53,9 @@ const MAX_PAIRS_PER_RUN = 12;
 const CONTEXT_RADIUS = 300;
 
 export interface DetectionPassResult {
+  /** State-lock violations found and stored (§5.7). Counted separately from
+   *  pair adjudication because they cost no model call. */
+  lockViolations: number;
   candidates: number;
   adjudicated: number;
   skippedAlreadyJudged: number;
@@ -152,6 +156,7 @@ export async function runDetectionPass(args: {
   currentText?: string;
 }): Promise<DetectionPassResult> {
   const empty: DetectionPassResult = {
+    lockViolations: 0,
     candidates: 0,
     adjudicated: 0,
     skippedAlreadyJudged: 0,
@@ -186,8 +191,42 @@ export async function runDetectionPass(args: {
     unreliableNarrator: null,
     multiplePov: deriveMultiplePov(facts),
   };
+  // ── State locks (§5.7) ──────────────────────────────────────────────────
+  // Run BEFORE the candidate early-return: a lock violation has nothing to do
+  // with whether two extracted facts clash, and a manuscript with a locked
+  // character but no fact-pair candidates would otherwise report nothing.
+  //
+  // Stored in its own batch so that, until continuity_locked_tier.sql is
+  // applied, a rejected 'locked' row costs the lock flags and never the
+  // contradiction flags beside them.
+  const violations = findStateLockViolations(facts, frame);
+  const lockViolations = violations.length
+    ? await storeFlags({
+        userId: args.userId,
+        manuscriptId: args.manuscriptId,
+        readingId: args.readingId,
+        flags: violations.map((v) => ({
+          factAId: v.lockFactId,
+          factBId: v.appearanceFactId,
+          entity: v.entity,
+          attribute: v.attribute,
+          outcome: v.tier === 'locked' ? ('locked' as const) : ('worth_checking' as const),
+          reasoning: v.reasoning,
+          explanation: v.explanation,
+          confidence: null,
+          ceiling: v.tier === 'locked' ? 'hard' : 'worth_checking',
+          demotions: [],
+          // No pass ran at all here, let alone a second one. The nearest true
+          // statement in the existing shape is that nothing adversarial
+          // reviewed this — see the module header for why that is correct
+          // rather than a shortcut.
+          shortCircuited: true,
+        })),
+      })
+    : 0;
+
   const candidates = findCandidatePairs(facts.map(toGateFact), frame);
-  if (candidates.length === 0) return empty;
+  if (candidates.length === 0) return { ...empty, lockViolations };
 
   // Already-judged pairs are dropped before the cap is applied, so a
   // manuscript with a long settled history does not spend its whole per-run
@@ -264,6 +303,7 @@ export async function runDetectionPass(args: {
   });
 
   return {
+    lockViolations,
     candidates: candidates.length,
     adjudicated: results.length,
     skippedAlreadyJudged,
