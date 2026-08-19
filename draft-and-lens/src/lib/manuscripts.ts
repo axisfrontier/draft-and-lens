@@ -394,6 +394,95 @@ export async function resolveAttachment(
 }
 
 /**
+ * The frame properties learned about a manuscript so far (§5.1), as stored in
+ * `manuscripts.narrative_frame`.
+ *
+ * ONLY `nonLinear` is persisted, and the omission of the other two is
+ * deliberate rather than unfinished:
+ *
+ *   - `multiplePov` is derived live from the manuscript's own facts on every
+ *     detection run (see deriveMultiplePov). Storing a second copy would be
+ *     denormalisation with nothing to gain and drift to lose — the facts are
+ *     already loaded, and they are the authority.
+ *   - `unreliableNarrator` has no evidence source anywhere in the pipeline.
+ *     Writing a value for it would be inventing one, and a wrong `false`
+ *     promotes narration to the book's own voice — the §5.2 failure the gate
+ *     exists to prevent. It stays unlearned until something can establish it.
+ */
+export interface StoredFrame {
+  /** NULL means UNKNOWN and never "linear" — sub-question 1a, resolved
+   *  unknown-and-demote. */
+  nonLinear: boolean | null;
+}
+
+/**
+ * Fold one chapter's structural evidence into the manuscript's frame, and
+ * return the frame that results.
+ *
+ * STICKY TRUE, and that is the whole design of the function. One chapter
+ * reading as linear does not make a book linear: chapter 1 straightforward and
+ * chapter 9 a flashback is the ordinary shape of a novel, and if an early
+ * chapter were allowed to write `false`, stated ages and dates would be handed
+ * hard tier — exactly the case §5.4 names as where this feature is most likely
+ * to embarrass itself. So once any chapter is seen to be non-linear the
+ * manuscript stays non-linear, and no later evidence quietly undoes it.
+ *
+ * `false` is therefore only ever written from a standing start, meaning "some
+ * chapter has now been mapped and none was non-linear" — the best available
+ * inference under ruling 1, which removed the writer's declaration and
+ * accepted a precision cost for a zero-friction start.
+ *
+ * Evidence of `null` is not evidence. It records nothing and cannot demote a
+ * frame already learned.
+ */
+export async function recordFrameEvidence(
+  userId: string,
+  manuscriptId: string,
+  nonLinear: boolean | null
+): Promise<StoredFrame> {
+  if (!isSupabaseConfigured()) return { nonLinear: null };
+  try {
+    const supabase = getServiceClient();
+    const { data } = await supabase
+      .from(MANUSCRIPTS_TABLE)
+      .select('narrative_frame')
+      .eq('id', manuscriptId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .limit(1);
+    if (!data || data.length === 0) return { nonLinear: null };
+
+    const stored = (data as unknown as Array<{ narrative_frame: StoredFrame | null }>)[0]
+      ?.narrative_frame;
+    const current = typeof stored?.nonLinear === 'boolean' ? stored.nonLinear : null;
+
+    const merged = mergeFrameEvidence(current, nonLinear);
+    if (merged === current) return { nonLinear: current };
+
+    await supabase
+      .from(MANUSCRIPTS_TABLE)
+      .update({ narrative_frame: { ...(stored ?? {}), nonLinear: merged } })
+      .eq('id', manuscriptId)
+      .eq('user_id', userId);
+    return { nonLinear: merged };
+  } catch {
+    // An unknown frame demotes rather than promotes, so a storage failure
+    // costs precision and never correctness.
+    return { nonLinear: null };
+  }
+}
+
+/** The sticky-true merge, extracted so it is testable without a database. */
+export function mergeFrameEvidence(
+  current: boolean | null,
+  evidence: boolean | null
+): boolean | null {
+  if (current === true) return true; // sticky: never un-learned
+  if (evidence === null) return current; // no evidence changes nothing
+  return evidence;
+}
+
+/**
  * Is this work already filed in this manuscript?
  *
  * Distinct from resolveAttachment, which answers "what sequence index would

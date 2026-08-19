@@ -7,6 +7,7 @@ import {
   type FlagToStore,
 } from '../lib/continuity-flags';
 import { listLedger } from '../lib/continuity';
+import { recordFrameEvidence } from '../lib/manuscripts';
 import {
   findCandidatePairs,
   extractContext,
@@ -165,12 +166,24 @@ export async function runDetectionPass(args: {
   const quoteByFact = new Map(facts.map((f) => [f.factId, f.evidenceQuote]));
   const readingByFact = new Map(facts.map((f) => [f.factId, f.readingId]));
 
-  // Structural evidence comes from this submission; POV evidence comes from
-  // the whole manuscript's accumulated facts, which is the stronger source —
-  // a book is multi-POV because of what it contains overall, not because of
-  // the chapter that happens to be in front of us.
+  // The frame is assembled from three sources with three different lifetimes,
+  // which is the point of doing it here rather than in deriveFrame:
+  //
+  //   nonLinear   — accumulated across every chapter ever read, because one
+  //                 chapter cannot see the book's shape. Folded in and read
+  //                 back in a single call, so this submission's own evidence
+  //                 counts toward the frame it is then judged under.
+  //   multiplePov — derived live from the manuscript's whole fact set.
+  //   unreliable  — never learned; see StoredFrame.
+  const structural = deriveFrame(args.diagnostic);
+  const frameState = await recordFrameEvidence(
+    args.userId,
+    args.manuscriptId,
+    structural.nonLinear
+  );
   const frame: NarrativeFrame = {
-    ...deriveFrame(args.diagnostic),
+    nonLinear: frameState.nonLinear,
+    unreliableNarrator: null,
     multiplePov: deriveMultiplePov(facts),
   };
   const candidates = findCandidatePairs(facts.map(toGateFact), frame);

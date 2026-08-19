@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { deriveFrame, deriveMultiplePov } from '../../src/ai/detection-pass';
 import { pairKey } from '../../src/lib/continuity-flags';
+import { mergeFrameEvidence } from '../../src/lib/manuscripts';
 import type { DiagnosticResult } from '../../src/prompts/types';
 
 const withStructure = (narrativeStructure?: string): DiagnosticResult =>
@@ -100,5 +101,37 @@ describe('deriveMultiplePov', () => {
 
   it('ignores blank and whitespace-only attributions', () => {
     expect(deriveMultiplePov([f('Sarah'), f('   '), f('')])).toBeNull();
+  });
+});
+
+/**
+ * The frame decides whether a stated age clash can ever be called a
+ * contradiction, so the dangerous direction is learning "linear" on thin
+ * evidence. §5.4 names ages and dates as where this feature is most likely to
+ * embarrass itself, and a premature `false` is exactly how that happens.
+ */
+describe('mergeFrameEvidence', () => {
+  it('learns from a standing start', () => {
+    expect(mergeFrameEvidence(null, true)).toBe(true);
+    expect(mergeFrameEvidence(null, false)).toBe(false);
+  });
+
+  it('is STICKY on true — a later linear chapter cannot un-learn it', () => {
+    // Chapter 9 is a flashback, chapter 10 is straightforward. The book is
+    // still non-linear, and ages must keep demoting.
+    expect(mergeFrameEvidence(true, false)).toBe(true);
+    expect(mergeFrameEvidence(true, null)).toBe(true);
+    expect(mergeFrameEvidence(true, true)).toBe(true);
+  });
+
+  it('promotes a linear frame to non-linear the moment evidence appears', () => {
+    expect(mergeFrameEvidence(false, true)).toBe(true);
+  });
+
+  it('treats absent evidence as no evidence, never as linear', () => {
+    // Most submissions produce no structural map at all. That must leave the
+    // frame exactly as it was rather than quietly asserting chronology.
+    expect(mergeFrameEvidence(null, null)).toBeNull();
+    expect(mergeFrameEvidence(false, null)).toBe(false);
   });
 });
