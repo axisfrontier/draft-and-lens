@@ -550,7 +550,7 @@ Three chunks, all committed, 111 tests green, build ✓, IP grep exit 1.
 2. **`narrative_frame` accumulation, sticky-true** — folded across every chapter rather than derived from whichever one is in front of us. One chapter reading linear does not make a book linear; once any chapter is non-linear the manuscript stays non-linear. `false` only ever from a standing start. No migration — phase 2 provisioned the column and never wrote to it.
 3. **State locks (§5.7) + the locked tier** — deterministic, no model call, one violation per lock citing the earliest later narration appearance.
 
-**ACTION REQUIRED FROM NENAD — one migration to apply by hand:**
+**~~ACTION REQUIRED~~ — APPLIED AND VERIFIED by Nenad, 2026-08-19. The constraint now includes 'locked'; the locked tier is live. Kept below for the record:**
 `draft-and-lens/supabase/migrations/continuity_locked_tier.sql`. It widens the `continuity_flags` outcome CHECK to admit `'locked'`, §6's fourth tier. **Nothing breaks before it is applied:** lock violations are stored in their own batch, so a rejected `locked` row costs only the lock flags and never the contradiction flags beside them — and since the locked tier requires a manuscript established as chronological, the overwhelmingly common `worth_checking` lock flag stores fine either way. Verify with the query in the file's footer.
 
 **Scope held throughout:** compare assertions, never compute chronology (§3). Nothing added computes whether one chapter precedes another. The innocent explanation (flashback / memory / dream) is shown at BOTH lock tiers, including the firm one, because §5.7 says it stays available and death locks are the least checkable thing the feature offers — the copy does not claim otherwise.
@@ -577,4 +577,4 @@ The 2026-08-02 handover §6 defines two distinct things, and only one of them wa
 
 **Beta list now:** 1 detection ✓ · 2 timeline reasoning ✓ · 3 mentor mode ✓ · 4 differentiator — subtle half ✓, escalation awaiting Nenad. Next in the UI backlog's order is the periodic audit (already run 2026-08-18) and then the new UI exploration.
 
-**Still awaiting Nenad, unchanged:** apply `continuity_locked_tier.sql`; the flag dismissal control; the `FREE_WORD_LIMIT`/`TESTER_WORD_CAP` decision that keeps `nonLinear` NULL on real traffic.
+**Still awaiting Nenad:** the flag dismissal control; the `FREE_WORD_LIMIT`/`TESTER_WORD_CAP` decision that keeps `nonLinear` NULL on real traffic.
