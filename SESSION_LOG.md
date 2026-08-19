@@ -558,3 +558,23 @@ Three chunks, all committed, 111 tests green, build ✓, IP grep exit 1.
 **Still held for Nenad, unbuilt as instructed:** the flag dismissal control. Sub-question 1a's "promote once dismissal establishes the frame" depends on it; `reconciled_at` exists and both `gatePair` and the new state-lock check already honour it, so only the interaction is missing.
 
 **Known limit, unchanged:** `nonLinear` will stay NULL on real beta traffic because `structuralMap` is the only linearity signal and the structural reader is gated at the word cap. Frame accumulation is correct and will start working the moment that flagged `FREE_WORD_LIMIT` / `TESTER_WORD_CAP` decision is made. `multiplePov` fires today.
+
+### Mentor mode built and verified live; differentiator messaging — 2026-08-19
+
+**Part A — mentor disposition.** Audited first, as the addendum requires. Item 1 needed no change: the mode prompts already carry the mentor register ("MENTOR STANDARD", honest-without-harshness). Item 2 was a genuine gap — no closing growth element existed. The old "Where To Begin"/"Action Plan" tails that might have supplied one were collapsed into WHAT TO REVISE by corpus v2.10, and that list is about the draft, not the writer. So `WHERE TO GROW NEXT` was added to the always-include set across story/script/treatment. One more section in the existing analyst pass — no second model call, as the addendum forbids.
+
+**Verified live on production, first read, no prior stored.** The section rendered as `sec-09` and appears in the sidebar. It gave ONE forward direction, framed as the writer's capacity ("you could take this facility… and practise carrying it backward into time"), grounded in evidence from that very text ("already alive in the cooling water and the wheel that caught"), pointed at future work rather than this draft — **and invented no history.** That is the addendum's verify criterion 1 passing on real output.
+
+**Part B — memory framing.** The acknowledge-the-change half already existed in `buildRevisionDirective`. Added the half that needs evidence: `getPriorRevisionNotes` returns the stored WHAT TO REVISE from the previous reading of the same work, or null. Null is the load-bearing case — the caller passes null rather than a placeholder, so no code path invites a past that was not given. The no-fabrication law is structural, not merely instructed, and the tests assert the absence as carefully as the presence.
+
+**CLAUDE.md sidebar counts updated:** `parseReport` lifts only WHAT TO REVISE, so WHERE TO GROW NEXT lands in the Analysis group. Analysis max 12 → 13, base 25 → 26, ceiling 27 → 28.
+
+**Differentiator messaging (item 4) — the subtle half is DONE; the escalation is FLAGGED for Nenad.**
+The 2026-08-02 handover §6 defines two distinct things, and only one of them was mine to build:
+- *The subtle version* (its line 35): the persona references something concrete from the writer's own previous submission, demonstrating persistence "without ever saying so directly". **That is exactly what Part B now does** — where a revision answered an earlier note, the reading says so plainly. No comparison, no competitor named, method shown rather than claimed.
+- *The escalation* (its line 36): breaking toward directness with an explicit method line. **Not built, deliberately.** Three reasons it is Nenad's, not mine: the copy is marked "(draft, not final copy)"; it must fire "once, not repeated", and *once per what* is undefined (per writer? per work?) with no user-state storage existing to track it; and the handover's own closing instruction is explicit — "Don't guess at how prominent the differentiator messaging should be — start subtle as agreed, flag back before escalating to anything more visible/marketing-like."
+- Also worth carrying: the line "only works if the feedback right after it is sharp and specific enough to validate the confidence in the same breath". Whatever gates it must be a quality gate, not just a memory gate.
+
+**Beta list now:** 1 detection ✓ · 2 timeline reasoning ✓ · 3 mentor mode ✓ · 4 differentiator — subtle half ✓, escalation awaiting Nenad. Next in the UI backlog's order is the periodic audit (already run 2026-08-18) and then the new UI exploration.
+
+**Still awaiting Nenad, unchanged:** apply `continuity_locked_tier.sql`; the flag dismissal control; the `FREE_WORD_LIMIT`/`TESTER_WORD_CAP` decision that keeps `nonLinear` NULL on real traffic.
