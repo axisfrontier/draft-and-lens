@@ -75,15 +75,15 @@ Before any analyst prompt change, verify maxTokens is high enough for a full rep
 
 The fixed groups are Overview (3), Dashboard (2), Action (3), Reference (5) = **13 constant links**. **The Analysis group is variable by design** — derived from `parsed.sections` in `ReportView.tsx`, so it tracks whatever the evidence-gated report contained.
 
-Story mode defines 13 sections, but `parseReport` lifts `WHAT TO REVISE` out into its own callout (`report.ts`, the `WHAT TO REVISE`/`REVISION PRIORITIES` branch), so the Analysis maximum is **12** and the base maximum is **25**.
+Story mode defines 14 sections (13 until `WHERE TO GROW NEXT` was added on 2026-08-19), but `parseReport` lifts `WHAT TO REVISE` out into its own callout (`report.ts`, the `WHAT TO REVISE`/`REVISION PRIORITIES` branch) — and lifts only that one, so `WHERE TO GROW NEXT` stays in `parsed.sections` and lands in the Analysis group. The Analysis maximum is therefore **13** and the base maximum is **26**.
 
 Two conditional links sit on top of that, so the ceiling depends on what the reading has:
 
 | State | Max links |
 |---|---|
-| Base — standalone reading | **25** |
-| + **Continuity ledger** link (Overview group; present only when the reading belongs to a grouped manuscript) | **26** |
-| + **Continuity section** (Analysis group; §6a, built 2026-08-18 — appears only when detection surfaced something) | **27** |
+| Base — standalone reading | **26** |
+| + **Continuity ledger** link (Overview group; present only when the reading belongs to a grouped manuscript) | **27** |
+| + **Continuity section** (Analysis group; §6a, built 2026-08-18 — appears only when detection surfaced something) | **28** |
 
 So Overview is 3 links, or 4 when the reading is grouped.
 

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { EVIDENCE_GATING, WHAT_TO_REVISE } from './shared';
+import { EVIDENCE_GATING, WHAT_TO_REVISE, WHERE_TO_GROW_NEXT } from './shared';
 
 /**
  * Craft principle: see inline PROMPT_RATIONALE.
@@ -37,6 +37,7 @@ const SECTIONS: ReportSection[] = [
   { heading: 'CHARACTER CONSISTENCY', body: 'Cross-reference every named character. Flag any instance where established voice, behaviour, or stated beliefs contradict something set up earlier. Name it and locate it precisely. If a character bible was provided, flag any deviation.' },
   { heading: 'GENRE ALIGNMENT', body: 'Is the script delivering on the promises of its chosen tradition? Which conventions are being met? Which deliberately broken — and does the break earn itself within the script\'s own logic? Which are being accidentally bypassed?' },
   { heading: 'WHAT TO REVISE', body: WHAT_TO_REVISE },
+  { heading: 'WHERE TO GROW NEXT', body: WHERE_TO_GROW_NEXT },
 ];
 
 const VERDICT_FOOTER = '---\nVERDICT: [RECOMMEND / CONSIDER WITH REVISIONS / PASS — BUT WATCH THE WRITER / PASS]\nOne honest paragraph. Name the script\'s specific tradition and ambition. Say what would need to change for the verdict to change.\n---';

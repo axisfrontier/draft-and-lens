@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { EVIDENCE_GATING, WHAT_TO_REVISE } from './shared';
+import { EVIDENCE_GATING, WHAT_TO_REVISE, WHERE_TO_GROW_NEXT } from './shared';
 
 /**
  * Craft principle: see inline PROMPT_RATIONALE.
@@ -37,6 +37,7 @@ const SECTIONS: ReportSection[] = [
   { heading: 'CHARACTER CONSISTENCY', body: 'Cross-reference every named character across the treatment. Flag any instance where a character\'s stated motivation, role, or behaviour contradicts something set up earlier. Name it and locate it precisely. If a character bible was provided, flag any deviation.' },
   { heading: 'TRADITION ALIGNMENT', body: 'Is the treatment setting up a film that delivers on the promises of its chosen tradition? Which conventions are being met at the structural level? Which deliberately broken — and does the break earn itself? Which are being accidentally bypassed?' },
   { heading: 'WHAT TO REVISE', body: WHAT_TO_REVISE },
+  { heading: 'WHERE TO GROW NEXT', body: WHERE_TO_GROW_NEXT },
 ];
 
 const VERDICT_FOOTER = "---\nVERDICT: [READY TO DRAFT / DEVELOP FURTHER / SIGNIFICANT REWORK NEEDED]\nOne honest paragraph. Reference the treatment's specific tradition and the film it is trying to become.\n---";

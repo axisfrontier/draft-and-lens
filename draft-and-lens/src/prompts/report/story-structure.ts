@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { EVIDENCE_GATING, WHAT_TO_REVISE } from './shared';
+import { EVIDENCE_GATING, WHAT_TO_REVISE, WHERE_TO_GROW_NEXT } from './shared';
 
 /**
  * Craft principle: see inline PROMPT_RATIONALE.
@@ -36,6 +36,7 @@ const SECTIONS: ReportSection[] = [
   { heading: 'CHARACTER CONSISTENCY', body: 'Cross-reference every named character. Flag contradictions of established voice, interiority, behaviour. Name and locate precisely.' },
   { heading: 'TRADITION ALIGNMENT', body: "Is the story delivering on the promises of its chosen tradition? Which conventions met, broken purposefully, or accidentally bypassed?" },
   { heading: 'WHAT TO REVISE', body: WHAT_TO_REVISE },
+  { heading: 'WHERE TO GROW NEXT', body: WHERE_TO_GROW_NEXT },
 ];
 
 const VERDICT_FOOTER = "---\nVERDICT: [PUBLISH READY / DEVELOP FURTHER / SIGNIFICANT REWORK NEEDED]\nOne honest paragraph. Reference the story's specific tradition and ambition.\n---";
