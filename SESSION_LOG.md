@@ -541,3 +541,20 @@ Checkpointed before writing code. **Nothing in flight, tree clean.** One finding
 - `unreliableNarrator` has **no evidence source in the pipeline**. It stays null and the §5.1 gate stays inert. Do not infer it from `narrativeStructure` or register — neither means it, and a wrong `false` promotes narration to the book's own voice, which is the §5.2 failure.
 
 **Caveat that limits the value of all of this:** `structuralMap` is the only linearity signal and the structural reader is gated at the word cap, so in practice almost no submission produces one. Frame accumulation is correct to build, but `nonLinear` will stay NULL on real beta traffic until that gate is resolved — which is the flagged `FREE_WORD_LIMIT` / `TESTER_WORD_CAP` decision. `multiplePov` is the piece that will actually fire today.
+
+### Ledger phase 3 (timeline reasoning) — built, 2026-08-19
+
+Three chunks, all committed, 111 tests green, build ✓, IP grep exit 1.
+
+1. **`multiplePov` derived from the ledger** — two or more distinct POV characters across a manuscript's facts. Costs no model call and no storage, and activates the §5.3 cross-POV demotion in `gatePair`, which had been inert since it was written. Names normalised for case/whitespace so `Sarah`/`sarah` across chapters is one POV, not two.
+2. **`narrative_frame` accumulation, sticky-true** — folded across every chapter rather than derived from whichever one is in front of us. One chapter reading linear does not make a book linear; once any chapter is non-linear the manuscript stays non-linear. `false` only ever from a standing start. No migration — phase 2 provisioned the column and never wrote to it.
+3. **State locks (§5.7) + the locked tier** — deterministic, no model call, one violation per lock citing the earliest later narration appearance.
+
+**ACTION REQUIRED FROM NENAD — one migration to apply by hand:**
+`draft-and-lens/supabase/migrations/continuity_locked_tier.sql`. It widens the `continuity_flags` outcome CHECK to admit `'locked'`, §6's fourth tier. **Nothing breaks before it is applied:** lock violations are stored in their own batch, so a rejected `locked` row costs only the lock flags and never the contradiction flags beside them — and since the locked tier requires a manuscript established as chronological, the overwhelmingly common `worth_checking` lock flag stores fine either way. Verify with the query in the file's footer.
+
+**Scope held throughout:** compare assertions, never compute chronology (§3). Nothing added computes whether one chapter precedes another. The innocent explanation (flashback / memory / dream) is shown at BOTH lock tiers, including the firm one, because §5.7 says it stays available and death locks are the least checkable thing the feature offers — the copy does not claim otherwise.
+
+**Still held for Nenad, unbuilt as instructed:** the flag dismissal control. Sub-question 1a's "promote once dismissal establishes the frame" depends on it; `reconciled_at` exists and both `gatePair` and the new state-lock check already honour it, so only the interaction is missing.
+
+**Known limit, unchanged:** `nonLinear` will stay NULL on real beta traffic because `structuralMap` is the only linearity signal and the structural reader is gated at the word cap. Frame accumulation is correct and will start working the moment that flagged `FREE_WORD_LIMIT` / `TESTER_WORD_CAP` decision is made. `multiplePov` fires today.
