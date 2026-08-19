@@ -588,3 +588,27 @@ Manuscript "The Salt Line": chapter 1 establishes Elena Barros and her death; a 
 **Finding 1 — the lock check sees extracted FACTS, not appearances.** Chapter 2 had Elena in narration throughout and raised nothing, correctly: every Elena fact it produced was `register = dialogue`, and §5.2 rightly excludes those. Chapter 3 raised the violation only because it stated physical facts about her in narration (height, hair, scarring, age). So a character can be a live participant in present-tense narration for a whole chapter and stay invisible to the check if nothing *extractable* — name, physical, age/date, relationship — is asserted about them in the book's own voice. The design's condition is "appears as a live participant in present-tense narration"; what the ledger can actually see is narrower than that. Not a bug — the gate is behaving as written — but the feature is less sensitive than §5.7 implies, and that gap should be stated plainly rather than discovered by a writer whose death lock stayed quiet.
 
 **Finding 2 — a lock violation cannot be promoted later.** Flags are unique on `(fact_a_id, fact_b_id)` and stored with `ignoreDuplicates`, so a violation first raised at `worth_checking` (unknown frame) can never be re-stored as `locked` once the frame becomes known. Sub-question 1a says ages/dates and state locks "sit at worth-checking until dismissal behaviour establishes the frame, **then promote**". Nothing promotes. This is why the frame had to be established *before* the first violation in this test. Fixing it means either an update-on-conflict for a strictly higher tier, or re-adjudicating lock pairs each run — a design call, not a mechanical fix.
+
+### Verification pass complete — 2026-08-19
+
+**Mentor Part B VERIFIED LIVE, no-fabrication law included.** A revised chapter produced a reading that named the change specifically: *"the previous draft explained both the misreading and the correction; this version holds both in a single syntactic movement."* Checked against the stored prior notes rather than taken on trust — the earlier reading's WHAT TO REVISE said verbatim *"The sentence is explaining both the misreading AND the correction. Cut the second clause."* So the claim came from the real note it was handed, not invented. Grounded, specific, and without reproach.
+
+**`multiplePov` NOT verified live — blocked upstream, not in the derivation.** A deliberately dual-POV chapter (section headings, two close-third centres, two named viewpoint characters) came back with every fact classified `narration_omniscient` and `pov_character = null`. Across the whole test manuscript only one distinct POV value ever appeared, so `deriveMultiplePov` correctly returned null.
+
+The derivation is unit-tested and correct; the **extractor rarely assigns `pov_character` at all**. So the §5.3 cross-POV gate remains effectively inert in practice even now that something consumes it — the same shape of problem as `nonLinear` depending on a structural map the word cap suppresses. Both gates are correctly built and starved of input. Making the extractor assign POV reliably is its own piece of work and a prompt-design decision.
+
+**`narrative_frame` accumulation still not verified live.** It requires a structural map, which requires ≥4,000 words against a 4,000-word cap. For the lock test the frame was seeded directly as a disclosed fixture. Unit-tested (sticky-true, including that a later linear chapter cannot un-learn a non-linear book), but never observed learning from real evidence.
+
+**Test data deleted.** Manuscript "The Salt Line" plus 5 readings, 22 facts and 1 flag; also the standalone "The Quiet House" used for the Part A check. Verified after: `Home` is the only manuscript, its 3 readings and 9 facts intact, no readings from today remain, `continuity_flags` empty.
+
+**Live-verification scoreboard**
+| Item | Live? |
+|---|---|
+| Detection §6a contradiction | ✅ |
+| State locks — locked tier | ✅ (frame seeded) |
+| Mentor Part A — WHERE TO GROW NEXT | ✅ |
+| Mentor Part B — memory framing | ✅ |
+| Grouping stopword fix | ✅ |
+| `multiplePov` | ❌ extractor does not assign POV |
+| `narrative_frame` accumulation | ❌ needs ≥4,000 words vs a 4,000 cap |
+| Differentiator escalation | not built — Nenad's call |
