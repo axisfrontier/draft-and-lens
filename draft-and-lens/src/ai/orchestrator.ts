@@ -51,6 +51,8 @@ export interface PipelineInput {
   wordLimit?: number;
   /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
   revisionNote?: string;
+  /** Prior reading's revision list, when this is a revision (Mentor Part B). */
+  priorRevisionNotes?: string | null;
   /** Excerpt vs complete piece — a fragment is read on different terms (§Excerpt Mode). */
   submissionType?: 'complete' | 'excerpt';
 }
@@ -179,6 +181,7 @@ async function runPipelineBody(
         diagnostic,
         coverage,
         revisionNote: input.revisionNote,
+        priorRevisionNotes: input.priorRevisionNotes,
         submissionType: input.submissionType,
       },
       cb.onAnalystText,

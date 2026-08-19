@@ -11,7 +11,12 @@ import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
 import { isWorkAttached, resolveAttachment } from '../../../lib/manuscripts';
-import { newWorkId, resolveRevision, storeReading } from '../../../lib/readings';
+import {
+  getPriorRevisionNotes,
+  newWorkId,
+  resolveRevision,
+  storeReading,
+} from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
 import { logSubmissionTelemetry, type TraditionSource } from '../../../lib/telemetry-log';
 import type { AnalysisMode } from '../../../prompts/types';
@@ -257,6 +262,14 @@ export async function POST(req: NextRequest): Promise<Response> {
           return;
         }
         const revisionNote = decision.kind === 'revised' ? decision.note : undefined;
+        // Mentor addendum, Part B. Fetched only on a genuine revision, and
+        // only from stored text — null when there is nothing real to pass, so
+        // the prompt never invites a past it was not given. Best-effort: a
+        // failure here costs the memory register, never the reading.
+        const priorRevisionNotes =
+          decision.kind === 'revised'
+            ? await getPriorRevisionNotes(userId, decision.workId, null).catch(() => null)
+            : null;
         const status =
           decision.kind === 'revised' ? 'revised' :
           decision.kind === 'refreshed' ? 'refreshed' :
@@ -278,6 +291,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             // pipeline (computeCoverage runs before Brain 1). Law upheld.
             wordLimit: FREE_WORD_LIMIT,
             revisionNote,
+            priorRevisionNotes,
           },
           {
             onStage: (stage, title) => {

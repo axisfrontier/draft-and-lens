@@ -39,6 +39,9 @@ export interface AnalystInput {
   coverage: CoverageSignal;
   /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
   revisionNote?: string;
+  /** Real stored WHAT TO REVISE text from the prior reading, or null. Never a
+   *  placeholder — see buildRevisionDirective. */
+  priorRevisionNotes?: string | null;
   /** Excerpt vs complete piece — a fragment is read on different terms (§Excerpt Mode). */
   submissionType?: 'complete' | 'excerpt';
 }
@@ -59,6 +62,7 @@ export async function runAnalyst(
     diagnostic,
     coverage,
     revisionNote,
+    priorRevisionNotes,
     submissionType,
   } = input;
 
@@ -92,7 +96,7 @@ export async function runAnalyst(
   // Revision context goes to the very front so the analyst frames the whole
   // reading as a response to the revision (CHANGE 3).
   if (revisionNote) {
-    userPrompt = buildRevisionDirective(revisionNote) + userPrompt;
+    userPrompt = buildRevisionDirective(revisionNote, priorRevisionNotes) + userPrompt;
   }
 
   const { model, maxTokens, effort, useThinking } = adaptiveAnalystConfig(wordCount);

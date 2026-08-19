@@ -525,6 +525,58 @@ export async function getSourceTexts(
   }
 }
 
+/**
+ * The revision list from the most recent PRIOR reading of this work.
+ *
+ * Mentor addendum, Part B: on a genuine revision the reading may say whether
+ * the rework addressed what the earlier reading raised. That is only honest
+ * with the earlier notes actually in hand — the addendum's no-fabrication law
+ * is explicit that the analyst must never simulate a past it does not have —
+ * so this returns real stored text or null, and null means the prompt says
+ * nothing about a past.
+ *
+ * Only WHAT TO REVISE is returned, not the whole report. It is the part with
+ * something checkable in it; passing the entire prior reading would invite the
+ * analyst to re-run someone else's judgement instead of reading the draft in
+ * front of it, which is the "read the whole piece afresh" rule the revision
+ * directive already sets.
+ *
+ * Capped, because a long prior list would crowd the submitted text itself out
+ * of the analyst's attention.
+ */
+export async function getPriorRevisionNotes(
+  userId: string,
+  workId: string,
+  excludeReadingId: string | null
+): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('id, reading_json, created_at')
+      .eq('user_id', userId)
+      .eq('work_id', workId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(3);
+    if (error || !data) return null;
+
+    const rows = data as unknown as Array<{ id: string; reading_json: ReadingPayload | null }>;
+    const prior = rows.find((r) => r.id !== excludeReadingId);
+    const report = prior?.reading_json?.report;
+    if (!report) return null;
+
+    // `## WHAT TO REVISE` up to the next heading or the verdict rule.
+    const m = report.match(/^##\s+WHAT TO REVISE\s*$([\s\S]*?)(?=^##\s|^---|\Z)/m);
+    const body = m?.[1]?.trim();
+    if (!body) return null;
+    return body.length > 1800 ? `${body.slice(0, 1800).trimEnd()}…` : body;
+  } catch {
+    return null;
+  }
+}
+
 /** Complete, portable export of everything stored for a user (GDPR §20). */
 export interface UserDataExport {
   exportedAt: string;
