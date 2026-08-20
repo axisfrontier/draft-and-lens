@@ -72,7 +72,19 @@ export function adaptiveAnalystConfig(wordCount: number): {
 // contradict the real one and risk truncating reports.
 export const TOKEN_LIMITS = {
   moderation: 200,
-  diagnostician: 800,
+  // 800 sat INSIDE this brain's natural output range, not above it. Measured
+  // 2026-08-20 on a 4,000-word literary chapter: unconstrained runs land
+  // between 677 and 958 tokens, so at 800 three runs in six stopped at
+  // max_tokens and returned the FALLBACK diagnostic — tradition 'Unknown',
+  // register 'Unknown', empty ambition — with nothing anywhere reporting it.
+  // That is the worst failure available here: every downstream brain receives
+  // the tradition as locked (LearnedCorpus P1), so a silent fallback reads the
+  // whole submission with no confirmed tradition at all.
+  //
+  // 1600 is well clear of the observed ceiling. A ceiling only costs what it
+  // is used for, and this brain's output is a fixed-shape JSON that has no
+  // reason to grow.
+  diagnostician: 1600,
   // 2500 was not enough for a single one of these calls. Measured 2026-08-20
   // on a 4,000-word literary chapter: every run stopped at `max_tokens` with
   // the JSON cut mid-string, and because this is a JSON brain, truncation is
