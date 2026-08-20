@@ -86,6 +86,16 @@ Illustrative shape (exact copy to follow the Editor voice once finalised):
 
 Step 4 is the piece that makes the loop feel like working with an editor rather than receiving a verdict.
 
+### What steps 3 and 4 actually rest on (checked in the code, 2026-08-20)
+
+Mentor mode itself is done and live — both parts, against all four of its addendum's Verify criteria. Neither note below blocks building fragment handling; both are clauses of this spec that a builder would otherwise assume were already wired.
+
+**Step 3's "against their own stated intent where given" has no way to be given.** The `intent` field is plumbed the whole way server-side — `api/analyse` reads it off the request body, passes it into `PipelineInput`, and the orchestrator hands it to the analyst — but nothing in the UI ever sends it. The pipe is laid and there is no tap on it, so the "where given" case cannot currently occur.
+
+Note which way that dependency actually runs. The upfront ask in this spec — "Tell me what you'd like me to do with this" — *is* stated intent, and is the natural thing to populate that field with. So step 3 may complete as a consequence of building fragment handling rather than being a precondition for it. Worth deciding deliberately: if the upfront ask is going to fill `intent`, it should fill it in a shape the analyst can already use, not a fragment-only shape that has to be reconciled later.
+
+**Step 4 is most of the way there already.** `/api/converse` receives `reportText`, `diagnostic`, `submittedText` and `history`, so the Editor can be asked about the current reading — including the memory framing Part B writes *into* that report. It does not receive `priorRevisionNotes` or the revision note as separate context, so it can discuss what the reading says about the amends but cannot reason independently about what changed between drafts. Whether that is enough for "interrogating the judgement conversationally" is a design call for this spec, not a defect in what exists.
+
 ## Output shape
 
 Fragment responses are not reports. A few paragraphs of prose in the lens voice. Seconds, not a minute. If the complaint is that a paragraph shouldn't cost 55 seconds, the answer must feel conversational, not ceremonial.
