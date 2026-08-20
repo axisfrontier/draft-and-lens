@@ -59,12 +59,21 @@ const sidebarGroup: CSSProperties = {
   padding: '.9rem 1.25rem .3rem',
 };
 
+/**
+ * Must match ReportSection's heading exactly — same defect as the body wrapper
+ * below. This declared mono/.72rem/uppercase/amber-d while the finished report
+ * renders section headings as serif/.9rem/700/ink, so every heading changed
+ * face the moment streaming ended. The design system names the finished side
+ * as correct: "Section heading: Libre Baskerville, weight 700, --ink".
+ *
+ * Only marginBottom is this view's own — that is layout, not type.
+ */
 const sectionHeading: CSSProperties = {
-  fontFamily: 'var(--font-mono)',
-  fontSize: '.72rem',
-  letterSpacing: '.14em',
-  textTransform: 'uppercase',
-  color: 'var(--amber-d)',
+  fontFamily: 'var(--font-serif)',
+  fontSize: '.9rem',
+  fontWeight: 700,
+  letterSpacing: '.01em',
+  color: 'var(--ink)',
   marginBottom: '.9rem',
 };
 
@@ -329,10 +338,27 @@ export function ReportSkeleton({
               }}>
                 <div style={sectionHeading}>{label}</div>
                 {body ? (
-                  <div style={{
-                    fontFamily: 'var(--font-serif)', fontSize: '.92rem',
-                    lineHeight: 1.85, color: 'var(--ink-soft)',
-                  }}>
+                  /* NO TYPOGRAPHY HERE, and it must stay that way.
+                   *
+                   * This wrapper used to declare font-serif/.92rem/1.85/ink-soft.
+                   * Three of those four were already dead — FormattedBody's own
+                   * <p> sets size, line-height and colour and wins. The fourth
+                   * was live and was the bug: family is the ONE property
+                   * FormattedBody inherits, so the report streamed in Libre
+                   * Baskerville and then, the instant it finished and ReportView
+                   * took over, re-rendered the same words in IBM Plex Sans.
+                   * Identical metrics, so nothing reflowed — only the letterforms
+                   * changed. That is the "font swap during streaming", on every
+                   * reading, and it was never a font-loading problem: display:swap,
+                   * declared variants and synthesised weights were all investigated
+                   * and none of them was the cause.
+                   *
+                   * The finished report inherits sans from globals.css `body`,
+                   * which is what the prototype does (.section-body p declares no
+                   * family). Streaming must inherit the same way. Declaring
+                   * typography here at all recreates the second copy that drifted
+                   * in the first place. */
+                  <div>
                     <FormattedBody text={body} />
                   </div>
                 ) : (
