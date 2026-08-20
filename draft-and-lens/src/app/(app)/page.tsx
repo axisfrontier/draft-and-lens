@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 
 import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
+import FragmentPanel from '@/components/fragment/FragmentPanel';
 import { TermTooltip } from '@/components/glossary/TermTooltip';
 import type {
   ContinuityFlag,
@@ -1050,6 +1051,13 @@ export default function AppHomePage() {
                 letterSpacing: '.08em', color: 'var(--paper-dark)',
                 textAlign: 'center', fontStyle: 'italic',
               }}>Analysis streams as it arrives</p>
+
+              {/* Fragment mode — a passage and a question, answered
+                  conversationally and stored nowhere. Its own component with
+                  its own state: this page already carries thirty pieces of
+                  state for the reading pipeline, and fragment mode shares none
+                  of them by design. */}
+              <FragmentPanel />
 
             </div>
           </div>
