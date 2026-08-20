@@ -634,3 +634,49 @@ Run 2 is the fix: before it, that row could never leave `worth_checking`. Run 3 
 **Scope held:** this fixes the state-lock half of 1a. The fact-pair half (age/date clashes) additionally needs pairs to be re-adjudicated when the frame changes, which costs model calls per pair — a cost decision, not a mechanical fix, and deliberately not taken here.
 
 **Found while scoping the remaining verification:** the structural reader runs at `wordCount >= 4,000` and the route rejects `> 4,000`, so a submission of **exactly 4,000 words** is the one width of window where a real structural map can be produced under the current cap. That is the route to verifying `narrative_frame` accumulation from real evidence rather than a seeded fixture.
+
+### Verification found five token ceilings set below their own brains' output — 2026-08-20
+
+Continuing the verification list (multiplePov, narrative_frame, Mentor Part B) turned up a defect class that had nothing to do with the ledger and mattered more than any of them. Five commits, 123 tests green, build ✓, deployed.
+
+**How it surfaced.** `narrative_frame` had never been seen to learn, and the standing explanation was the word cap. Scoping that, I found the one width of window where a map is possible today: the route rejects submissions **above** 4,000 words and the structural reader runs at **4,000 or more**, so a submission of exactly 4,000 words reaches it. A 4,000-word test chapter (deliberately non-linear, two named POV centres) was run through the real pipeline — and the map came back null anyway, with the diagnostic reading `title: Untitled · tradition: Unknown`.
+
+That was not the word cap. **The structural reader was stopping at `max_tokens` on every single call**, and because it is a JSON brain, truncation is not partial output: `parseJsonLoose` returns null and the entire map is discarded, which `.catch(() => null)` in the orchestrator makes indistinguishable from a brain with nothing to say.
+
+**Measured, then fixed — each brain's natural output against the ceiling it had:**
+
+| Brain | Ceiling | Natural output | What truncation cost |
+|---|---|---|---|
+| `structuralReader` | 2500 | 3,025–3,550 | Whole map discarded. **The real reason `narrative_frame` never learned.** |
+| `diagnostician` | 800 | 677–958 | FALLBACK on **3 runs in 6** — tradition 'Unknown', register 'Unknown', empty ambition, for the whole reading. Every downstream brain is handed the tradition as locked (P1). |
+| `narratorCorrector` | 6000 | 6,175–6,609 | **Reports delivered ending mid-sentence.** See below. |
+| `bible` | 1200 | 2,240–2,356 | Character bible cut in half, mid-entry, and shown that way. |
+| `market` | 1200 | 1,159–1,204 | Ceiling sat exactly ON the output; a long run drops the market section silently. |
+| `narratorVerifier` | 1000 | 500 for 4 lines; **804 observed live** | Null verdicts → the narrator correction pass does not run at all. Raised because its input just grew: a complete structural map carries longer `narratorBehaviour` lists. |
+| `scorer` | 800 | 405–416 | Healthy, unchanged. |
+| `continuityExtractor` | 3000 | 1,343–1,426 (17–18 facts) | Healthy, unchanged. |
+
+Not measured, so not touched: `moderation`, `detection`, `lens`, `conversation`. `lens`/`conversation` are in the modules the 2026-08-18 audit found never execute, so their entries here may not be live values at all.
+
+**The narrator corrector deserves its own paragraph, because it was reaching writers.** It returns the *whole corrected report*, so its ceiling has to clear the analyst's 16,000 — at 6,000 it could not. Measured on an 18,609-char report: the call stopped at `max_tokens` having produced 18,575 chars, and the guard written to catch exactly this — `corrected.length > analysisText.length * 0.7` — **accepted it**, because a truncation that loses the last 3% is still 97% of the original. The delivered report ended `"This is a controlled,"`. The same call at 16,000 finishes in 6,175 tokens and closes properly.
+
+**Follow-up, not done here:** that guard is length-based and cannot see a `stop_reason` of `max_tokens`. Raising the ceiling puts the truncation out of reach; it does not make it detectable. The structural fix is to surface `stop_reason` from `callTextBrain` so truncation is a fact rather than an inference — that changes a shared signature and every call site, so it wants doing deliberately rather than at 2am.
+
+**Cost of the change:** ceilings are billed for what is used, not what is allowed. Per submission this adds roughly 1,100 output tokens (bible), 300–1,000 (structural reader), 150 (diagnostician) — cents, in exchange for a diagnostic that parses half the time instead of always failing, a bible that finishes, and reports that do not stop mid-sentence.
+
+**Verification scoreboard, updated**
+
+| Item | Live? | Evidence |
+|---|---|---|
+| Lock promotion `worth_checking` → `locked` | ✅ **new** | Same flag row promoted on the frame becoming known; no demotion when it went back to unknown |
+| `narrative_frame` accumulation | ✅ **new** | `{nonLinear: true}` stored from a REAL structural map — "non-linear — multi-timeline with frame narrative" — not a seeded fixture |
+| `multiplePov` | ✅ **new** | `pov_character` = `maren` / `halvard` / null on three consecutive runs; `deriveMultiplePov` → true |
+| Mentor Part B — memory framing | ✅ | End-to-end 2026-08-19; re-checked read-only today against production: works with a prior reading return the real stored WHAT TO REVISE (capped at 1,800 chars), works without one return null |
+| Detection §6a contradiction | ✅ | 2026-08-18 |
+| State locks — locked tier | ✅ | 2026-08-19 |
+| Mentor Part A — WHERE TO GROW NEXT | ✅ | 2026-08-19 |
+| Differentiator escalation | not built | Nenad's call, unchanged |
+
+**Disclosure on method:** today's runs went through the real brains, the real Anthropic API and the production Supabase, but not through the browser — this Chrome profile's session showed signed-out when the work started, so submissions were driven by calling `runAnalysisPipeline` / `runContinuityExtractor` / `runDetectionPass` directly, exactly as `/api/analyse` calls them. The route's own word gate is arithmetic and was read rather than exercised. Every test manuscript created was hard-deleted; `Home` verified as the only manuscript remaining after each run, with its readings and facts untouched.
+
+**Still awaiting Nenad, unchanged:** the flag-dismissal control; the differentiator escalation; and the `FREE_WORD_LIMIT` / `TESTER_WORD_CAP` decision — which is now the *only* thing keeping `nonLinear` from learning on ordinary traffic, since a structural map needs 4,000+ words and the cap rejects anything above 4,000.
