@@ -48,3 +48,4 @@ scripts/.extracted/
 
 # Vercel deploy hook URL (local only, never commit)
 .deploy-hook
+.vercel-deploy-hook

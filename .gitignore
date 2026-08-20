@@ -28,3 +28,15 @@ npm-debug.log*
 
 # Test / extraction caches
 scripts/.extracted/
+.vercel
+.env*
+
+# Legal / trademark / launch-prep material — stays on disk, never enters git
+# history (added 1 Aug 2026, ahead of the migration out of Dropbox).
+/DraftAndLens_Solicitor_Questions.md
+/DraftAndLens_BetaOutreach_Tracker.xlsx
+/DraftAndLens_GoLivePlan.md
+/DraftAndLens_Anthropic_Terms_Record.md
+/DraftAndLens_Trademark_Search_Record.md
+/URGENT TIMETABLE/
+/for Solicitor/
