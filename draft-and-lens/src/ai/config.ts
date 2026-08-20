@@ -73,7 +73,19 @@ export function adaptiveAnalystConfig(wordCount: number): {
 export const TOKEN_LIMITS = {
   moderation: 200,
   diagnostician: 800,
-  structuralReader: 2500,
+  // 2500 was not enough for a single one of these calls. Measured 2026-08-20
+  // on a 4,000-word literary chapter: every run stopped at `max_tokens` with
+  // the JSON cut mid-string, and because this is a JSON brain, truncation is
+  // not partial output — parseJsonLoose returns null and the ENTIRE map is
+  // discarded silently. That is why narrative_frame had never been seen to
+  // learn: the word cap stops most submissions reaching the structural reader
+  // at all, and the ones that did reach it threw their map away.
+  //
+  // The same text needs 3,025 tokens to close its JSON. Input is bounded by
+  // sampleForStructure (12,000 chars), so output does not grow with manuscript
+  // length; 6,000 is roughly double the measured need and costs nothing unless
+  // it is used.
+  structuralReader: 6000,
   narratorVerifier: 1000,
   narratorCorrector: 6000,
   scorer: 800,
