@@ -37,6 +37,7 @@ If you are about to state anything about Codex-Maths — its UI process, its rep
 - `DraftAndLens_UIExploration_Backlog.md` — new UI design exploration, not started
 - `AUDIT_CHECKLIST.md` — Level 3 periodic audit, triggers before major new features
 - `DraftAndLens_FragmentMode_Spec.md` — fragment/short-input handling and the revision loop. Design only, not built. Sequenced after Mentor mode.
+- `DraftAndLens_DepthAndScenarios_Spec.md` — tradition depth, scenarios page, contextual nudges. Design only, not built. Build order inside.
 
 ## Standing beta build order (as of 2026-08-18)
 
