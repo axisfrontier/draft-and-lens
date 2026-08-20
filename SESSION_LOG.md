@@ -781,3 +781,25 @@ Identical. Section headings render Libre Baskerville 700 at `--ink` in both. The
 1. Nenad applies `supabase/migrations/user_milestones.sql` manually.
 2. Nenad approves final wording (replaces `DIFFERENTIATOR_PLACEHOLDER_COPY`).
 3. Live verification, which needs three readings on one work: an original, a genuine revision (line should appear once, under the revision banner), and a second revision (line must NOT appear again). Until step 1 the third check cannot be distinguished from the fail-closed path.
+
+### Differentiator VERIFIED LIVE — three readings, all three checks pass — 2026-08-20 (late)
+
+Migration applied by Nenad. Verified on production with three real readings of one work, driven through the browser signed in.
+
+| # | Submission | Revision banner | Method line | `user_milestones` |
+|---|---|---|---|---|
+| 1 | original, 227 words | — | **not shown** ✅ | empty — the claim was never asked for |
+| 2 | genuine revision, 227 words | shown | **shown once** ✅ | one row, `23:10:16` |
+| 3 | second revision, 222 words | shown | **not shown** ✅ | still one row, same timestamp |
+
+Reading 1 is the check that matters most for the mechanism's design: the memory gate failed, so `claimMilestone` was never called and the account's single showing was **not** burned on a reading that had nothing to remember. That ordering — gate first, claim last — is what makes the one showing land somewhere it means something.
+
+Reading 2 rendered it exactly where §6 wants it: immediately under "Updated reading — this responds to your revision of an earlier draft", 71 characters after it, in quiet italic serif at `--ink-soft` with a hairline rule. And the reading itself validated the claim in the same breath without being asked to — the OVERVIEW opened *"The revision has sharpened the piece materially. The gull sentence, which in an earlier form carried an explanatory clause about what birds know that people cannot see, has been cut to its bone…"*. That is the quality gate happening by luck rather than by enforcement, which is exactly the distinction recorded in `lib/differentiator.ts`.
+
+Reading 3 confirms the once-ever guarantee against a second qualifying reading, not merely against a repeat of the same one.
+
+**Cleanup, both reversible for 30 days:**
+- The milestone row was **deleted to re-arm the account**, using the procedure in the migration footer. It had been spent on placeholder copy, and leaving it would have meant Nenad's own account could never see the approved line.
+- The Halloran test work (3 readings) soft-deleted. Six works remain, all his.
+
+**Still required before this reaches a writer:** final wording. The mechanism is verified; the copy is not approved.
