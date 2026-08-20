@@ -27,8 +27,24 @@ type Ask = 'craft' | 'fit' | 'tradition' | 'free';
 
 const mono = 'var(--font-mono)';
 
-export default function FragmentPanel(): React.ReactElement {
+/**
+ * When the writer pressed Analyse on something too short to read as a piece,
+ * the page hands the passage over rather than making them paste it twice. The
+ * nonce is what makes a second identical attempt reopen the panel.
+ */
+export interface FragmentHandoff {
+  passage: string;
+  reason: string;
+  nonce: number;
+}
+
+export default function FragmentPanel({
+  handoff,
+}: {
+  handoff?: FragmentHandoff | null;
+}): React.ReactElement {
   const [open, setOpen] = useState(false);
+  const [handoffReason, setHandoffReason] = useState('');
   const [hasContext, setHasContext] = useState(false);
   const [passage, setPassage] = useState('');
   const [ask, setAsk] = useState<Ask | null>(null);
@@ -39,6 +55,20 @@ export default function FragmentPanel(): React.ReactElement {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
+
+  // A handoff from the Analyse button: the writer asked for a reading on
+  // something too short to give one to, so the passage comes across rather
+  // than being pasted twice.
+  useEffect(() => {
+    if (!handoff) return;
+    setOpen(true);
+    setPassage(handoff.passage);
+    setHandoffReason(handoff.reason);
+    setAsk(null);
+    setReply('');
+    setRoute('');
+    setError('');
+  }, [handoff]);
 
   // Whether the "does this fit with what you've read" option is offered at all
   // is a fact about the account, not a guess about the text. A writer with
@@ -71,6 +101,7 @@ export default function FragmentPanel(): React.ReactElement {
     setRoute('');
     setError('');
     setRunning(false);
+    setHandoffReason('');
   }
 
   async function send(chosen: Ask): Promise<void> {
@@ -196,6 +227,15 @@ export default function FragmentPanel(): React.ReactElement {
           Close
         </button>
       </div>
+
+      {handoffReason && (
+        <p style={{
+          fontFamily: 'var(--font-serif)', fontSize: '.88rem', lineHeight: 1.65,
+          color: 'var(--paper)', marginTop: '.6rem',
+        }}>
+          {handoffReason}
+        </p>
+      )}
 
       <textarea
         value={passage}

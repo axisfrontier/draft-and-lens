@@ -29,3 +29,34 @@ export function countWords(text: string): number {
   const trimmed = text.trim();
   return trimmed === '' ? 0 : trimmed.split(/\s+/).length;
 }
+
+/**
+ * Below this, a submission is offered fragment mode instead of a full reading.
+ *
+ * READ THIS BEFORE MOVING IT, because it sits against a standing decision.
+ * The Word Cap standing decision (2026-08-20) says the submission ceiling is
+ * the only word-count boundary and that no brain gates on length internally.
+ * This is NOT such a gate, and the distinction is the whole justification:
+ *
+ *   • It is not inside any brain. Every brain still runs at every length it is
+ *     given, exactly as that decision requires — nothing is skipped, degraded,
+ *     or returned null because a piece is short.
+ *   • It does not silently reroute. It ASKS, which is the fragment spec's
+ *     governing principle: when context is insufficient for the method to run
+ *     cleanly, ask rather than proceed. The cost of a wrong guess is one click,
+ *     not a wrong answer — which is what makes this a different kind of
+ *     boundary from the dead zone, where being on the wrong side silently
+ *     disabled a feature and produced a null nobody could see.
+ *
+ * WHY A NUMBER EXISTS AT ALL: a reading is a report whose always-include set
+ * (shared.ts) demands an overview, at least three quoted strengths, revisions,
+ * a growth note and a verdict. Thirty words cannot support that, and what came
+ * back from trying was 200 seconds of pipeline ending in a Studios section —
+ * confident nonsense, which the spec names as one of the two failure modes
+ * that would discredit the product.
+ *
+ * 200 IS A PRODUCT NUMBER, NOT A DERIVED ONE. It is deliberately low: it is
+ * the point below which a full reading is not honest, not the point below
+ * which fragment mode is nicer. Nenad owns it and it moves in one line.
+ */
+export const FULL_READING_MIN_WORDS = 200;

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 
 import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
-import FragmentPanel from '@/components/fragment/FragmentPanel';
+import FragmentPanel, { type FragmentHandoff } from '@/components/fragment/FragmentPanel';
 import { TermTooltip } from '@/components/glossary/TermTooltip';
 import type {
   ContinuityFlag,
@@ -15,7 +15,7 @@ import type {
   Mode,
   Scores,
 } from '@/components/analysis/types';
-import { TESTER_WORD_CAP, countWords } from '@/lib/limits';
+import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '@/lib/limits';
 import {
   MAX_UPLOAD_BYTES,
   UPLOAD_ACCEPT,
@@ -187,6 +187,7 @@ export default function AppHomePage() {
    *  submission. Keeps the panel on screen even if a later classification would
    *  hide it — see the note where it is set. */
   const [panelShown, setPanelShown] = useState(false);
+  const [fragmentHandoff, setFragmentHandoff] = useState<FragmentHandoff | null>(null);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
 
   const effectiveText = text.trim() || uploadedFileText;
@@ -363,6 +364,28 @@ export default function AppHomePage() {
 
   async function analyse(forceRefresh = false): Promise<void> {
     if (mode === null) return;
+
+    // Too short to read as a piece — ask instead of proceeding.
+    //
+    // This is the fragment spec's governing principle at the one place the
+    // writer can walk past it: pressing Analyse. It is not a gate on any
+    // brain — every brain still runs at every length it is handed — and it
+    // does not silently reroute. It hands the passage to the conversation and
+    // lets the writer say what they actually wanted, which costs a click if
+    // this is wrong and costs 200 seconds of pipeline and a Studios verdict on
+    // thirty words if it is absent. See FULL_READING_MIN_WORDS.
+    const forReading = (text.trim() || uploadedFileText).trim();
+    if (countWords(forReading) < FULL_READING_MIN_WORDS) {
+      setError('');
+      setFragmentHandoff({
+        passage: forReading,
+        reason:
+          "That's shorter than I can give a full reading to — a reading needs enough on the page to have something to be true about. Ask me about it directly instead and I'll tell you what I see.",
+        nonce: Date.now(),
+      });
+      return;
+    }
+
     setRunning(true);
     setError('');
     setStreamed('');
@@ -1057,7 +1080,7 @@ export default function AppHomePage() {
                   its own state: this page already carries thirty pieces of
                   state for the reading pipeline, and fragment mode shares none
                   of them by design. */}
-              <FragmentPanel />
+              <FragmentPanel handoff={fragmentHandoff} />
 
             </div>
           </div>

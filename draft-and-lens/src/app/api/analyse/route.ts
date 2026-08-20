@@ -6,7 +6,7 @@ import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor'
 import { runDetectionPass } from '../../../ai/detection-pass';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
-import { TESTER_WORD_CAP, countWords } from '../../../lib/limits';
+import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
@@ -118,6 +118,27 @@ export async function POST(req: NextRequest): Promise<Response> {
         error: `Draft & Lens reads best in focused pieces right now — please paste up to about ${TESTER_WORD_CAP.toLocaleString()} words (a chapter, a short story, or an excerpt). Full-length novels and scripts are coming soon.`,
       },
       { status: 413 }
+    );
+  }
+
+  // Too small to read as a piece — offer the conversation instead of a report.
+  //
+  // Defence-in-depth behind the client, exactly like the cap above, and for a
+  // sharper reason: what happens without it is not a smaller reading, it is
+  // 200 seconds of pipeline ending in a Studios verdict on thirty words. The
+  // report's always-include set alone (overview, three quoted strengths,
+  // revisions, growth, verdict) cannot be honestly filled from that.
+  //
+  // `offerFragment` tells the client which door to open. The message is
+  // placeholder copy awaiting the Editor voice, like the rest of fragment mode.
+  if (submittedWordCount > 0 && submittedWordCount < FULL_READING_MIN_WORDS) {
+    return NextResponse.json(
+      {
+        error:
+          "That's shorter than I can give a full reading to — a reading needs enough on the page to have something to be true about. Ask me about it directly instead and I'll tell you what I see.",
+        offerFragment: true,
+      },
+      { status: 422 }
     );
   }
 
