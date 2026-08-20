@@ -116,7 +116,11 @@ export const TOKEN_LIMITS = {
   // making it detectable. See SESSION_LOG 2026-08-20.
   narratorCorrector: 16000,
   scorer: 800,
-  market: 1200,
+  // Measured 2026-08-20: 1,159-1,204 tokens on the same chapter, i.e. the
+  // 1200 ceiling sat exactly ON the natural output rather than above it, and
+  // a run landing a few tokens long parses to null and drops the market
+  // section entirely. Same failure the diagnostician had.
+  market: 2500,
   // Measured 2026-08-20 on a 4,000-word chapter: the bible runs 2,240-2,356
   // tokens unconstrained, so at 1200 every bible was cut roughly in half.
   // This is a text brain, so the writer received the truncation rather than
