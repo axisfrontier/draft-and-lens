@@ -117,7 +117,11 @@ export const TOKEN_LIMITS = {
   narratorCorrector: 16000,
   scorer: 800,
   market: 1200,
-  bible: 1200,
+  // Measured 2026-08-20 on a 4,000-word chapter: the bible runs 2,240-2,356
+  // tokens unconstrained, so at 1200 every bible was cut roughly in half.
+  // This is a text brain, so the writer received the truncation rather than
+  // an empty result — a character bible that stops mid-entry.
+  bible: 4000,
   lens: 1200,
   conversation: 800,
   // A chapter can legitimately yield 20-30 facts, each carrying a verbatim
