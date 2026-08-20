@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { deriveFrame, deriveMultiplePov } from '../../src/ai/detection-pass';
-import { pairKey } from '../../src/lib/continuity-flags';
+import { pairKey, promotes } from '../../src/lib/continuity-flags';
 import { mergeFrameEvidence } from '../../src/lib/manuscripts';
 import type { DiagnosticResult } from '../../src/prompts/types';
 
@@ -68,6 +68,59 @@ describe('pairKey', () => {
 
   it('distinguishes genuinely different pairs', () => {
     expect(pairKey('a', 'b')).not.toBe(pairKey('a', 'c'));
+  });
+});
+
+/**
+ * Sub-question 1a is unknown-and-demote *then promote*. Before this existed
+ * the second half never happened: a lock violation first raised under an
+ * unknown frame was stored at worth-checking and the unique index kept it
+ * there for the life of the manuscript, however clearly the frame was later
+ * established.
+ */
+describe('promotes', () => {
+  it('lets a worth-checking lock violation reach the locked tier', () => {
+    // The whole point. Chapter 3 raises it under an unknown frame; chapter 7
+    // brings the structural evidence that says the book is chronological.
+    expect(promotes('worth_checking', 'locked')).toBe(true);
+  });
+
+  it('promotes up the rest of the ladder too', () => {
+    expect(promotes('worth_checking', 'contradiction')).toBe(true);
+    expect(promotes('contradiction', 'locked')).toBe(true);
+  });
+
+  it('never moves DOWN a tier', () => {
+    // `nonLinear` is sticky-true, so a manuscript read as chronological at
+    // chapter 7 can become non-linear at chapter 9 and never go back. If that
+    // demoted a flag already shown at the locked tier, the tool would look
+    // like it was retracting a finding.
+    expect(promotes('locked', 'worth_checking')).toBe(false);
+    expect(promotes('locked', 'contradiction')).toBe(false);
+    expect(promotes('contradiction', 'worth_checking')).toBe(false);
+  });
+
+  it('never re-raises a dismissed pair, at any tier', () => {
+    // A dismissal is a conclusion, not a lower rung — the same reason
+    // listAdjudicatedPairs counts dismissals as already answered.
+    expect(promotes('dismissed', 'locked')).toBe(false);
+    expect(promotes('dismissed', 'contradiction')).toBe(false);
+    expect(promotes('dismissed', 'worth_checking')).toBe(false);
+  });
+
+  it('never dismisses a live flag', () => {
+    // §5.5 gives the writer reconciled_at for that, and it works upstream by
+    // stopping the pair being raised at all.
+    expect(promotes('worth_checking', 'dismissed')).toBe(false);
+    expect(promotes('locked', 'dismissed')).toBe(false);
+  });
+
+  it('is a no-op on an unchanged tier — a re-run rewrites nothing', () => {
+    // Lock violations recompute every run, so the common case by far is the
+    // same tier arriving again. It must not count as a promotion or churn the
+    // row's reading_id.
+    expect(promotes('worth_checking', 'worth_checking')).toBe(false);
+    expect(promotes('locked', 'locked')).toBe(false);
   });
 });
 

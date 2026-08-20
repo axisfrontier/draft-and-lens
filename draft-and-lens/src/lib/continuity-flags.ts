@@ -16,6 +16,13 @@ import { getServiceClient, isSupabaseConfigured } from './supabase-server';
  * here — consistently, on both the write path and the already-adjudicated
  * lookup, or the idempotency guarantee silently stops holding and every
  * chapter re-pays for pairs it has already judged.
+ *
+ * PROMOTION. Idempotency is not the same as immutability. Sub-question 1a
+ * resolves state locks and age/date clashes as unknown-and-demote — they sit
+ * at worth-checking until the frame is established, and then *promote*. A pair
+ * therefore has to be able to change tier after it is first written, or the
+ * demotion is permanent and the second half of the ruling never happens.
+ * Movement is one-way, up: see `promotes`.
  */
 
 const FLAGS_TABLE = 'continuity_flags';
@@ -84,6 +91,44 @@ function orderedPair(factAId: string, factBId: string): [string, string] {
   return factAId < factBId ? [factAId, factBId] : [factBId, factAId];
 }
 
+/**
+ * The §6 ladder as an order, with the locked tier above it.
+ *
+ * Used for one question only — may this row move? — never for display, which
+ * reads the outcome directly.
+ */
+const OUTCOME_RANK: Record<FlagOutcome, number> = {
+  dismissed: 0,
+  worth_checking: 1,
+  contradiction: 2,
+  locked: 3,
+};
+
+/**
+ * May an existing flag be rewritten at the incoming tier?
+ *
+ * Strictly upward, and never through 'dismissed' in either direction:
+ *
+ * • Upward only, because the frame is learned incrementally and can go from
+ *   known-linear back to unknown — `nonLinear` is sticky-true, so a later
+ *   flashback chapter turns a manuscript non-linear for good. If that could
+ *   quietly demote a locked flag the writer has already been shown, the tool
+ *   would appear to take a finding back. It stands until they resolve it.
+ *
+ * • Never out of 'dismissed', because a pair already judged innocent is
+ *   exactly the one that must not be re-raised — the same reasoning that puts
+ *   dismissals in `listAdjudicatedPairs`. A dismissal is a conclusion, not a
+ *   lower rung.
+ *
+ * • Never *into* 'dismissed', because nothing in detection re-dismisses a live
+ *   flag; §5.5 gives the writer `continuity_facts.reconciled_at` for that and
+ *   it works upstream, by stopping the pair being raised at all.
+ */
+export function promotes(stored: FlagOutcome, incoming: FlagOutcome): boolean {
+  if (stored === 'dismissed' || incoming === 'dismissed') return false;
+  return OUTCOME_RANK[incoming] > OUTCOME_RANK[stored];
+}
+
 function toFlag(row: FlagRow): ContinuityFlag {
   return {
     flagId: row.id,
@@ -149,7 +194,103 @@ export async function listAdjudicatedPairs(
   }
 }
 
-/** Persist a detection run's results. Returns how many rows landed. */
+/** One row as it is written, before the store decides insert or promote. */
+interface FlagInsert {
+  manuscript_id: string;
+  user_id: string;
+  fact_a_id: string;
+  fact_b_id: string;
+  entity: string;
+  attribute: string;
+  outcome: FlagOutcome;
+  reasoning: string | null;
+  explanation: string | null;
+  confidence: number | null;
+  ceiling: string | null;
+  demotions: string[];
+  short_circuited: boolean;
+  reading_id: string | null;
+}
+
+/**
+ * Rewrite pairs that already exist at a strictly lower tier.
+ *
+ * Runs only on the rows the insert declined, so the ordinary path — every pair
+ * new — costs nothing extra.
+ *
+ * Each update is guarded on the outcome it read (`.eq('outcome', …)`), which
+ * makes it a compare-and-set: two submissions promoting the same pair at once
+ * leaves one winner and no lost write, the same posture `ignoreDuplicates`
+ * takes on the insert.
+ *
+ * `reading_id` moves to the run that promoted the flag. §6a is "what did this
+ * submission turn up", and a promotion is exactly that — leaving it attributed
+ * to the older reading would raise the tier somewhere the writer is not
+ * looking. The cost is real and accepted: reopening that older reading no
+ * longer shows the flag it first raised. A pair is one row and can only be
+ * attributed to one run; the current one is the one that matters.
+ */
+async function promoteExistingFlags(
+  supabase: ReturnType<typeof getServiceClient>,
+  manuscriptId: string,
+  userId: string,
+  rows: readonly FlagInsert[]
+): Promise<number> {
+  const { data, error } = await supabase
+    .from(FLAGS_TABLE)
+    .select('id, fact_a_id, fact_b_id, outcome')
+    .eq('manuscript_id', manuscriptId)
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .in(
+      'fact_a_id',
+      rows.map((r) => r.fact_a_id)
+    )
+    .in(
+      'fact_b_id',
+      rows.map((r) => r.fact_b_id)
+    );
+  if (error || !data) return 0;
+
+  // .in() × .in() is a cross product, so a pair is only genuinely present if
+  // both halves came back on the SAME row. Keyed here rather than trusted.
+  const stored = new Map(
+    (data as unknown as Array<{ id: string; fact_a_id: string; fact_b_id: string; outcome: string }>)
+      .map((r) => [pairKey(r.fact_a_id, r.fact_b_id), r] as const)
+  );
+
+  let promoted = 0;
+  for (const row of rows) {
+    const existing = stored.get(pairKey(row.fact_a_id, row.fact_b_id));
+    if (!existing) continue;
+    if (!promotes(existing.outcome as FlagOutcome, row.outcome)) continue;
+
+    const { data: updated } = await supabase
+      .from(FLAGS_TABLE)
+      .update({
+        outcome: row.outcome,
+        reasoning: row.reasoning,
+        explanation: row.explanation,
+        confidence: row.confidence,
+        ceiling: row.ceiling,
+        demotions: row.demotions,
+        short_circuited: row.short_circuited,
+        // Only when this run has a reading to attribute it to. A null would
+        // orphan the flag out of every §6a section, including the old one.
+        ...(row.reading_id ? { reading_id: row.reading_id } : {}),
+      })
+      .eq('id', existing.id)
+      .eq('outcome', existing.outcome)
+      .select('id');
+    if (updated && updated.length > 0) promoted += 1;
+  }
+  return promoted;
+}
+
+/**
+ * Persist a detection run's results. Returns how many rows landed — inserts
+ * plus promotions, both being findings the writer will now see.
+ */
 export async function storeFlags(args: {
   userId: string;
   manuscriptId: string;
@@ -161,7 +302,7 @@ export async function storeFlags(args: {
     const supabase = getServiceClient();
     if (!(await ownsManuscript(supabase, args.userId, args.manuscriptId))) return 0;
 
-    const rows = args.flags.map((f) => {
+    const rows: FlagInsert[] = args.flags.map((f) => {
       const [a, b] = orderedPair(f.factAId, f.factBId);
       return {
         manuscript_id: args.manuscriptId,
@@ -184,12 +325,30 @@ export async function storeFlags(args: {
     // ignoreDuplicates so a concurrent submission racing on the same pair
     // loses harmlessly instead of failing the whole batch. The unique index is
     // the authority; this just declines to fight it.
+    //
+    // It also declines to update, which is why the promotion pass below
+    // exists: what comes back here is only the rows that were NEW.
     const { data, error } = await supabase
       .from(FLAGS_TABLE)
       .upsert(rows, { onConflict: 'fact_a_id,fact_b_id', ignoreDuplicates: true })
-      .select('id');
+      .select('fact_a_id, fact_b_id');
     if (error || !data) return 0;
-    return data.length;
+
+    const insertedPairs = new Set(
+      (data as unknown as Array<{ fact_a_id: string; fact_b_id: string }>).map((r) =>
+        pairKey(r.fact_a_id, r.fact_b_id)
+      )
+    );
+    const conflicted = rows.filter((r) => !insertedPairs.has(pairKey(r.fact_a_id, r.fact_b_id)));
+    if (conflicted.length === 0) return data.length;
+
+    const promoted = await promoteExistingFlags(
+      supabase,
+      args.manuscriptId,
+      args.userId,
+      conflicted
+    );
+    return data.length + promoted;
   } catch {
     return 0;
   }
