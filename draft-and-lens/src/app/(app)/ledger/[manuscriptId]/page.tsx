@@ -405,10 +405,10 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
 
       {entities !== null && entities.length === 0 && (
         <div className="mt-8 max-w-2xl text-sm text-ink-soft">
-          <p>Nothing tracked yet.</p>
+          <p>I haven’t started tracking anything here yet.</p>
           <p className="mt-2">
-            Facts collect here as complete chapters are read. Nothing is inferred from an excerpt —
-            a draft mid-revision isn’t something to hold the rest of the book to.
+            I collect facts as I read complete chapters. I take nothing from an excerpt — a draft
+            mid-revision isn’t something to hold the rest of the book to.
           </p>
         </div>
       )}
