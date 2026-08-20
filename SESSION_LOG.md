@@ -762,3 +762,22 @@ Identical. Section headings render Libre Baskerville 700 at `--ink` in both. The
 **Why it looked like a regression:** with the narrator corrector's ceiling fixed the night before, that pass now actually runs, so the final text differs from the streamed text as well as the face. The swap had been there all along; the wording moving made it impossible to miss.
 
 **Left on the account:** one test reading from a 260-word excerpt, created to verify issue 2. Deleting readings is destructive and it is Nenad's data, so it stays until he says otherwise.
+
+### Differentiator messaging built — migration awaiting Nenad — 2026-08-20 (late)
+
+`d069c93`. 137 tests green, build ✓, IP grep exit 1, deployed. **Nothing shows yet, by design.**
+
+**Once-ever is a schema guarantee, not caller discipline.** `user_milestones` has a composite primary key on `(user_id, milestone)`, and `claimMilestone` attempts the insert rather than checking first. Check-then-show has a race in it, and that race's outcome is a writer being told the same thing twice by a sentence whose entire claim is that the product remembers. A failed insert has no window. Per Nenad's 2026-08-20 ruling the milestone is per WRITER: one showing per account, ever, whatever the work.
+
+**The gate is memory only, and the quality gate is recorded as unenforceable rather than quietly dropped.** §6 says the line "only works if the feedback right after it is sharp and specific enough to validate the confidence in the same breath". What is checkable: the reading is a genuine revision AND prior notes were actually retrieved. Both are required — a revision whose notes came back null was handed null by the no-fabrication law, so it genuinely was not read against anything, whatever its revision status says. What is not checkable at runtime is whether the reading that follows is any good, and a guess there would let the product make its loudest claim over its weakest reading. `lib/differentiator.ts` states this in the file rather than leaving it to be rediscovered; the mitigation is editorial, so **the final copy should be judged against a mediocre reading, not only a good one.**
+
+**There is no differentiator spec file to note this in** — the source is the 2026-08-02 handover §6, which is a historical record and the wrong place to amend. It is recorded here and in the code. Say if you want a standing spec file for it.
+
+**Fails closed in every direction** — no Supabase, missing table, any error, any conflict all return false and nothing renders. Verified against the live database just now: `user_milestones` absent (PGRST205), `claimMilestone` returned false. So the deployed code is live and inert, which is what keeps unapproved placeholder copy away from a real writer.
+
+**Copy is placeholder and not approved.** A test guards it against naming a competitor or making a comparison — §6's method is demonstration, and a comparison would turn a reading into an advert.
+
+**What is left, in order:**
+1. Nenad applies `supabase/migrations/user_milestones.sql` manually.
+2. Nenad approves final wording (replaces `DIFFERENTIATOR_PLACEHOLDER_COPY`).
+3. Live verification, which needs three readings on one work: an original, a genuine revision (line should appear once, under the revision banner), and a second revision (line must NOT appear again). Until step 1 the third check cannot be distinguished from the fail-closed path.
