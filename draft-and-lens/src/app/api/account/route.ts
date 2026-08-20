@@ -17,13 +17,13 @@ export async function DELETE(): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: 'DELETE /api/account' });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
 
   const wiped = await deleteAllUserData(userId);
   if (!wiped) {
     return NextResponse.json(
-      { error: 'Could not delete your data. Nothing was removed — please try again.' },
+      { error: 'Something went wrong and nothing was deleted. Your data is exactly as it was.' },
       { status: 500 }
     );
   }

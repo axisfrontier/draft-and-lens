@@ -106,28 +106,28 @@ function formatMb(bytes: number): string {
  */
 export const UPLOAD_MESSAGES = {
   legacyDoc:
-    'Old-style .doc files cannot be read. Open it in Word or Pages and re-save as .docx, .pdf or .txt, then upload again.',
+    "I can't open old-style .doc files. Re-save it as .docx, .pdf or .txt and send it again.",
 
   unsupported: (ext: string): string =>
-    `${ext === '' ? 'That file has no extension' : `${ext} files are not supported`}. Draft & Lens reads ${UPLOAD_FORMAT_HINT.replace(/ · /g, ', ')}.`,
+    `${ext === '' ? 'That file has no extension' : `I can't read ${ext} files`}. I read ${UPLOAD_FORMAT_HINT.replace(/ · /g, ', ')}.`,
 
   tooLarge: (bytes: number): string =>
-    `That file is ${formatMb(bytes)}MB, over the ${formatMb(MAX_UPLOAD_BYTES)}MB limit. Upload a single chapter rather than the full manuscript.`,
+    `That's ${formatMb(bytes)}MB, past the ${formatMb(MAX_UPLOAD_BYTES)}MB I can take. Send a single chapter rather than the whole manuscript.`,
 
   empty: (label: string): string =>
-    `That ${label} file opened but contained no text. Check it is not empty, then try again.`,
+    `That ${label} opened but there was nothing in it.`,
 
   binary: (label: string): string =>
-    `That file is named ${label} but its contents are not readable text. It may have been renamed from another format. Re-save it as ${label} and try again.`,
+    `That file is named ${label}, but what's inside isn't readable text — it may have been renamed from another format. Re-save it as ${label} and send it again.`,
 
   scannedPdf:
-    'That PDF holds no selectable text, so it is most likely a scan or images of pages. Upload the original .docx or .txt instead.',
+    "There's no selectable text in that PDF — it looks like a scan, or images of pages. Send me the original .docx or .txt.",
 
   extractionFailed: (label: string): string =>
-    `That ${label} file could not be read. It may be password-protected or damaged. Try re-saving it, or upload a .txt or .md copy instead.`,
+    `I couldn't read that ${label} — it may be password-protected or damaged. Re-save it, or send a .txt or .md copy.`,
 
   readFailed: (label: string): string =>
-    `That ${label} file could not be opened. Try again, or upload a .txt or .md copy instead.`,
+    `I couldn't open that ${label}. Send it again, or a .txt or .md copy.`,
 } as const;
 
 /**

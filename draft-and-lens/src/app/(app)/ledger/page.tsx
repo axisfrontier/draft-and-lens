@@ -31,7 +31,7 @@ export default function LedgerIndexPage() {
   useEffect(() => {
     if (isSignedIn !== true) return;
     fetch('/api/ledger')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Could not load your manuscripts.'))))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("I couldn't load your books."))))
       .then((d: { manuscripts: Manuscript[] }) => setManuscripts(d.manuscripts))
       .catch((e: Error) => setError(e.message));
   }, [isSignedIn]);

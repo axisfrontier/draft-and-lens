@@ -37,7 +37,7 @@ export default function AccountPage() {
 
   const loadWorks = useCallback(() => {
     fetch('/api/works')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Could not load your work.'))))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("I couldn't load your work."))))
       .then((d: { works: Work[] }) => setWorks(d.works))
       .catch((e: Error) => setError(e.message));
   }, []);
@@ -50,7 +50,7 @@ export default function AccountPage() {
     setError('');
     const res = await fetch(`/api/works/${work.workId}`, { method: 'DELETE' });
     if (!res.ok) {
-      setError('Could not delete that work.');
+      setError("I couldn't delete that one. Nothing has changed.");
       return;
     }
     setWorks((prev) => (prev ? prev.filter((w) => w.workId !== work.workId) : prev));
@@ -65,7 +65,7 @@ export default function AccountPage() {
       body: JSON.stringify({ action: 'restore' }),
     });
     if (!res.ok) {
-      setError('Could not restore that work.');
+      setError("I couldn't restore that one. Nothing has changed.");
       return;
     }
     setJustDeleted(null);
@@ -81,7 +81,7 @@ export default function AccountPage() {
       body: JSON.stringify({ title: value }),
     });
     if (!res.ok) {
-      setError('Could not rename that work.');
+      setError("I couldn't rename that one — it's still under its old title.");
       return;
     }
     const newTitle = value.trim() || 'Untitled';
@@ -98,14 +98,14 @@ export default function AccountPage() {
       const res = await fetch('/api/account', { method: 'DELETE' });
       if (!res.ok) {
         const d = (await res.json().catch(() => null)) as { error?: string } | null;
-        setError(d?.error ?? 'Could not delete your account.');
+        setError(d?.error ?? 'Something went wrong and your account was not deleted.');
         setWiping(false);
         return;
       }
       await signOut();
       window.location.href = '/';
     } catch {
-      setError('Could not delete your account.');
+      setError('Something went wrong and your account was not deleted.');
       setWiping(false);
     }
   }

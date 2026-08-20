@@ -484,7 +484,7 @@ export default function AppHomePage() {
       }
     } catch (e) {
       if ((e as Error)?.name !== 'AbortError') {
-        setError((e as Error)?.message ?? 'Analysis failed.');
+        setError((e as Error)?.message ?? 'Something went wrong before I finished. Send it again.');
       }
     } finally {
       setRunning(false);
@@ -872,7 +872,7 @@ export default function AppHomePage() {
                     <div style={{
                       fontFamily: 'var(--font-sans)', fontSize: '.85rem',
                       color: 'var(--rule)', fontStyle: 'italic',
-                    }}>Built automatically from your submission.</div>
+                    }}>I build this from what you send me.</div>
                   </div>
                   <label style={{
                     display: 'flex', alignItems: 'center', gap: '.4rem',
@@ -905,7 +905,7 @@ export default function AppHomePage() {
                     value={bibleInput}
                     onChange={(e) => setBibleInput(e.target.value)}
                     rows={3}
-                    placeholder="Characters, traits, relationships, voice patterns, wants, history — anything the analysis should know."
+                    placeholder="Characters, traits, relationships, voice patterns, wants, history — anything I should know."
                     style={{
                       width: '100%', fontFamily: 'var(--font-sans)',
                       fontSize: '.8rem', lineHeight: 1.7,
@@ -1080,7 +1080,7 @@ export default function AppHomePage() {
                 fontFamily: 'var(--font-mono)', fontSize: '.68rem',
                 letterSpacing: '.08em', color: 'var(--paper-dark)',
                 textAlign: 'center', fontStyle: 'italic',
-              }}>Analysis streams as it arrives</p>
+              }}>It arrives as I write it.</p>
 
               {/* Fragment mode — a passage and a question, answered
                   conversationally and stored nowhere. Its own component with

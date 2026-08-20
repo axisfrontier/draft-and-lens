@@ -156,14 +156,14 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
       });
       if (!res.ok) {
         const d = (await res.json().catch(() => null)) as { error?: string } | null;
-        setError(d?.error ?? 'Could not add that lock.');
+        setError(d?.error ?? "I couldn't add that lock.");
       } else {
         setAddingLock(false);
         setDraft({ entity: '', attribute: '', value: '', category: 'name', lockKind: 'rule', lockFromSequence: '' });
         load();
       }
     } catch {
-      setError('Could not add that lock.');
+      setError("I couldn't add that lock.");
     }
     setBusy(null);
   }
@@ -192,10 +192,10 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workId }),
       });
-      if (!res.ok) setError('Could not remove that chapter.');
+      if (!res.ok) setError("I couldn't take that chapter out of the book.");
       else load();
     } catch {
-      setError('Could not remove that chapter.');
+      setError("I couldn't take that chapter out of the book.");
     }
     setBusy(null);
   }

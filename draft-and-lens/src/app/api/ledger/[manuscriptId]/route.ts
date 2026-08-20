@@ -49,7 +49,7 @@ async function requireUser(route: string): Promise<string | NextResponse> {
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
   return userId;
 }
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest, { params }: Params): Promise<Respon
   // null covers both "not your manuscript" and "storage unavailable". They are
   // deliberately not distinguished to the client: confirming that a manuscript
   // id exists but belongs to someone else is itself a small leak.
-  if (!factId) return NextResponse.json({ error: 'Could not create lock.' }, { status: 400 });
+  if (!factId) return NextResponse.json({ error: "I couldn't lock that." }, { status: 400 });
   return NextResponse.json({ factId }, { status: 201 });
 }
 
@@ -128,7 +128,7 @@ export async function PATCH(req: NextRequest, _ctx: Params): Promise<Response> {
 
   if (action === 'unlock') {
     const done = await unlockFact(user, factId);
-    if (!done) return NextResponse.json({ error: 'Could not unlock.' }, { status: 400 });
+    if (!done) return NextResponse.json({ error: "I couldn't unlock that." }, { status: 400 });
     return NextResponse.json({ ok: true });
   }
 
@@ -141,7 +141,7 @@ export async function PATCH(req: NextRequest, _ctx: Params): Promise<Response> {
       return badRequest('A state lock needs lockFromSequence — the chapter it holds from.');
     }
     const done = await lockFact(user, factId, lockKind as LockKind, seq);
-    if (!done) return NextResponse.json({ error: 'Could not lock.' }, { status: 400 });
+    if (!done) return NextResponse.json({ error: "I couldn't lock that." }, { status: 400 });
     return NextResponse.json({ ok: true });
   }
 
@@ -163,6 +163,6 @@ export async function DELETE(req: NextRequest, _ctx: Params): Promise<Response> 
   if (typeof factId !== 'string' || !factId) return badRequest('factId is required.');
 
   const done = await deleteFact(user, factId);
-  if (!done) return NextResponse.json({ error: 'Could not delete.' }, { status: 400 });
+  if (!done) return NextResponse.json({ error: "I couldn't delete that." }, { status: 400 });
   return NextResponse.json({ ok: true });
 }

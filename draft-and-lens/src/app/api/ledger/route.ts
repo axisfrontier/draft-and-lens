@@ -19,7 +19,7 @@ export async function GET(): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: 'GET /api/ledger' });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
   const manuscripts = await listManuscripts(userId);
   return NextResponse.json({ manuscripts });

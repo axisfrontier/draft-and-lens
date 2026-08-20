@@ -71,7 +71,7 @@ async function handleFragment(
   if (countWords(passage) > TESTER_WORD_CAP) {
     return NextResponse.json(
       {
-        error: `That is past what I can take in one go right now — up to about ${TESTER_WORD_CAP.toLocaleString()} words. Send it as a full reading instead.`,
+        error: `That's more than I can take in one go — up to about ${TESTER_WORD_CAP.toLocaleString()} words. Send it as a full reading and I'll read it properly.`,
       },
       { status: 400 }
     );
@@ -155,7 +155,7 @@ async function handleFragment(
 export async function POST(req: NextRequest): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: 'Sign in to use your personal editor.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in and we can talk about it.' }, { status: 401 });
   }
 
   let body: Record<string, unknown>;

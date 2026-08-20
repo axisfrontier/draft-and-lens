@@ -21,10 +21,10 @@ export async function DELETE(
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: '/api/works/[workId]' });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
   const ok = await softDeleteWork(userId, params.workId);
-  if (!ok) return NextResponse.json({ error: 'Could not delete that work.' }, { status: 500 });
+  if (!ok) return NextResponse.json({ error: "I couldn't delete that one. Nothing has changed." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
 
@@ -35,18 +35,18 @@ export async function PATCH(
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: '/api/works/[workId]' });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
 
   const body = (await req.json().catch(() => ({}))) as { action?: string; title?: string };
   if (body.action === 'restore') {
     const ok = await restoreWork(userId, params.workId);
-    if (!ok) return NextResponse.json({ error: 'Could not restore that work.' }, { status: 500 });
+    if (!ok) return NextResponse.json({ error: "I couldn't restore that one. Nothing has changed." }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
   if (typeof body.title === 'string') {
     const ok = await renameWork(userId, params.workId, body.title);
-    if (!ok) return NextResponse.json({ error: 'Could not rename that work.' }, { status: 500 });
+    if (!ok) return NextResponse.json({ error: "I couldn't rename that one — it's still under its old title." }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
   return NextResponse.json({ error: 'Unknown action.' }, { status: 400 });

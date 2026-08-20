@@ -407,9 +407,9 @@ export function ReportView({
               borderLeft: '3px solid var(--teal)', background: 'var(--cream)',
             }}>
               <p style={{ margin: 0, lineHeight: 1.7 }}>
-                This is your saved reading from {formatReadAt(readAt)}. Your draft hasn&rsquo;t changed
-                since then, so we&rsquo;ve brought this one straight back. If you&rsquo;d like a fresh pass
-                on the same text, the button below will run it again.
+                This is the reading I gave you on {formatReadAt(readAt)}. Your draft hasn&rsquo;t
+                changed since, so I&rsquo;ve brought it straight back rather than reading it again.
+                If you want a fresh pass on the same text, ask below.
               </p>
               <button
                 type="button"
@@ -424,8 +424,8 @@ export function ReportView({
                 Get a fresh reading
               </button>
               <p style={{ margin: '.6rem 0 0', fontSize: '.72rem', fontStyle: 'italic', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-                Draft &amp; Lens is still being refined during beta, so a fresh reading may notice
-                things the saved one didn&rsquo;t, even though your text is the same.
+                I&rsquo;m still being refined during beta, so a fresh pass may notice things this
+                one didn&rsquo;t, even though your text hasn&rsquo;t changed.
               </p>
             </div>
           )}
@@ -435,7 +435,7 @@ export function ReportView({
               fontSize: '.82rem', color: 'var(--amber)',
               borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
             }}>
-              Updated reading — this responds to your revision of an earlier draft.
+              I&rsquo;ve read this against the draft you sent before.
             </p>
           )}
 
@@ -588,7 +588,7 @@ export function ReportView({
                 border: '1px solid var(--rule)', color: 'var(--ink-soft)',
                 cursor: 'pointer',
               }}
-            >New Analysis</button>
+            >Read something else</button>
             <button
               type="button"
               onClick={() => {
@@ -898,7 +898,7 @@ export function ReportView({
             <div style={{
               fontFamily: 'var(--font-serif)', fontSize: '1.6rem',
               fontWeight: 700, color: 'var(--paper)', marginBottom: '1.25rem',
-            }}>Speak with your editor</div>
+            }}>Ask me about it</div>
 
             <div style={{ borderTop: '1px solid var(--border-dark)', marginBottom: '1.25rem' }} />
 

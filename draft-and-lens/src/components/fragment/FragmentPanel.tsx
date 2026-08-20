@@ -131,7 +131,7 @@ export default function FragmentPanel({
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error || 'Something went wrong.');
+        setError(data.error || "Something went wrong — try me again.");
         setRunning(false);
         return;
       }
@@ -161,14 +161,14 @@ export default function FragmentPanel({
               acc += ev.delta;
               setReply(acc);
             }
-            if (ev.type === 'error') setError(ev.message || 'Something went wrong.');
+            if (ev.type === 'error') setError(ev.message || "Something went wrong — try me again.");
           } catch {
             /* a partial line — the next chunk completes it */
           }
         }
       }
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') setError('Something went wrong.');
+      if ((err as Error).name !== 'AbortError') setError("Something went wrong — try me again.");
     } finally {
       setRunning(false);
     }

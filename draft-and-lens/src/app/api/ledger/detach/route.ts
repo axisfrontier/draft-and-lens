@@ -22,7 +22,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: 'POST /api/ledger/detach' });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
 
   let body: Record<string, unknown>;
@@ -36,6 +36,6 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (!workId) return NextResponse.json({ error: 'workId is required.' }, { status: 400 });
 
   const done = await detachWork(userId, workId);
-  if (!done) return NextResponse.json({ error: 'Could not detach.' }, { status: 400 });
+  if (!done) return NextResponse.json({ error: "I couldn't take that chapter out of the book." }, { status: 400 });
   return NextResponse.json({ ok: true });
 }

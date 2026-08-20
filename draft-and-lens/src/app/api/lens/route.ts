@@ -16,7 +16,7 @@ function isLensId(id: unknown): id is LensId {
 export async function POST(req: NextRequest): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: 'Sign in to use editorial lenses.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in to read this through another voice.' }, { status: 401 });
   }
 
   let body: Record<string, unknown>;

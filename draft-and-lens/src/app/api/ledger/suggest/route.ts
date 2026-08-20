@@ -30,7 +30,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: 'POST /api/ledger/suggest' });
-    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in first.' }, { status: 401 });
   }
 
   let body: Record<string, unknown>;
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const format = typeof body.format === 'string' ? body.format : null;
     const manuscriptId = await createManuscript(userId, title, format);
     if (!manuscriptId) {
-      return NextResponse.json({ error: 'Could not create manuscript.' }, { status: 400 });
+      return NextResponse.json({ error: "I couldn't start that book." }, { status: 400 });
     }
     return NextResponse.json({ manuscriptId }, { status: 201 });
   }

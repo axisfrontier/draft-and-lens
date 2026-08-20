@@ -86,7 +86,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
     logSecurityEvent('auth_denied', { route: 'POST /api/analyse' });
-    return NextResponse.json({ error: 'Please sign in to analyse your work.' }, { status: 401 });
+    return NextResponse.json({ error: "Sign in first and I'll read this." }, { status: 401 });
   }
 
   const { text, mode, genre, intent, bible, skipBible, submissionType, forceRefresh } = body;
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (submittedWordCount > TESTER_WORD_CAP) {
     return NextResponse.json(
       {
-        error: `Draft & Lens reads best in focused pieces right now — please paste up to about ${TESTER_WORD_CAP.toLocaleString()} words (a chapter, a short story, or an excerpt). Full-length novels and scripts are coming soon.`,
+        error: `That's more than I can take in one go — send me up to about ${TESTER_WORD_CAP.toLocaleString()} words and I'll read it properly. A chapter, a story, an excerpt.`,
       },
       { status: 413 }
     );
@@ -214,7 +214,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       entries: gateEntries,
     });
     return NextResponse.json(
-      { error: 'We couldn’t check your submission just now. Please try again in a moment.' },
+      { error: 'Something went wrong before I could start reading. Give it a moment and send it again.' },
       { status: 503 }
     );
   }
@@ -574,7 +574,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         // A client disconnect / Stop surfaces as an AbortError — stay quiet,
         // the pipeline has already been aborted via req.signal.
         if ((err as Error)?.name !== 'AbortError') {
-          send({ type: 'error', message: (err as Error)?.message ?? 'Analysis failed.' });
+          send({ type: 'error', message: (err as Error)?.message ?? 'Something went wrong before I finished. Send it again.' });
         }
         await logSubmissionTelemetry({
           runId,
