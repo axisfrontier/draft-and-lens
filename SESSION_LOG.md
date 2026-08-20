@@ -725,3 +725,40 @@ Verified against the real model, three cases: a craft ask returned three paragra
 **Deliberately not built, flagged rather than hidden:** the spec's "which lens speaks" clause. The server composes a lens voice when `target` is a lens id, but the panel does not yet offer a picker, so v1 answers in D&L's editorial voice. The mechanism is there; the UI increment is small.
 
 **Next:** differentiator messaging — mechanism plus user-state storage, placeholder copy, final wording to Nenad before it goes live. Not started.
+
+### Both live-test issues fixed and VERIFIED LIVE — 2026-08-20 (late)
+
+**Issue 1 — a 30-word paste ran the full pipeline. `05896b1`.**
+Nothing failed to route; nothing was routing. Fragment mode shipped as a separate door and the Analyse button had no knowledge of it, so a short paste took the only path it knew. Fixed at the entry point in both places — page.tsx hands the passage to the conversation instead of starting a reading, and `/api/analyse` returns 422 with `offerFragment` as defence-in-depth.
+
+**Verified live, signed in:** a 31-word paste with Story + Complete piece selected, Analyse clicked — **no `/api/analyse` request was made at all** (network panel confirms), the fragment panel opened by itself carrying the passage across, and the craft option returned three paragraphs of specific line-level prose in under nine seconds. No headings, no sections, no score, no rewrite. During an earlier attempt against a mid-deploy bundle the server guard alone was observed returning 422, so both layers are confirmed independently.
+
+`FULL_READING_MIN_WORDS = 200` is a product number and is Nenad's — the point below which a full reading is not honest, not the point below which fragment mode is nicer. It sits against the Word Cap standing decision and the commit explains at length why it is not the kind of gate that decision forbids: it is not inside any brain, and it asks rather than silently rerouting.
+
+**Issue 2 — the font swap. `98d7feb`. It was never a font-loading problem.**
+Two earlier passes chased `display: swap`, declared variants and synthesised weights; the 2026-08-16 commit's own note admits its swap fix was unproven. It was unproven because none of those was the cause.
+
+The reading is rendered by two components holding two independent copies of its typography, and they disagreed:
+
+| | streaming (ReportSkeleton) | finished (ReportView) |
+|---|---|---|
+| body prose | `--font-serif` | inherits `--font-sans` |
+| section headings | mono .72rem uppercase amber-d | serif .9rem 700 ink |
+
+So every line changed face the instant streaming ended. Body metrics matched, so nothing reflowed and only the letterforms moved — which is exactly what it looked like, and it happened on **every** reading, not intermittently.
+
+Fixed by deleting the second copy rather than correcting it. The body wrapper now declares no typography at all — FormattedBody's own `<p>` already owns size, line-height and colour, and family is the one property it inherits, so streaming now inherits sans from `globals.css` exactly as the finished report does (the prototype's own arrangement). The heading constant is aligned to the finished view, which the design system names as correct. Both carry comments saying why they must not re-declare type.
+
+**Verified live by measurement, not by eye** — computed styles sampled mid-stream and again after completion on the same reading:
+
+| | mid-stream | finished |
+|---|---|---|
+| body font | `IBM_Plex_Sans` | `IBM_Plex_Sans` |
+| size | 16.56px | 16.56px |
+| line-height | 31.1328px | 31.1328px |
+
+Identical. Section headings render Libre Baskerville 700 at `--ink` in both. The staging phase is fully styled throughout.
+
+**Why it looked like a regression:** with the narrator corrector's ceiling fixed the night before, that pass now actually runs, so the final text differs from the streamed text as well as the face. The swap had been there all along; the wording moving made it impossible to miss.
+
+**Left on the account:** one test reading from a 260-word excerpt, created to verify issue 2. Deleting readings is destructive and it is Nenad's data, so it stays until he says otherwise.
