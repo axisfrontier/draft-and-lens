@@ -612,3 +612,25 @@ The derivation is unit-tested and correct; the **extractor rarely assigns `pov_c
 | `multiplePov` | ❌ extractor does not assign POV |
 | `narrative_frame` accumulation | ❌ needs ≥4,000 words vs a 4,000 cap |
 | Differentiator escalation | not built — Nenad's call |
+
+### Lock promotion fixed and VERIFIED LIVE; ledger sensitivity logged as a constraint — 2026-08-20
+
+Two commits, 123 tests green, build ✓, IP grep exit 1, deployed.
+
+**1. `docs:` the ledger-sensitivity finding is now a recorded constraint, not an open bug.** `DraftAndLens_Internal_Research_Notes.md` gains a *Known constraints — built as designed* section: state-lock checks fire on extracted facts, not on presence, so a locked character can be on the page for a whole chapter and stay invisible unless something extractable is asserted about her *in the book's own voice*. Recorded with why it stays (loosening it breaks §5.2; it fails in the safe direction — a quiet miss, not a false accusation) and what it costs (a copy obligation: a silent lock means nothing was found, never that the manuscript is clean). `multiplePov` and `nonLinear` are logged alongside it as correctly built and starved of input.
+
+**2. `fix:` a flag can now be promoted, never demoted.** This one was a real defect against sub-question 1a, which resolves as unknown-and-demote *then promote*. Nothing promoted: flags are unique on `(fact_a_id, fact_b_id)` and were stored with `ignoreDuplicates`, so a violation first raised at `worth_checking` under an unknown frame was pinned there for the life of the manuscript. `storeFlags` now runs a promotion pass over exactly the rows the insert declined — strictly upward, compare-and-set on the outcome it read, `reading_id` moved to the promoting run so §6a shows it where the writer is actually looking.
+
+**Verified live against the production ledger**, three runs on one throwaway manuscript, no model calls (the two facts differ in attribute, so no candidate pair):
+
+| Run | Frame evidence | Stored frame | Flag |
+|---|---|---|---|
+| 1 | none | `null` | row `f96973dd` — `worth_checking`, ceiling `worth_checking` |
+| 2 | structural map: linear | `{nonLinear:false}` | **same row**, now `locked`, ceiling `hard`, reading_id moved |
+| 3 | structural map: non-linear | `{nonLinear:true}` (sticky) | same row, **still `locked`** — no demotion |
+
+Run 2 is the fix: before it, that row could never leave `worth_checking`. Run 3 is the guarantee that matters just as much — a manuscript that turns non-linear later must not silently retract a finding the writer has already been shown. Test manuscript, facts and flag hard-deleted afterwards; `Home` verified as the only manuscript remaining.
+
+**Scope held:** this fixes the state-lock half of 1a. The fact-pair half (age/date clashes) additionally needs pairs to be re-adjudicated when the frame changes, which costs model calls per pair — a cost decision, not a mechanical fix, and deliberately not taken here.
+
+**Found while scoping the remaining verification:** the structural reader runs at `wordCount >= 4,000` and the route rejects `> 4,000`, so a submission of **exactly 4,000 words** is the one width of window where a real structural map can be produced under the current cap. That is the route to verifying `narrative_frame` accumulation from real evidence rather than a seeded fixture.
