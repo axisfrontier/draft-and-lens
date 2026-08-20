@@ -704,3 +704,24 @@ Two stale rationales went with it, in the same commit: `limits.ts` justified the
 This is the accepted cost of the decision, not a surprise. If it turns out to be too much, the lever is making Brain 1b cheaper — a faster model for `structuralReader`, or a tighter map — **not** re-introducing a threshold, which is the thing the decision forbids. Raised as an option, not acted on.
 
 **The route's rejection copy is unchanged**, deliberately. It already reads warmly — "Draft & Lens reads best in focused pieces right now — please paste up to about 4,000 words (a chapter, a short story, or an excerpt). Full-length novels and scripts are coming soon." The decision doc says the exact wording waits on the Editor's voice being finalised, so rewriting it now would be guessing at copy that has a proper source coming.
+
+### Fragment mode built and deployed; live UI check BLOCKED on sign-in — 2026-08-20 (late)
+
+Two commits, 131 tests green, build ✓, bundle IP grep exit 1, deployed.
+
+**`8fffd59` — server path.** `kind: 'fragment'` branch on `/api/converse`; existing conversation contract untouched. `src/lib/fragment.ts` (routing, no word count anywhere — a test pins that), `src/prompts/fragment.ts` (server-only IP), `getFragmentContext` in readings.ts (read-only), `TOKEN_LIMITS.fragment = 1200`.
+
+Verified against the real model, three cases: a craft ask returned three paragraphs of specific line-level reading quoting the writer's words; a free-text question needing the whole chapter redirected without half-answering; a deliberate bait asking for a mark out of ten plus a rewritten sentence refused both in one line and then gave a real reading. 380/354 tokens against 1200.
+
+**`f2a3ffc` — the door and the upfront ask.** `FragmentPanel.tsx`, mounted in page.tsx with an import and one element. Three options plus free text, `fit` offered only when `/api/works` reports something read. All copy placeholder.
+
+**WHAT IS NOT VERIFIED, and why.** The signed-in flow. This Chrome profile is signed OUT of draftandlens.com (it was signed in earlier today; the session has since dropped), and signing in is not something I can do. Confirmed live as far as is possible without a session:
+- the panel ships and renders — Chrome's DOM search finds the entry button on the deployed page;
+- the endpoint is guarded — an unauthenticated POST to `/api/converse` with `kind: 'fragment'` gets a 307 to sign-in, never a reply;
+- the IP boundary holds — `.next/static` grep for the new fragment prompt phrases returns exit 1.
+
+**Two minutes for Nenad, signed in, to close it:** open draftandlens.com → "Just have a passage and a question?" beneath the Analyse button → paste any paragraph → (1) "how the writing itself is holding up" should return 3-4 paragraphs of prose in seconds, no headings, no score, no rewritten line; (2) the free-text box with *"add this to my chapter and tell me if it's cohesive now"* should decline and ask for the chapter; (3) "does this fit with what you've read" should be selectable given existing works. Nothing should appear in the works list afterwards — the exchange is stored nowhere.
+
+**Deliberately not built, flagged rather than hidden:** the spec's "which lens speaks" clause. The server composes a lens voice when `target` is a lens id, but the panel does not yet offer a picker, so v1 answers in D&L's editorial voice. The mechanism is there; the UI increment is small.
+
+**Next:** differentiator messaging — mechanism plus user-state storage, placeholder copy, final wording to Nenad before it goes live. Not started.
