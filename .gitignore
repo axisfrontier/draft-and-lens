@@ -44,3 +44,13 @@ scripts/.extracted/
 # Generated knowledge graph — rebuilt by `graphify update .`, never authored.
 # 4MB of derived output that would churn on every code change.
 /graphify-out/
+
+# One-time audit reference, deleted 20 Aug 2026. Nothing unique was in it —
+# the same palette lives in draft-and-lens/src/design/tokens.css, in
+# DraftAndLens_DesignSystem.md, and in the prototype. Ignored so a re-export
+# cannot land back in the repo.
+/DraftAndLens_Prototype_Component_CSS.css
+
+# Campaign exploration — image work, not codebase. Deleted 20 Aug 2026.
+/Ads/
+
