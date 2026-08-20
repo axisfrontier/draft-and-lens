@@ -29,9 +29,6 @@ import { withCostTracking, type CostEntry } from './cost-tracker';
 /** Free-tier word cap — the opening this many words are read (Architecture §13). */
 export const FREE_WORD_LIMIT = 10_000;
 
-/** Below this, Brain 1b + the narrator verifier are skipped (Brain 2 holds the full text). */
-const STRUCTURAL_READER_MIN_WORDS = 4_000;
-
 const MODE_LABELS: Record<AnalysisMode, string> = {
   script: 'Script',
   story: 'Story',
@@ -146,19 +143,30 @@ async function runPipelineBody(
   // blank-screen perception of slowness (Latency Diagnostic Brief, Q4/5A).
   cb.onDiagnostic?.(diagnostic);
 
-  // ── Brain 1b + narrator verify — only on works ≥ 4,000 words ────────────
-  if (wordCount >= STRUCTURAL_READER_MIN_WORDS) {
-    cb.onStage?.('structure', 'Mapping the structure');
-    const structuralMap = await runStructuralReader(text, modeLabel, diagnostic).catch(
-      () => null
-    );
-    diagnostic = { ...diagnostic, structuralMap: structuralMap ?? undefined };
+  // ── Brain 1b + narrator verify — every submission, at any length ────────
+  // There is exactly ONE word-count boundary in the system and it is the
+  // submission ceiling in the route (Word Cap standing decision, 2026-08-20).
+  // Nothing here gates on length.
+  //
+  // This used to run only at >= 4,000 words while the route rejected anything
+  // above 4,000, which left a one-word-wide window — a submission of exactly
+  // 4,000 words was the only one in existence that could produce a structural
+  // map. A second threshold is not a fix for a first: 2,999 against 3,000
+  // fails the same way 4,000 against 4,001 does. The map is either something
+  // the reading needs or it is not, and it is not less needed at 900 words.
+  //
+  // The brains scale by themselves — sampleForStructure reads whatever it is
+  // given, and a short piece simply produces a shorter map.
+  cb.onStage?.('structure', 'Mapping the structure');
+  const structuralMap = await runStructuralReader(text, modeLabel, diagnostic).catch(
+    () => null
+  );
+  diagnostic = { ...diagnostic, structuralMap: structuralMap ?? undefined };
 
-    if (structuralMap?.narratorBehaviour) {
-      cb.onStage?.('structure', 'Verifying the narrator');
-      const verdicts = await runNarratorVerifier(structuralMap).catch(() => null);
-      if (verdicts) diagnostic = { ...diagnostic, narratorVerdicts: verdicts };
-    }
+  if (structuralMap?.narratorBehaviour) {
+    cb.onStage?.('structure', 'Verifying the narrator');
+    const verdicts = await runNarratorVerifier(structuralMap).catch(() => null);
+    if (verdicts) diagnostic = { ...diagnostic, narratorVerdicts: verdicts };
   }
 
   // ── Brain 2 (streaming) ‖ Brains 3/4/5 ─────────────────────────────────

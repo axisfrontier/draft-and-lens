@@ -5,11 +5,21 @@
  */
 
 /**
- * Tester-phase upload cap, in words. Chosen so that:
- *  - every reading stays UNDER the 5,000-word structural-reader threshold → the
- *    slow structural/narrator stages never run → fast (~10s) first feedback; and
- *  - the analyst's read window (≈28,000 chars) covers the whole capped piece, so
- *    nothing is silently under-read.
+ * Tester-phase upload cap, in words — and, as of the Word Cap standing
+ * decision (2026-08-20), the ONLY word-count boundary anywhere in the system.
+ * Above it the route rejects before any brain runs; below it every brain runs
+ * at every length and scales to what it is given.
+ *
+ * It still holds the property that matters for coverage: the analyst's read
+ * window (≈28,000 chars) covers the whole capped piece, so nothing is
+ * silently under-read.
+ *
+ * The other reason recorded here — that the cap kept every reading under the
+ * structural reader's own threshold, so the slow structural/narrator stages
+ * never ran — no longer applies, and had stopped being true before it was
+ * removed: that threshold was 4,000, not the 5,000 written here, so the two
+ * numbers met and a submission of exactly 4,000 words ran the stages anyway.
+ *
  * Raise this for full-length support later (with chunking), not before.
  */
 export const TESTER_WORD_CAP = 4000;

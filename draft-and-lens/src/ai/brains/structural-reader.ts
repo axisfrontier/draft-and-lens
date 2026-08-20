@@ -10,7 +10,8 @@ import { callJsonBrain } from './_shared';
 
 /**
  * Brain 1b — Structural reader. Maps structure + collects evidence for Brain 2.
- * Does not evaluate. SKIPPED on works < 5,000 words (the orchestrator gates it).
+ * Does not evaluate. Runs on EVERY submission at every length — the orchestrator
+ * no longer gates it on word count (Word Cap standing decision, 2026-08-20).
  * On long works it samples structural waypoints — opening, ~quarter turn,
  * midpoint, ~three-quarter turn, ending — not the trimmed head+tail, so the
  * midpoint it exists to map is never dropped. Ported from runStructuralReader().
