@@ -40,3 +40,7 @@ scripts/.extracted/
 /DraftAndLens_Trademark_Search_Record.md
 /URGENT TIMETABLE/
 /for Solicitor/
+
+# Generated knowledge graph — rebuilt by `graphify update .`, never authored.
+# 4MB of derived output that would churn on every code change.
+/graphify-out/

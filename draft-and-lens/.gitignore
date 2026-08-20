@@ -49,3 +49,11 @@ scripts/.extracted/
 # Vercel deploy hook URL (local only, never commit)
 .deploy-hook
 .vercel-deploy-hook
+
+# Local editor/tool launch config — machine-specific, not shared setup.
+.claude/launch.json
+
+# Throwaway verification probes. The convention is a leading .tmp- so they
+# are recognisable as scratch; they call the real brains against the real
+# database and are written for one session, not for reuse.
+scripts/.tmp-*
