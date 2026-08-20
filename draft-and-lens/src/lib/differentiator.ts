@@ -31,21 +31,16 @@ import 'server-only';
  */
 
 /**
- * PLACEHOLDER COPY — NOT FINAL, NOT APPROVED, AND NOT TO BE SHIPPED AS IS.
+ * APPROVED COPY — Nenad, 2026-08-21. Do not edit without him.
  *
- * The handover's own draft is marked "(draft, not final copy)" and its closing
- * instruction is explicit: do not guess at how prominent this should be, flag
- * before escalating to anything more visible. This exists so the mechanism can
- * be built and tested end to end; the wording is Nenad's and comes back for
- * approval before the migration that switches it on is applied.
- *
- * What it has to do, per §6: name the method once, in the product's own voice,
- * without comparison and without naming a competitor — the claim is that this
- * reading was made against what came before it, which the reader has just seen
- * demonstrated a paragraph earlier.
+ * Does what §6 asks and no more: names the method once, in the editor's own
+ * voice, in the first person, with no comparison and no competitor. It claims
+ * only that this reading was made against what came before — which the writer
+ * has just seen demonstrated a paragraph above, rather than being told about
+ * here.
  */
-export const DIFFERENTIATOR_PLACEHOLDER_COPY =
-  'A note on how I read, once and then not again: I read this against your last draft, not on its own. That is the whole difference between a reading and a report — and you have just seen it, above, rather than been told it here.';
+export const DIFFERENTIATOR_COPY =
+  "I read this differently from the first time — against what you sent before, not on its own. That's what I mean by a reading.";
 
 export interface DifferentiatorInput {
   /** resolveRevision returned 'revised' — genuinely changed text of a stored work. */

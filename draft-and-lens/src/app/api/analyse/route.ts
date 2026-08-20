@@ -6,7 +6,7 @@ import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor'
 import { runDetectionPass } from '../../../ai/detection-pass';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
-import { DIFFERENTIATOR_PLACEHOLDER_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
+import { DIFFERENTIATOR_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { claimMilestone } from '../../../lib/user-milestones';
 import { logSubmissionCost } from '../../../lib/cost-log';
@@ -382,7 +382,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           }) &&
           (await claimMilestone(userId, 'differentiator_method_line').catch(() => false))
         ) {
-          send({ type: 'differentiator', text: DIFFERENTIATOR_PLACEHOLDER_COPY });
+          send({ type: 'differentiator', text: DIFFERENTIATOR_COPY });
         }
 
         // Wall clock stops when the user has everything, not after the

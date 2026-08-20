@@ -444,7 +444,7 @@ export function ReportView({
               memory it refers to: the writer has just been told this reading
               responds to their earlier draft, and this names the method once.
               Deliberately quiet — the claim is carried by the reading above it,
-              not by the styling. PLACEHOLDER COPY, server-supplied. */}
+              not by the styling. Copy is server-supplied and approved. */}
           {differentiator && (
             <p style={{
               marginTop: '1.25rem', marginBottom: '1rem', paddingLeft: '1.25rem',

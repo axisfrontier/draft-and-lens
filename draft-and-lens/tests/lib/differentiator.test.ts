@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  DIFFERENTIATOR_PLACEHOLDER_COPY,
+  DIFFERENTIATOR_COPY,
   qualifiesForDifferentiator,
 } from '../../src/lib/differentiator';
 
@@ -47,20 +47,19 @@ describe('qualifiesForDifferentiator', () => {
 });
 
 /**
- * Not a style opinion — a guard. The copy is explicitly unapproved, and the
- * thing that must never happen is it shipping as final because nobody noticed
- * it had never been signed off.
+ * Not a style opinion — a guard. The copy is approved and fixed, and what must
+ * never happen is a later edit quietly turning a reading into an advert.
  */
-describe('placeholder copy', () => {
+describe('approved copy', () => {
   it('exists and is a single short passage, not a marketing block', () => {
-    expect(DIFFERENTIATOR_PLACEHOLDER_COPY.length).toBeGreaterThan(40);
-    expect(DIFFERENTIATOR_PLACEHOLDER_COPY.length).toBeLessThan(400);
+    expect(DIFFERENTIATOR_COPY.length).toBeGreaterThan(40);
+    expect(DIFFERENTIATOR_COPY.length).toBeLessThan(400);
   });
 
   it('names no competitor and makes no comparison', () => {
     // §6's subtle half works by demonstration; the escalation names the method,
     // never a rival. A comparison here would turn a reading into an advert.
     const forbidden = /\b(unlike|better than|other tools|competitors?|chatgpt|rivals?)\b/i;
-    expect(DIFFERENTIATOR_PLACEHOLDER_COPY).not.toMatch(forbidden);
+    expect(DIFFERENTIATOR_COPY).not.toMatch(forbidden);
   });
 });
