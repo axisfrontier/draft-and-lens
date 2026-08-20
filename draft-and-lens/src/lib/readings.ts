@@ -731,3 +731,67 @@ export async function listWorks(userId: string): Promise<WorkSummary[]> {
     return [];
   }
 }
+
+/** What D&L has already read of this writer, for a fragment answer. */
+export interface FragmentContext {
+  workId: string;
+  title: string | null;
+  tradition: string | null;
+  register: string | null;
+}
+
+/**
+ * The writer's most recent reading, reduced to what a fragment answer may use.
+ *
+ * Read-only by design and by constraint: fragment mode stores nothing, so this
+ * is the only direction data moves. It returns the established tradition and
+ * register rather than any of the reading's content, because that is all a
+ * passage-scale answer can honestly lean on — enough to judge whether a
+ * paragraph sits consistently with the work, not enough to pretend to remember
+ * the book.
+ *
+ * 'Unknown' is normalised to null. The diagnostician's fallback writes that
+ * string literally, and passing "Tradition: Unknown" into a prompt is worse
+ * than passing nothing — it reads as an established fact about the work.
+ */
+export async function getFragmentContext(userId: string): Promise<FragmentContext | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('work_id, work_title, reading_json')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (error || !data || data.length === 0) return null;
+
+    const row = (data as unknown as Array<{
+      work_id: string;
+      work_title: string | null;
+      reading_json: ReadingPayload | null;
+    }>)[0];
+    if (!row) return null;
+
+    const d = row.reading_json?.diagnostic as
+      | { tradition?: unknown; register?: unknown }
+      | null
+      | undefined;
+    const clean = (v: unknown): string | null => {
+      if (typeof v !== 'string') return null;
+      const t = v.trim();
+      if (!t || t.toLowerCase() === 'unknown') return null;
+      return t;
+    };
+
+    return {
+      workId: row.work_id,
+      title: row.work_title,
+      tradition: clean(d?.tradition),
+      register: clean(d?.register),
+    };
+  } catch {
+    return null;
+  }
+}

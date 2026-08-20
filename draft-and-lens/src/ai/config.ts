@@ -135,6 +135,12 @@ export const TOKEN_LIMITS = {
   bible: 4000,
   lens: 1200,
   conversation: 800,
+  // A fragment answer is three or four short paragraphs by instruction, so it
+  // should land near 500. Sized above that rather than on it — the 2026-08-20
+  // ceiling audit found five brains whose limit sat inside their own natural
+  // output, and the failure mode here is a reply that stops mid-sentence in
+  // front of the writer.
+  fragment: 1200,
   // A chapter can legitimately yield 20-30 facts, each carrying a verbatim
   // quote — the quotes dominate the budget. Sized above structuralReader
   // (2500) for that reason; truncation here silently loses facts.
