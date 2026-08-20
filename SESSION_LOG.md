@@ -680,3 +680,27 @@ Not measured, so not touched: `moderation`, `detection`, `lens`, `conversation`.
 **Disclosure on method:** today's runs went through the real brains, the real Anthropic API and the production Supabase, but not through the browser — this Chrome profile's session showed signed-out when the work started, so submissions were driven by calling `runAnalysisPipeline` / `runContinuityExtractor` / `runDetectionPass` directly, exactly as `/api/analyse` calls them. The route's own word gate is arithmetic and was read rather than exercised. Every test manuscript created was hard-deleted; `Home` verified as the only manuscript remaining after each run, with its readings and facts untouched.
 
 **Still awaiting Nenad, unchanged:** the flag-dismissal control; the differentiator escalation; and the `FREE_WORD_LIMIT` / `TESTER_WORD_CAP` decision — which is now the *only* thing keeping `nonLinear` from learning on ordinary traffic, since a structural map needs 4,000+ words and the cap rejects anything above 4,000.
+
+### Word cap standing decision applied; internal dead zone removed — 2026-08-20 (later)
+
+**Working tree cleared, as agreed.** Four commits: both `.gitignore` files (the root one carries the `.env*` and legal/trademark rules — they were protecting nothing outside this one disk); the six untracked working docs including both handovers; the eight new lens voice portraits; and new ignore rules for `graphify-out/`, `.claude/launch.json` and `scripts/.tmp-*`. Left uncommitted at Nenad's instruction: `Ads/`, `Inspiration/`, `draftandlens.png`, `Lucas.jpg` (a modification, 445,790 → 63,620 bytes, not an addition). Also still untracked and not in either list: `DraftAndLens_Prototype_Component_CSS.css` — it sat in the same "bulk asset" row and was not named either way, so it was left alone.
+
+**`DraftAndLens_WordCap_StandingDecision.md` is now committed.** The file's own stated purpose is to be the permanent record of a decision that was agreed once, never written down, and cost real time to re-derive. Sitting untracked on one disk it was not that yet.
+
+**The dead zone is gone.** Brain 1b and the narrator verifier ran only at `wordCount >= 4,000` while the route rejected anything `> 4,000` — so a submission of exactly 4,000 words was the only one that could produce a structural map, and every other length got a null one indistinguishable from a brain with nothing to say. The gate and its constant are deleted; both stages now run at every length.
+
+Two stale rationales went with it, in the same commit: `limits.ts` justified the cap by keeping readings under a "5,000-word structural-reader threshold" that was in fact 4,000 — the two numbers had already met, which is how the window appeared — and the structural reader's own header still claimed it was skipped below 5,000.
+
+**Verified live at 700 words** — a length that could not previously produce a map at all:
+
+- structural map returned: `"linear — single continuous scene unfolding in real time on one Tuesday…"`
+- `narrative_frame` stored as `{nonLinear: false}` — learned, from real evidence, at 700 words
+- `deriveMultiplePov` → null, correctly: one POV character in that excerpt is the honest answer, not a failure
+
+**Not touched, and flagged rather than assumed.** `adaptiveAnalystConfig` still branches at 800 and 3,000 words, and `cost-log`'s Micro/Short labels at the same numbers. These are not dead zones under the decision — nothing is disabled either side, the token ceiling is 16,000 at every tier, and the only real boundary is sonnet → opus at 3,000. That is "lighter, appropriately-scaled", which the decision explicitly allows. If Nenad wants that boundary gone too it is a cost decision (opus on every 500-word piece), not a bug fix.
+
+**THE COST, MEASURED — Nenad should see this number.** The structural and narrator stages now run ahead of the analyst on every submission. On the 700-word run: structural reader **45.9s**, narrator verifier **9.4s** — about **55 seconds added before the report starts streaming**, on pieces that previously skipped both. Total wall clock 254s. The stage pill does say "Mapping the structure" throughout, so it is not a blank screen, but the Latency Diagnostic Brief's own 5A concern is exactly this.
+
+This is the accepted cost of the decision, not a surprise. If it turns out to be too much, the lever is making Brain 1b cheaper — a faster model for `structuralReader`, or a tighter map — **not** re-introducing a threshold, which is the thing the decision forbids. Raised as an option, not acted on.
+
+**The route's rejection copy is unchanged**, deliberately. It already reads warmly — "Draft & Lens reads best in focused pieces right now — please paste up to about 4,000 words (a chapter, a short story, or an excerpt). Full-length novels and scripts are coming soon." The decision doc says the exact wording waits on the Editor's voice being finalised, so rewriting it now would be guessing at copy that has a proper source coming.
