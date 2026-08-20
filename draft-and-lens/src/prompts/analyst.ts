@@ -15,6 +15,7 @@ import { buildScriptReportStructure } from './report/script-structure';
 import { buildStoryReportStructure } from './report/story-structure';
 import { buildTreatmentReportStructure } from './report/treatment-structure';
 import { REGISTER } from './register';
+import { AMBITION_AGAINST_EXECUTION } from './tradition-depth';
 import type { AnalysisMode, DiagnosticResult } from './types';
 
 /**
@@ -195,6 +196,8 @@ ${craftQuestions}
 ${structuralBlock}
 
 You are now evaluating this work on its own terms within its confirmed tradition. Apply ONLY the craft principles appropriate to ${diagnostic.tradition}. Do not apply principles from a different tradition.
+
+${AMBITION_AGAINST_EXECUTION}
 
 INTENTIONAL JUXTAPOSITION AND REGISTER SPECIFICITY — MANDATORY:
 
