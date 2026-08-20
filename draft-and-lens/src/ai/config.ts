@@ -98,7 +98,14 @@ export const TOKEN_LIMITS = {
   // length; 6,000 is roughly double the measured need and costs nothing unless
   // it is used.
   structuralReader: 6000,
-  narratorVerifier: 1000,
+  // Output scales with the number of narrator lines the structural map hands
+  // it — measured 2026-08-20 at ~125 tokens per line (500 for 4 lines), and
+  // observed at 804/1000 in a full pipeline run. That was 80% of the ceiling
+  // BEFORE the structural reader stopped truncating; a complete map produces
+  // longer narratorBehaviour lists, so the input to this brain has just grown.
+  // Truncation here returns null verdicts and the narrator correction pass
+  // silently does not run at all.
+  narratorVerifier: 3000,
   // Must be able to reproduce the WHOLE report, because that is literally what
   // it returns — the corrected analysis, not a diff. The analyst's ceiling is
   // 16000 (adaptiveAnalystConfig), so anything lower here is a cap on a copy
