@@ -17,6 +17,21 @@ Before doing anything else in this repo, read DL_ONLY_ReadFirst.md in full. This
 - Revert, don't patch, on breakage.
 - Touch only the named files. Anything outside the list requires explicit approval.
 
+### Writer-facing copy — the editor's voice (standing rule, 2026-08-21)
+Every string a writer can read is the editor speaking. First person, direct, developmental. It does not explain the product, name the product in the third person, or describe its own machinery.
+
+- **Never**: "your submission", "analysis complete", "analysis failed", "please try again", "Draft & Lens reads…", "Could not delete that work". Passive-voice system failures are the commonest slip — the editor says "I couldn't delete that one. Nothing has changed."
+- **Errors are still the editor.** A failure is something that happened to the two of you, not a status code: "Something went wrong before I could start reading. Give it a moment and send it again."
+- **Developmental, never directive** — the same disposition the reading itself carries (Mentor addendum Part A).
+
+**Four deliberate exceptions. These are not oversights; do not "fix" them.**
+1. **The legal statement.** "Your work is yours. We never train AI on it" stays in the first person plural. It is a company-level claim sitting beside the privacy policy, not editor copy. Nenad's ruling, 2026-08-21.
+2. **Developer-facing 400s** — "Invalid JSON.", "workId is required.", "Unknown action.", "No message provided." Only reachable when the client misbehaves. No writer ever sees them, and dressing them in the editor's voice would be theatre.
+3. **The fragment upfront ask.** Its options are written in the WRITER's first person — "Does this fit with what you've read of my work?" — because the writer is choosing them. Converting them to the editor's voice breaks the grammar of the interaction.
+4. **Stage labels** — "Reading your work", "Mapping the structure", "Writing the reading", "Final check". Already in voice and honest about what is happening.
+
+Full sweep done 2026-08-21 (`0983ad2`, `c2d618b`). Before adding any new writer-facing string, read this section; after adding one, grep for the banned phrases above.
+
 ### IP boundary (non-negotiable)
 - All prompt and lens IP stays server-side. Browser sends only submitted text, receives only results.
 - Run bundle IP grep (`.next/static` for the 5 IP markers, must return exit:1) after any change that touches client surface.
