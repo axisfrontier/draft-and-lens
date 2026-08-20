@@ -134,6 +134,7 @@ export function ReportView({
   onFreshReadingRequest,
   manuscriptId,
   continuityFlags = [],
+  differentiator,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -145,6 +146,10 @@ export function ReportView({
   mode?: string;
   revisionStatus?: string;
   readAt?: string;
+  /** The method line, sent by the server at most once per account, ever
+   *  (handover §6). Absent on every other reading — which is almost all of
+   *  them — and the client never decides whether it should appear. */
+  differentiator?: string;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
    *  link through to its continuity ledger. Absent for a standalone piece,
@@ -431,6 +436,24 @@ export function ReportView({
               borderLeft: '3px solid var(--amber)', background: 'var(--cream)',
             }}>
               Updated reading — this responds to your revision of an earlier draft.
+            </p>
+          )}
+
+          {/* Differentiator method line (handover §6, line 36).
+              Placed directly under the revision banner because that is the
+              memory it refers to: the writer has just been told this reading
+              responds to their earlier draft, and this names the method once.
+              Deliberately quiet — the claim is carried by the reading above it,
+              not by the styling. PLACEHOLDER COPY, server-supplied. */}
+          {differentiator && (
+            <p style={{
+              marginTop: '1.25rem', marginBottom: '1rem', paddingLeft: '1.25rem',
+              borderLeft: '1px solid var(--rule)',
+              fontFamily: 'var(--font-serif)', fontSize: '.85rem',
+              lineHeight: 1.75, color: 'var(--ink-soft)', fontStyle: 'italic',
+              maxWidth: 660,
+            }}>
+              {differentiator}
             </p>
           )}
 

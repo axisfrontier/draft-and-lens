@@ -6,7 +6,9 @@ import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor'
 import { runDetectionPass } from '../../../ai/detection-pass';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
+import { DIFFERENTIATOR_PLACEHOLDER_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
+import { claimMilestone } from '../../../lib/user-milestones';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
@@ -358,6 +360,31 @@ export async function POST(req: NextRequest): Promise<Response> {
           bible: result.bible,
         };
         send({ type: 'done', ...payload, revision: { status } });
+
+        // ── Differentiator method line (handover §6) ──────────────────────
+        // AFTER `done` on purpose. The reading is already on screen, so this
+        // cannot delay it and cannot fail it — and the line's own argument
+        // depends on the writer having just read the memory it refers to.
+        //
+        // Two gates, and only the first is real:
+        //   • memory — a genuine revision with prior notes actually retrieved;
+        //   • quality — NOT ENFORCED AND NOT ENFORCEABLE, see lib/differentiator.
+        //
+        // claimMilestone is the once-ever guarantee and is asked LAST, so a
+        // reading that fails the memory gate never burns the one showing this
+        // account will ever get. It fails closed, so nothing appears until the
+        // user_milestones migration is applied — which is what keeps
+        // placeholder copy away from a real writer before Nenad approves it.
+        if (
+          qualifiesForDifferentiator({
+            isGenuineRevision: decision.kind === 'revised',
+            hasPriorNotes: priorRevisionNotes !== null,
+          }) &&
+          (await claimMilestone(userId, 'differentiator_method_line').catch(() => false))
+        ) {
+          send({ type: 'differentiator', text: DIFFERENTIATOR_PLACEHOLDER_COPY });
+        }
+
         // Wall clock stops when the user has everything, not after the
         // best-effort persistence below — that work is invisible to them.
         const totalWallClockMs = Date.now() - runStartedAtMs;

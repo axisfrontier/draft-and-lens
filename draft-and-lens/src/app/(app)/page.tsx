@@ -65,6 +65,9 @@ type StreamEvent =
   // Read back from the store server-side, so this carries exactly what a later
   // view of the same reading would load.
   | { type: 'continuity'; flags: ContinuityFlag[] }
+  // Sent after `done`, at most once per account for the life of the account.
+  // The server decides and records; the client only renders what it is given.
+  | { type: 'differentiator'; text: string }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -188,6 +191,7 @@ export default function AppHomePage() {
    *  hide it — see the note where it is set. */
   const [panelShown, setPanelShown] = useState(false);
   const [fragmentHandoff, setFragmentHandoff] = useState<FragmentHandoff | null>(null);
+  const [differentiator, setDifferentiator] = useState('');
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
 
   const effectiveText = text.trim() || uploadedFileText;
@@ -390,6 +394,7 @@ export default function AppHomePage() {
     setError('');
     setStreamed('');
     setReport('');
+    setDifferentiator('');
     setStage('Reading your work');
     setEarlyDiagnostic(null);
     setCoverage(null);
@@ -472,6 +477,8 @@ export default function AppHomePage() {
             }
           } else if (evt.type === 'continuity') {
             setContinuityFlags(evt.flags);
+          } else if (evt.type === 'differentiator') {
+            setDifferentiator(evt.text);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -1321,6 +1328,7 @@ export default function AppHomePage() {
           mode={mode ?? undefined}
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}
+          differentiator={differentiator || undefined}
           revisionStatus={revisionStatus ?? undefined}
           readAt={readAt ?? undefined}
           onFreshReadingRequest={() => analyse(true)}
