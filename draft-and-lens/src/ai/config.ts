@@ -99,7 +99,22 @@ export const TOKEN_LIMITS = {
   // it is used.
   structuralReader: 6000,
   narratorVerifier: 1000,
-  narratorCorrector: 6000,
+  // Must be able to reproduce the WHOLE report, because that is literally what
+  // it returns — the corrected analysis, not a diff. The analyst's ceiling is
+  // 16000 (adaptiveAnalystConfig), so anything lower here is a cap on a copy
+  // of something larger than itself.
+  //
+  // Measured 2026-08-20 on an 18,609-char report: at 6000 the correction
+  // stopped at max_tokens having produced 18,575 chars — and the length guard
+  // below (`corrected.length > analysisText.length * 0.7`) PASSED it, because
+  // a truncation that loses the last 3% is still 97% of the original. The
+  // writer received a report ending mid-sentence. The same call at 16000
+  // finishes in 6,175 tokens.
+  //
+  // NOTE the guard is still length-based and cannot see a stop_reason of
+  // max_tokens; this ceiling puts the truncation out of reach rather than
+  // making it detectable. See SESSION_LOG 2026-08-20.
+  narratorCorrector: 16000,
   scorer: 800,
   market: 1200,
   bible: 1200,
