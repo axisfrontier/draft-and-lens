@@ -101,14 +101,17 @@ Fragment responses are not reports. A few paragraphs of prose in the lens voice.
 
 Tradition cannot be identified from a fragment, so it is never inferred.
 
+## Resolved
+
+**Persistence — ephemeral. Confirmed and final for the first build (2026-08-20).** Fragment answers behave exactly as Ask the Lens does today: no persistence, no storage, nothing written. Persistence is a deliberate future upgrade, not an oversight and not a gap to be quietly closed by whoever builds this.
+
+That decision also closes the one place fragment mode could have damaged something already working. Step 3 of the revision loop runs entirely through `getPriorRevisionNotes`, which regex-matches `## WHAT TO REVISE` out of the stored prior reading and reads nothing else. Fragment responses are prose in the lens voice and carry no such heading — so had they been stored *as readings*, a fragment would have become the prior that the next revision was judged against, the lookup would return null, and null is the no-fabrication case: indistinguishable from "no prior reading exists". The loop would have stopped closing with nothing anywhere reporting it. Storing nothing means that cannot arise.
+
+**Condition on the future upgrade, recorded here so it is not rediscovered the hard way.** If fragment answers are ever persisted, the fragment path must either keep `WHAT TO REVISE` in what it stores, or be excluded from the `getPriorRevisionNotes` lookup. One or the other, settled before that upgrade ships.
+
 ## Open questions — Nenad's calls, not to be guessed
 
 - **Usage accounting.** Fragment responses skip structural mapping and report generation entirely — much cheaper. Do they count the same against limits?
-- **Persistence.** Are fragment answers revisitable, or ephemeral like current Ask the Lens?
-
-  **Constraint on this answer, from how the revision loop actually works.** Step 3 above runs entirely through `getPriorRevisionNotes`, which regex-matches `## WHAT TO REVISE` out of the stored prior reading and reads nothing else. Fragment responses are prose in the lens voice, not reports, so they carry no such heading. If they are persisted *as readings*, a fragment becomes the prior that the next revision is judged against, the lookup returns null, and null is the no-fabrication case — indistinguishable from "no prior reading exists". The loop stops closing and nothing anywhere reports it.
-
-  Ephemeral answers carry no risk here. If they are persisted, the fragment path must either keep `WHAT TO REVISE` in what it stores, or be excluded from the `getPriorRevisionNotes` lookup. One or the other, decided before it is built rather than discovered afterwards.
 - **Exact copy** for the upfront ask and the redirect — waits on the Editor voice being finalised.
 
 ## Dependencies and build order
