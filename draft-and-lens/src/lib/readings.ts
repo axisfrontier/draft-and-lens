@@ -3,6 +3,7 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 
 import { getServiceClient, isSupabaseConfigured } from './supabase-server';
+import { USER_MILESTONES_TABLE } from './user-milestones';
 
 /**
  * Reading storage + revision awareness (CHANGE 3, server-side).
@@ -380,8 +381,16 @@ export async function deleteAllUserData(userId: string): Promise<boolean> {
 
     // Flags before facts before manuscripts: each references the next, so
     // this order holds even if those FKs are ever tightened from
-    // `on delete cascade` to something restrictive.
-    for (const table of [FLAGS_TABLE, FACTS_TABLE, MANUSCRIPTS_TABLE]) {
+    // `on delete cascade` to something restrictive. user_milestones has no
+    // FK to any of them and could sit anywhere in the list.
+    //
+    // EVERY per-user table belongs here. user_milestones was added on
+    // 2026-08-21 and missed this list on the way in — an account wipe left the
+    // row behind, so a writer who deleted their account and returned would
+    // silently never be shown a once-per-account line again. That is a false
+    // deletion claim, which is a legal statement and not merely a bug.
+    // writer_patterns joins this list the day it exists.
+    for (const table of [FLAGS_TABLE, FACTS_TABLE, MANUSCRIPTS_TABLE, USER_MILESTONES_TABLE]) {
       const { error } = await supabase.from(table).delete().eq('user_id', userId);
       if (error && !isMissingTable(error)) return false;
     }

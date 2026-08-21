@@ -20,7 +20,11 @@ import { getServiceClient, isSupabaseConfigured } from './supabase-server';
  * against here.
  */
 
-const TABLE = 'user_milestones';
+/** Exported so the account wipe (§8) references the same name this file writes
+ *  to. A per-user table that the wipe does not know about makes the deletion
+ *  claim false, which is a legal statement and not only a bug. */
+export const USER_MILESTONES_TABLE = 'user_milestones';
+const TABLE = USER_MILESTONES_TABLE;
 
 /**
  * Every once-only message. A union rather than free strings so a typo cannot
@@ -31,6 +35,7 @@ export type Milestone =
   /** Contextual nudges — one row each, so a nudge cannot reappear. See nudges.ts. */
   | 'nudge_ledger_tracking'
   | 'nudge_revision_memory'
+  /** Reserved, not yet shipped — its copy claims Gap 2. See nudges.ts. */
   | 'nudge_keep_sending';
 
 /**

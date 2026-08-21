@@ -43,10 +43,12 @@ describe('selectNudge', () => {
     expect(n?.milestone).toBe('nudge_revision_memory');
   });
 
-  it('offers the compounding line on the third submission only', () => {
+  it('says nothing on the third submission — the line for it is held off', () => {
     // priorSubmissions is counted BEFORE this reading is stored, so two prior
-    // means this is the third. Second and fourth get nothing.
-    expect(selectNudge({ ...base, priorSubmissions: 2 })?.milestone).toBe('nudge_keep_sending');
+    // means this is the third. The line written for that moment claims
+    // cross-submission pattern recognition, which does not exist, and a nudge
+    // shown once is shown once forever — so it must not fire until it is true.
+    expect(selectNudge({ ...base, priorSubmissions: 2 })).toBeNull();
     expect(selectNudge({ ...base, priorSubmissions: 1 })).toBeNull();
     expect(selectNudge({ ...base, priorSubmissions: 3 })).toBeNull();
   });

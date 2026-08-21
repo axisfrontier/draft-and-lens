@@ -29,8 +29,9 @@ import type { Milestone } from './user-milestones';
  * feature "was actually used or is directly applicable", and one of those is
  * stronger evidence than the other.
  *
- * COPY IS PLACEHOLDER, per the spec's open questions: final wording comes to
- * Nenad for approval before it ships, exactly as the differentiator line did.
+ * COPY: the two live lines are approved (Nenad, 2026-08-21). A third, for the
+ * writer's third submission, is written and NOT shipped — see the note above
+ * selectNudge's last branch.
  */
 
 export interface NudgeContext {
@@ -47,22 +48,16 @@ export interface Nudge {
   text: string;
 }
 
-/** PLACEHOLDER COPY — not approved, not final. */
+/** APPROVED — Nenad, 2026-08-21. */
 const LEDGER_TRACKING: Nudge = {
   milestone: 'nudge_ledger_tracking',
   text: "I'm tracking names and details across your chapters now.",
 };
 
-/** PLACEHOLDER COPY — not approved, not final. */
+/** APPROVED — Nenad, 2026-08-21. */
 const REVISION_MEMORY: Nudge = {
   milestone: 'nudge_revision_memory',
   text: "If you resubmit this revised, I'll read it against what I said here.",
-};
-
-/** PLACEHOLDER COPY — not approved, not final. */
-const KEEP_SENDING: Nudge = {
-  milestone: 'nudge_keep_sending',
-  text: "The more you send me, the more I'll notice across your work.",
 };
 
 /**
@@ -81,10 +76,17 @@ export function selectNudge(ctx: NudgeContext): Nudge | null {
   // the writer has no reason to know it would if they came back.
   if (ctx.priorSubmissions === 0) return REVISION_MEMORY;
 
-  // The third submission — the point at which coming back has visibly become
-  // a habit, and worth saying that it compounds.
-  if (ctx.priorSubmissions === 2) return KEEP_SENDING;
-
+  // NOTHING FOR THE THIRD SUBMISSION, deliberately.
+  //
+  // The line written for it — "The more you send me, the more I'll notice
+  // across your work." under the reserved key `nudge_keep_sending` — promises
+  // cross-submission pattern recognition, which is Gap 2 and does not exist.
+  // Nenad approved the other two on 2026-08-21 and did not rule on this one.
+  // Firing it would spend the writer's single showing of that line on a claim
+  // the product cannot keep, and a nudge shown once is shown once forever.
+  //
+  // To ship it the day Gap 2 lands: restore the constant and a
+  // `ctx.priorSubmissions === 2` branch above this comment.
   return null;
 }
 
