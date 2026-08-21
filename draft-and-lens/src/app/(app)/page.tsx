@@ -369,6 +369,29 @@ export default function AppHomePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
+  /**
+   * §5.5 — the writer says a flagged pair is intentional.
+   *
+   * Removed from view immediately rather than after the round trip: the click
+   * is the writer correcting the tool, and making them wait to see their own
+   * correction land reads as the tool arguing. If the request fails the flag
+   * comes back, which is the honest outcome — it was not dismissed.
+   */
+  async function reconcileFlag(flagId: string): Promise<void> {
+    const before = continuityFlags;
+    setContinuityFlags((prev) => prev.filter((f) => f.flagId !== flagId));
+    try {
+      const res = await fetch('/api/ledger/reconcile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flagId }),
+      });
+      if (!res.ok) setContinuityFlags(before);
+    } catch {
+      setContinuityFlags(before);
+    }
+  }
+
   async function analyse(forceRefresh = false): Promise<void> {
     if (mode === null) return;
 
@@ -1337,6 +1360,7 @@ export default function AppHomePage() {
           differentiator={differentiator || undefined}
           nudge={nudge || undefined}
           onDismissNudge={() => setNudge('')}
+          onReconcileFlag={reconcileFlag}
           revisionStatus={revisionStatus ?? undefined}
           readAt={readAt ?? undefined}
           onFreshReadingRequest={() => analyse(true)}

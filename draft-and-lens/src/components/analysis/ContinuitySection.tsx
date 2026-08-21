@@ -40,7 +40,16 @@ function humaniseAttribute(attribute: string): string {
   return attribute.replace(/_/g, ' ').trim();
 }
 
-export function ContinuitySection({ flags }: { flags: readonly ContinuityFlag[] }) {
+export function ContinuitySection({
+  flags,
+  onReconcile,
+}: {
+  flags: readonly ContinuityFlag[];
+  /** §5.5 — the writer marks this pair intentional. Absent where the section
+   *  is read-only, in which case no control is offered rather than one that
+   *  does nothing. */
+  onReconcile?: (flagId: string) => void;
+}) {
   if (flags.length === 0) return null;
 
   // Locked first, then contradictions, then questions. A lock is the writer's
@@ -182,6 +191,25 @@ export function ContinuitySection({ flags }: { flags: readonly ContinuityFlag[] 
               >
                 {flag.explanation}
               </p>
+            )}
+
+            {/* §5.5 — one click, permanent. "The tool does not have to be
+                right about intent — it has to be correctable once." Deliberately
+                the quietest thing in the block: it is an escape hatch, not a
+                verdict the writer is being asked to give. */}
+            {onReconcile && (
+              <button
+                type="button"
+                onClick={() => onReconcile(flag.flagId)}
+                style={{
+                  marginTop: '.75rem', background: 'none', border: 'none', padding: 0,
+                  cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                  letterSpacing: '.12em', textTransform: 'uppercase',
+                  color: 'var(--ink-faint)',
+                }}
+              >
+                This is intentional
+              </button>
             )}
           </div>
         );

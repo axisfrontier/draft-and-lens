@@ -382,3 +382,102 @@ export async function listFlagsForReading(
     return [];
   }
 }
+
+/**
+ * The writer says a flagged pair is intentional (§5.5).
+ *
+ * "The tool does not have to be right about intent — it has to be correctable
+ * once." This is that one click, and it does two separate things because the
+ * schema keeps two separate kinds of memory.
+ *
+ * 1. THE FLAG BECOMES 'dismissed'. That is what makes it permanent, and it
+ *    works differently for the two kinds of flag, which is why it is done at
+ *    this level rather than upstream:
+ *      • a contradiction pair is in `listAdjudicatedPairs` from then on, so
+ *        detection never re-adjudicates it — no model call, no second flag;
+ *      • a lock violation is recomputed from the facts on every run, so it
+ *        WILL be found again — but `storeFlags` cannot insert it (the pair is
+ *        unique) and cannot promote it either, because `promotes` treats
+ *        'dismissed' as terminal in both directions. It is raised, and
+ *        silently declined, every time. That was designed in before there was
+ *        anything to dismiss.
+ *
+ * 2. ONE FACT IS RECONCILED, and only one. `continuity_facts.reconciled_at`
+ *    is what `gatePair` and `findStateLockViolations` read, so writing it
+ *    stops the pair upstream of any model call. But the column is per FACT
+ *    while §5.5 speaks per PAIR, and marking both sides would reach further
+ *    than the writer agreed to:
+ *      • on a state lock, reconciling the lock fact would kill the lock
+ *        itself — a writer who says "she's in chapter 3 because it's a
+ *        flashback" has not said the death no longer holds, and a real
+ *        violation in chapter 12 must still fire. So the lock is never the
+ *        side that gets reconciled;
+ *      • on a contradiction, the later fact is reconciled and the earlier one
+ *        left live, so the establishing claim can still be checked against
+ *        chapters that do not exist yet.
+ *    The flag row, not this column, is what carries exact per-pair memory.
+ *
+ * Idempotent: dismissing twice is harmless and returns true both times.
+ */
+export async function reconcileFlag(
+  userId: string,
+  flagId: string,
+  reason?: string | null
+): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const supabase = getServiceClient();
+
+    const { data: flagRows, error: flagErr } = await supabase
+      .from(FLAGS_TABLE)
+      .select('id, fact_a_id, fact_b_id, outcome')
+      .eq('id', flagId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .limit(1);
+    if (flagErr || !flagRows || flagRows.length === 0) return false;
+    const flag = (flagRows as unknown as Array<{
+      id: string; fact_a_id: string; fact_b_id: string; outcome: string;
+    }>)[0];
+    if (!flag) return false;
+
+    // Which side may be reconciled — never a writer-authored lock, otherwise
+    // the later of the two. Both facts are read in one query.
+    const { data: factRows } = await supabase
+      .from('continuity_facts')
+      .select('id, source, sequence_index')
+      .in('id', [flag.fact_a_id, flag.fact_b_id])
+      .eq('user_id', userId);
+    const facts = (factRows ?? []) as unknown as Array<{
+      id: string; source: string; sequence_index: number | null;
+    }>;
+    const eligible = facts.filter((f) => f.source !== 'writer');
+    const target =
+      eligible.length === 0
+        ? null
+        : eligible.reduce((later, f) =>
+            (f.sequence_index ?? -1) > (later.sequence_index ?? -1) ? f : later
+          );
+
+    if (target) {
+      await supabase
+        .from('continuity_facts')
+        .update({
+          reconciled_at: new Date().toISOString(),
+          reconciled_reason: reason?.trim()?.slice(0, 500) || null,
+        })
+        .eq('id', target.id)
+        .eq('user_id', userId);
+    }
+
+    const { data: updated } = await supabase
+      .from(FLAGS_TABLE)
+      .update({ outcome: 'dismissed' })
+      .eq('id', flagId)
+      .eq('user_id', userId)
+      .select('id');
+    return Boolean(updated && updated.length > 0);
+  } catch {
+    return false;
+  }
+}

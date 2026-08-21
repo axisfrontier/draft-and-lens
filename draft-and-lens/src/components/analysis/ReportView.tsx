@@ -137,6 +137,7 @@ export function ReportView({
   differentiator,
   nudge,
   onDismissNudge,
+  onReconcileFlag,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -157,6 +158,8 @@ export function ReportView({
    *  only lets the writer close it. */
   nudge?: string;
   onDismissNudge?: () => void;
+  /** §5.5 — the writer marks a continuity flag intentional. */
+  onReconcileFlag?: (flagId: string) => void;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
    *  link through to its continuity ledger. Absent for a standalone piece,
@@ -679,7 +682,7 @@ export function ReportView({
           {/* §6a — outside the report/anchored branch on purpose: these are
               stated facts about the manuscript, not a reading of it, so they
               belong in both views rather than only the prose one. */}
-          <ContinuitySection flags={continuityFlags} />
+          <ContinuitySection flags={continuityFlags} onReconcile={onReconcileFlag} />
 
           {/* Contextual nudge (Depth & Scenarios spec, Part 3).
               ONE PLACEMENT for every nudge rather than the spec's per-nudge
