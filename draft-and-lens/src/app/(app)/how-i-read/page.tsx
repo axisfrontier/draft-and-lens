@@ -103,10 +103,10 @@ export default function HowIReadPage() {
         Tell me they belong together and I start keeping a ledger — names, ages, physical details,
         relationships, whatever the book has established as fact. Each new chapter is read against
         it. If chapter nine gives someone green eyes and chapter two gave them brown, I raise it,
-        and I show you both passages so you can see what I saw rather than take my word for it. I
-        only do this for complete chapters: a draft mid-revision isn&apos;t something to hold the
-        rest of a book to. And when I&apos;m not certain — when a discrepancy might be a flashback,
-        or deliberate — I say so, and I say what would settle it.
+        and I tell you which chapters they were so you can go and look. I only do this for complete
+        chapters: a draft mid-revision isn&apos;t something to hold the rest of a book to. And when
+        I&apos;m not certain — when a discrepancy might be a flashback, or deliberate — I say so,
+        and I name the innocent explanation before the awkward one.
       </p>
 
       <h2 style={h2}>If you only have a paragraph and a question</h2>
