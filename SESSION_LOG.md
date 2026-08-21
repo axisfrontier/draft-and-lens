@@ -803,3 +803,31 @@ Reading 3 confirms the once-ever guarantee against a second qualifying reading, 
 - The Halloran test work (3 readings) soft-deleted. Six works remain, all his.
 
 **Still required before this reaches a writer:** final wording. The mechanism is verified; the copy is not approved.
+
+### Depth & Scenarios spec — three of four parts built and verified live — 2026-08-21
+
+Build order followed as specified. 144 tests green, build ✓, IP grep exit 1 throughout. Four commits.
+
+**1. Tradition depth — ambition against execution (`a27b156`).** Brain 2 now separates a writer working IN a tradition from one reaching FOR it. Built as an analyst system-prompt extension rather than a new pass: a second call would need the whole text and the whole diagnostic to say anything, which is Brain 2's job description at Brain 2's cost, with a seam down the middle of the reading. Attached to the analyst rather than a TRADITION ALIGNMENT body because story and treatment have that heading, script calls it GENRE ALIGNMENT and stage play has neither.
+
+Three guards against the obvious failure, which is condescension: the innocent reading is mandatory and comes first; the gap must be named in the tradition's own vocabulary, with generic quality words explicitly forbidden; and it runs both ways.
+
+**Verified twice.** On a deliberately thin imitation-minimalism passage the reading returned *"In minimalist realism, spare means every sentence carries load; thin means less in it than it needs. This sentence is thin: it occupies space and does zero work."* — and in the same reading correctly read `He did not wash it` as the instrument working rather than the same failure. Then live in the browser on production, where the OVERVIEW framed the whole reading as *"does the restraint carry load, or is it merely thin?"*
+
+**2. Scenarios page, `/how-i-read` (`b49054f`).** Live, in the nav between About and Glossary, first person throughout, reusing `closeOrGoBack` (whose fallback path list needed the new route adding or Close would have stranded anyone arriving in the same tab).
+
+**SCENARIO 5 IS DELIBERATELY ABSENT.** The spec lists six; five shipped. The missing one is cross-submission pattern recognition — Gap 2, not built. Shipping it would have this page tell writers I notice things across their work when I demonstrably do not, and a retention page is exactly where that temptation is strongest. The file says so where the next person will read it. It goes in when Gap 2 does.
+
+**3. Contextual nudges (`49b325f`).** One per reading, once per writer ever, never beside the method line. Evaluated at the very end of the stream — the only point where extraction has finished or been skipped AND the differentiator has fired or not — and claimed last, so a nudge the writer will not see cannot consume their single showing. `countSubmissions` runs before the reading is stored, which is what makes "their first" and "their third" answerable without inference.
+
+Priority departs from the spec's table order deliberately: what actually happened beats what might happen, so a first reading that also contributed facts gets the ledger line.
+
+**Verified live end to end:** a 220-word chapter grouped into a throwaway book extracted 13 facts, `nudge_ledger_tracking` was claimed at 00:21:07, and the line rendered as designed — quiet italic serif, hairline rule, DISMISS control — after the reading's action block and before the lenses. Dismiss removed it. No differentiator appeared, correctly, since this was a new work rather than a revision.
+
+**Two catalogue entries not built,** with reasons in `nudges.ts`: the fragment-redirect nudge belongs to a different surface with a different transport, and the tradition-gap nudge has no deterministic signal — pattern-matching the report for "thin" would fire on readings that merely used the word, and a nudge that guesses wrong claims the writer's one showing forever.
+
+**Test data removed:** manuscript, facts, work and nudge milestone rows all deleted. `Home` is the only manuscript, 6 works, `user_milestones` empty.
+
+**4. Cross-submission pattern recognition — NOT BUILT, FLAGGED, as instructed.** It needs a `writer_patterns` table and therefore a Supabase migration Nenad applies by hand. Stopping here was the instruction. When it is picked up, the design questions already visible: what counts as evidence of a pattern (Brain 2 identifies tendencies in prose, not as structured output, so something has to extract them); how a pattern is dismissed and where that lives; and the strict gate that a pattern is never named from one submission.
+
+**Everything above ships with placeholder copy** for the nudges, awaiting approval the same way the method line was.
