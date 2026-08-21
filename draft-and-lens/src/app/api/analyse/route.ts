@@ -8,6 +8,7 @@ import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { DIFFERENTIATOR_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
+import { selectNudge } from '../../../lib/nudges';
 import { claimMilestone } from '../../../lib/user-milestones';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
@@ -17,6 +18,7 @@ import {
   getPriorRevisionNotes,
   newWorkId,
   resolveRevision,
+  countSubmissions,
   storeReading,
 } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
@@ -359,6 +361,13 @@ export async function POST(req: NextRequest): Promise<Response> {
           market: result.market,
           bible: result.bible,
         };
+        // Counted BEFORE this reading is stored (storeReading runs below), so
+        // zero means this really is their first and two means this is the
+        // third. Both nudges depend on that ordering.
+        const priorSubmissions = await countSubmissions(userId).catch(() => 0);
+        let differentiatorShown = false;
+        let factsExtracted = 0;
+
         send({ type: 'done', ...payload, revision: { status } });
 
         // ── Differentiator method line (handover §6) ──────────────────────
@@ -383,6 +392,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           (await claimMilestone(userId, 'differentiator_method_line').catch(() => false))
         ) {
           send({ type: 'differentiator', text: DIFFERENTIATOR_COPY });
+          differentiatorShown = true;
         }
 
         // Wall clock stops when the user has everything, not after the
@@ -492,6 +502,7 @@ export async function POST(req: NextRequest): Promise<Response> {
               // signal the extractor has drifted — but it needs a telemetry
               // channel shaped for it rather than a misused one. Flagged in
               // SESSION_LOG rather than bodged in here.
+              factsExtracted = stored;
               void stored;
 
               // ── Detection (§9 Stage 3) ─────────────────────────────────
@@ -537,6 +548,20 @@ export async function POST(req: NextRequest): Promise<Response> {
               /* extraction is best-effort; the reading is already delivered */
             }
           }
+        }
+
+        // ── Contextual nudge (Depth & Scenarios spec, Part 3) ─────────────
+        // Evaluated HERE, at the end of everything, because that is the only
+        // point where all of its signals exist: extraction has finished (or
+        // was skipped), and the method line has either fired or not. One per
+        // reading, one per writer for the life of the account, and never
+        // beside the method line — selectNudge holds all three rules.
+        //
+        // Claimed last, like the differentiator: a nudge the writer will not
+        // be shown must not consume the single showing they get.
+        const nudge = selectNudge({ priorSubmissions, factsExtracted, differentiatorShown });
+        if (nudge && (await claimMilestone(userId, nudge.milestone).catch(() => false))) {
+          send({ type: 'nudge', text: nudge.text });
         }
 
         // Cost log (financial model data collection) — metadata + token counts

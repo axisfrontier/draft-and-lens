@@ -795,3 +795,28 @@ export async function getFragmentContext(userId: string): Promise<FragmentContex
     return null;
   }
 }
+
+/**
+ * How many readings this writer already has stored.
+ *
+ * Read-only, one counted query, no rows fetched. Called before the current
+ * reading is stored, so on a first submission it returns 0 — which is what
+ * makes "this is their first" and "this is their third" answerable without
+ * inference. Returns 0 on any failure: a nudge not shown costs nothing, a
+ * nudge shown on a wrong count burns the writer's only sighting of it.
+ */
+export async function countSubmissions(userId: string): Promise<number> {
+  if (!isSupabaseConfigured()) return 0;
+  try {
+    const supabase = getServiceClient();
+    const { count, error } = await supabase
+      .from(TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+    if (error || typeof count !== 'number') return 0;
+    return count;
+  } catch {
+    return 0;
+  }
+}

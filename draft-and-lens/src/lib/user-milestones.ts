@@ -26,7 +26,12 @@ const TABLE = 'user_milestones';
  * Every once-only message. A union rather than free strings so a typo cannot
  * silently mint a second milestone that has never been shown to anyone.
  */
-export type Milestone = 'differentiator_method_line';
+export type Milestone =
+  | 'differentiator_method_line'
+  /** Contextual nudges — one row each, so a nudge cannot reappear. See nudges.ts. */
+  | 'nudge_ledger_tracking'
+  | 'nudge_revision_memory'
+  | 'nudge_keep_sending';
 
 /**
  * Claim a milestone for this writer.

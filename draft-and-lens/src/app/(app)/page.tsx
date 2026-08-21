@@ -68,6 +68,8 @@ type StreamEvent =
   // Sent after `done`, at most once per account for the life of the account.
   // The server decides and records; the client only renders what it is given.
   | { type: 'differentiator'; text: string }
+  // Sent after everything else, at most once per reading and once per account.
+  | { type: 'nudge'; text: string }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -192,6 +194,7 @@ export default function AppHomePage() {
   const [panelShown, setPanelShown] = useState(false);
   const [fragmentHandoff, setFragmentHandoff] = useState<FragmentHandoff | null>(null);
   const [differentiator, setDifferentiator] = useState('');
+  const [nudge, setNudge] = useState('');
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
 
   const effectiveText = text.trim() || uploadedFileText;
@@ -395,6 +398,7 @@ export default function AppHomePage() {
     setStreamed('');
     setReport('');
     setDifferentiator('');
+    setNudge('');
     setStage('Reading your work');
     setEarlyDiagnostic(null);
     setCoverage(null);
@@ -479,6 +483,8 @@ export default function AppHomePage() {
             setContinuityFlags(evt.flags);
           } else if (evt.type === 'differentiator') {
             setDifferentiator(evt.text);
+          } else if (evt.type === 'nudge') {
+            setNudge(evt.text);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -1329,6 +1335,8 @@ export default function AppHomePage() {
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}
           differentiator={differentiator || undefined}
+          nudge={nudge || undefined}
+          onDismissNudge={() => setNudge('')}
           revisionStatus={revisionStatus ?? undefined}
           readAt={readAt ?? undefined}
           onFreshReadingRequest={() => analyse(true)}

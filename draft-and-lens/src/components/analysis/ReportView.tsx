@@ -135,6 +135,8 @@ export function ReportView({
   manuscriptId,
   continuityFlags = [],
   differentiator,
+  nudge,
+  onDismissNudge,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -150,6 +152,11 @@ export function ReportView({
    *  (handover §6). Absent on every other reading — which is almost all of
    *  them — and the client never decides whether it should appear. */
   differentiator?: string;
+  /** A single contextual nudge, chosen server-side — at most one per reading
+   *  and one per account, ever. The client never decides whether it appears,
+   *  only lets the writer close it. */
+  nudge?: string;
+  onDismissNudge?: () => void;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
    *  link through to its continuity ledger. Absent for a standalone piece,
@@ -673,6 +680,46 @@ export function ReportView({
               stated facts about the manuscript, not a reading of it, so they
               belong in both views rather than only the prose one. */}
           <ContinuitySection flags={continuityFlags} />
+
+          {/* Contextual nudge (Depth & Scenarios spec, Part 3).
+              ONE PLACEMENT for every nudge rather than the spec's per-nudge
+              positions: at most one appears in a reading, so a fixed spot
+              cannot collide with another, and a line that moves around the
+              report depending on which one fired is harder to recognise as
+              the same quiet aside. It sits after the reading's own sections
+              and the continuity facts — the writer has finished reading
+              before anything says what else is possible.
+              Copy is server-supplied and PLACEHOLDER, awaiting approval. */}
+          {nudge && (
+            <div style={{
+              display: 'flex', alignItems: 'baseline', gap: '.75rem',
+              margin: '1.5rem 0 0', paddingLeft: '1.25rem',
+              borderLeft: '1px solid var(--rule)', maxWidth: 660,
+            }}>
+              <p style={{
+                margin: 0, flex: 1, fontFamily: 'var(--font-serif)',
+                fontSize: '.85rem', lineHeight: 1.75, fontStyle: 'italic',
+                color: 'var(--ink-soft)',
+              }}>
+                {nudge}
+              </p>
+              {onDismissNudge && (
+                <button
+                  type="button"
+                  onClick={onDismissNudge}
+                  aria-label="Dismiss"
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    letterSpacing: '.12em', textTransform: 'uppercase',
+                    color: 'var(--ink-faint)', flexShrink: 0,
+                  }}
+                >
+                  Dismiss
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Lenses — Choose a Voice */}
           <div id="sec-lenses" style={{ marginTop: '0', scrollMarginTop: 'calc(var(--nav-h) + 1rem)' }}>
