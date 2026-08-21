@@ -2,7 +2,7 @@
 
 **Time budget: 15–30 minutes.** If it takes longer, something on it is too broad and should be cut or split — a checklist that gets skipped because it is daunting protects nothing.
 
-**Trigger: before starting any major new feature.** Not on a session count. The point is to enter a build with a clean floor, and a feature boundary is the moment when stale assumptions are most likely to be inherited into new code. (Every finding in the worked examples below was discovered *during* a build, when it was expensive; each would have been cheap to catch at this checkpoint.)
+**Two triggers, either one is enough: before starting any major new feature, OR every 2–3 weeks regardless of what is being built** (the second added 2026-08-21 — a feature-gated audit only runs when someone is about to build, so quiet weeks of small fixes accrue drift nothing looks at). Not on a session count. The point is to enter a build with a clean floor, and a feature boundary is the moment when stale assumptions are most likely to be inherited into new code. (Every finding in the worked examples below was discovered *during* a build, when it was expensive; each would have been cheap to catch at this checkpoint.)
 
 **Where this lives:** its own file rather than inside `CLAUDE.md`. `CLAUDE.md` is loaded into every session and should stay short enough to be read every time; a checklist is consulted deliberately, at a known moment. `CLAUDE.md` links to it.
 
@@ -69,3 +69,13 @@ Append findings to `SESSION_LOG.md` under the date, split into:
 - **Flagged** — needs a product decision. Record *why* it is a decision rather than a fix, or the next session will treat it as a fix and guess.
 
 An audit that finds nothing is a valid result and worth recording as such — but check the checklist itself is still pointed at where the code has actually moved.
+
+---
+
+## Run log
+
+Append a line every time this checklist is run, whatever it found. The gap between dates is the thing worth seeing — a checklist with no record of being run is indistinguishable from one nobody uses.
+
+| Date | Trigger | Outcome |
+|---|---|---|
+| 2026-08-18 | first run, before the detection build | Real defects on its first outing: two dead brain modules never executed, `detachReading`/`listLocks`/`traceMark` dead, corpus filename lagging its content. |

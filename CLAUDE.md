@@ -17,6 +17,16 @@ Before doing anything else in this repo, read DL_ONLY_ReadFirst.md in full. This
 - Revert, don't patch, on breakage.
 - Touch only the named files. Anything outside the list requires explicit approval.
 
+### Periodic audit — two triggers, not one (standing rule, 2026-08-21)
+`AUDIT_CHECKLIST.md` runs on BOTH of these, independently:
+
+1. **Before starting any major new feature** — the original trigger. Enter a build with a clean floor.
+2. **Every 2–3 weeks regardless of feature boundaries** — new. A feature-gated audit only ever runs when someone is about to build something, so a quiet fortnight of small fixes accrues drift that nothing looks at. The first run (2026-08-18) found real defects on a codebase nobody thought was dirty.
+
+**Record the date of every run** in `AUDIT_CHECKLIST.md`'s run log, so the gap between runs is visible rather than assumed. If the last recorded run is more than three weeks old, run it before doing anything else that session.
+
+**Run log lives in `AUDIT_CHECKLIST.md`. Last run: 2026-08-18.**
+
 ### Writer-facing copy — the editor's voice (standing rule, 2026-08-21)
 Every string a writer can read is the editor speaking. First person, direct, developmental. It does not explain the product, name the product in the third person, or describe its own machinery.
 
