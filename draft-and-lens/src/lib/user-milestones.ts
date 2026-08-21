@@ -35,7 +35,6 @@ export type Milestone =
   /** Contextual nudges — one row each, so a nudge cannot reappear. See nudges.ts. */
   | 'nudge_ledger_tracking'
   | 'nudge_revision_memory'
-  /** Reserved, not yet shipped — its copy claims Gap 2. See nudges.ts. */
   | 'nudge_keep_sending';
 
 /**

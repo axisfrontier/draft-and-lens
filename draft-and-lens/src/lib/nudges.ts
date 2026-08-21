@@ -29,9 +29,7 @@ import type { Milestone } from './user-milestones';
  * feature "was actually used or is directly applicable", and one of those is
  * stronger evidence than the other.
  *
- * COPY: the two live lines are approved (Nenad, 2026-08-21). A third, for the
- * writer's third submission, is written and NOT shipped — see the note above
- * selectNudge's last branch.
+ * COPY: all three lines approved by Nenad, 2026-08-21.
  */
 
 export interface NudgeContext {
@@ -63,6 +61,19 @@ const REVISION_MEMORY: Nudge = {
 };
 
 /**
+ * APPROVED — Nenad, 2026-08-21, and re-enabled the same day.
+ *
+ * Held back when the nudges shipped because its claim — that sending more work
+ * means I notice more ACROSS it — was cross-submission pattern recognition,
+ * which did not exist. Gap 2 shipped that morning, so the claim is now true and
+ * the line fires.
+ */
+const KEEP_SENDING: Nudge = {
+  milestone: 'nudge_keep_sending',
+  text: "The more you send me, the more I'll notice across your work.",
+};
+
+/**
  * The one nudge this reading earns, or nothing.
  *
  * Pure and total, so the whole policy is testable without a database and
@@ -82,17 +93,15 @@ export function selectNudge(ctx: NudgeContext): Nudge | null {
   // the writer has no reason to know it would if they came back.
   if (ctx.priorSubmissions === 0) return REVISION_MEMORY;
 
-  // NOTHING FOR THE THIRD SUBMISSION, deliberately.
+  // The third submission — the point at which coming back has visibly become a
+  // habit, and worth saying that it compounds. priorSubmissions is counted
+  // BEFORE this reading is stored, so two prior means this is the third.
   //
-  // The line written for it — "The more you send me, the more I'll notice
-  // across your work." under the reserved key `nudge_keep_sending` — promises
-  // cross-submission pattern recognition, which is Gap 2 and does not exist.
-  // Nenad approved the other two on 2026-08-21 and did not rule on this one.
-  // Firing it would spend the writer's single showing of that line on a claim
-  // the product cannot keep, and a nudge shown once is shown once forever.
-  //
-  // To ship it the day Gap 2 lands: restore the constant and a
-  // `ctx.priorSubmissions === 2` branch above this comment.
+  // This line was held back when the nudges first shipped: it promises that
+  // sending more work means I notice more ACROSS it, and that was Gap 2, which
+  // did not exist. It does now, so the claim is true and the line fires.
+  if (ctx.priorSubmissions === 2) return KEEP_SENDING;
+
   return null;
 }
 

@@ -294,8 +294,7 @@ export const WRITER_PATTERNS_TABLE = TABLE;
 /**
  * What the writer is actually shown, per tendency.
  *
- * PLACEHOLDER COPY — not approved, not final. Same process as the method line
- * and the nudges: Nenad approves before it reaches a writer.
+ * APPROVED — Nenad, 2026-08-21, all seven as written. Do not edit without him.
  *
  * Three rules held throughout, because this is the product's largest claim
  * about a person and the register decides whether it lands as mentorship or as
