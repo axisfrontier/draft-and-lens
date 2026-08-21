@@ -953,3 +953,45 @@ The model is asked whether it recognises the text, **not who wrote it**, and tol
 **Verified live on production:** a submission carrying rights boilerplate produced the hold with the confirmation button and **no pipeline ran at all**; clicking "It's mine — read it" cleared the hold and started the reading, which was then stopped so no test data was created.
 
 Fragment mode exempt, as ruled. Declines store nothing — no work, no reading, no text. The telemetry event (`provenance_declined`, added to the existing security-log union alongside `moderation_blocked`, no migration) carries the signal name only.
+
+### Cross-submission patterns — two proposals for Nenad, NO CODE — 2026-08-21
+
+1a confirmed unbuilt and correctly flagged; no action taken there.
+
+## Proposal A — the closed tendency vocabulary
+
+Every key below is a failure **the LearnedCorpus already names**, in the corpus's own words, with its principle cited. None is invented, and that is the point: a closed vocabulary drawn from the corpus makes "generic creative-writing advice" structurally impossible to produce, because there is no key for it.
+
+| Key | Corpus | What the corpus calls it |
+|---|---|---|
+| `restatement` | P2 | The narrator "explains what the work has already made clear… removes the reader's work". P2 calls this "always a failure" and gives its own cross-form applications: a character speaking subtext aloud in a play, a final sentence stating the theme in fiction. |
+| `narrated-not-accumulated` | P5 | The work "narrates a development that should be accumulated" — the reader "is given conclusions without the experience that produces them". |
+| `shrinking` | P7 | The narrator "replaces the image's register with something smaller or wrong", against extending, which adds a dimension the image cannot reach. |
+| `floating-abstraction` | P11 | Abstraction that "replaces concrete work the scene needs; announces significance the images have already earned, or gestures vaguely where specificity was available" — explicitly NOT abstraction as such, which P11 defends. |
+| `unearned-ambiguity` | P13 | The reader "confused because the writing failed to commit", as against ambiguity that is "the product of precision". |
+| `borrowed-phrase` | P4 | "Generic material placed against specific material loses the argument… a borrowed phrase placed against hard-won imagery diminishes the imagery." |
+| `withheld-payoff` | P22 | Tradition-bound: in contemporary literary realism and autofiction, ending "without emotional specificity has broken its contract". |
+
+**Two of these are tradition-bound and must not be counted outside their tradition.** `withheld-payoff` is a failure in literary realism and a virtue in crime or thriller; `borrowed-phrase` only arises where a juxtaposition is doing work. Counting either without checking the tradition would assert a failure that P3 says is a primary instrument — the exact error the corpus exists to prevent.
+
+**What is deliberately excluded.** Nothing from the reader-side guard principles — P3, P6, P9, P12, P15, P23, P26. Those bind the analyst, not the writer. A "pattern" drawn from them would say something like *"your devices keep getting faulted"*, which is a fact about the tool, not about the writing.
+
+**Three properties the storage has to carry:**
+- **The extractor chooses a key or returns nothing.** Free text is what makes matching impossible across differently-worded readings; forcing a choice from seven is what makes `confirmed_count` countable at all.
+- **Every candidate must carry the verbatim sentence from the reading it came from.** Forcing a choice invites the extractor to pick the nearest key when the reading said something else; a candidate with no quotable sentence is discarded rather than stored. Same discipline as the continuity extractor.
+- **The vocabulary is closed AND versioned.** Adding an eighth key later means evidence gathered under the old vocabulary cannot be matched to it retroactively. A `vocab_version` column keeps that visible instead of silently mixing two eras of counting.
+
+## Proposal B — where per-writer dismissal lives
+
+The spec says "same as continuity flag dismissal, in the ledger view". That cannot be taken literally: `/ledger/[manuscriptId]` is scoped to one manuscript and patterns span a writer's whole body of work, so they have no home there.
+
+Four candidates:
+
+1. **`/account`** — already per-writer, already lists every work, already carries destructive controls, so the idiom exists. But it is a settings surface, and a craft observation sitting beside "delete my account" is tonally wrong.
+2. **A new per-writer page** (`/patterns`, or folded into `/how-i-read`) — clean, but a new nav entry for something a writer will visit rarely.
+3. **In the reading itself, at the point the pattern is named** — the Mentor section, dismissed exactly where it is claimed.
+4. **`/ledger` index** — per-writer, but it is about books, not about the writer's habits.
+
+**Recommendation: 3, with 1 as a later review surface.** It matches the idiom just built for continuity flags, where the control sits on the flag in §6a rather than in a settings page — the writer corrects the claim at the moment they disagree with it, which is what makes it read as a correction rather than a preference toggle. It needs no new surface. If only one thing is built, build 3; a list of previously-named patterns can follow whenever it earns its place.
+
+**Consequence for the migration, which is Nenad's to apply:** the table needs `dismissed_at` per pattern (never named again once dismissed), `vocab_version`, and the evidence `reading_ids`. The shape depends on the two decisions above, so the SQL is deliberately not written yet.
