@@ -39,12 +39,20 @@ If you are about to state anything about Codex-Maths — its UI process, its rep
 - `DraftAndLens_FragmentMode_Spec.md` — fragment/short-input handling and the revision loop. Design only, not built. Sequenced after Mentor mode.
 - `DraftAndLens_DepthAndScenarios_Spec.md` — tradition depth, scenarios page, contextual nudges. Design only, not built. Build order inside.
 
-## Standing beta build order (as of 2026-08-18)
+## Standing beta build order (updated 2026-08-21)
 
-1. Detection — nearly complete, migration applied, being verified live
-2. Timeline reasoning (ledger phase 3) — not started
-3. Mentor mode — not started
-4. Differentiator messaging — not started, depends on Mentor mode
-5. THEN: new UI design exploration (Noel-driven), see backlog file
+Items 1–4 of the 2026-08-18 order are **done and verified live**: detection, timeline reasoning (ledger phase 3), mentor mode, and the differentiator line. Also shipped since: fragment mode, the tradition depth gap, `/how-i-read`, contextual nudges, and §5.5 flag dismissal.
+
+**Active queue:**
+
+1. **Lens-voice upload edge case — ACTIVE, approach to be agreed before code.** A writer pasting real published prose by one of the 36 lens voices (actual Carver, actual Hemingway) currently gets a reading of it as if it were their own work — and a lens can end up reading its own author's prose back to them. That is a trust and credibility risk, not a curiosity. Was deferred as "worth building once detection exists and is stable" (`DraftAndLens_Internal_Research_Notes.md`); detection is now stable, so it is live. Proposed approach lives in `SESSION_LOG.md` — **Nenad approves the approach before any code is written.**
+2. **Cross-submission pattern recognition (Depth spec, Part 1 Gap 2)** — needs a `writer_patterns` migration Nenad applies by hand. Design note in `SESSION_LOG.md`, decisions still open.
+3. **New UI design exploration (Noel-driven)** — see the backlog file.
 
 Don't reorder without Nenad's explicit instruction.
+
+## Periodic audit — it has a clock now (2026-08-21)
+
+`AUDIT_CHECKLIST.md` runs on **two** triggers, either sufficient: before any major new feature, **and every 2–3 weeks regardless of what is being built**. A feature-gated audit only ever ran when someone was already about to build; quiet weeks accrue drift nothing looks at.
+
+Every run is recorded in the checklist's own run log. **If the last recorded run is more than three weeks old, run it before anything else that session.** Last run: 2026-08-18.
