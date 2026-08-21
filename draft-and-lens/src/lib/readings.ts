@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getServiceClient, isSupabaseConfigured } from './supabase-server';
 import { USER_MILESTONES_TABLE } from './user-milestones';
+import { WRITER_PATTERNS_TABLE } from './writer-patterns';
 
 /**
  * Reading storage + revision awareness (CHANGE 3, server-side).
@@ -389,8 +390,14 @@ export async function deleteAllUserData(userId: string): Promise<boolean> {
     // row behind, so a writer who deleted their account and returned would
     // silently never be shown a once-per-account line again. That is a false
     // deletion claim, which is a legal statement and not merely a bug.
-    // writer_patterns joins this list the day it exists.
-    for (const table of [FLAGS_TABLE, FACTS_TABLE, MANUSCRIPTS_TABLE, USER_MILESTONES_TABLE]) {
+    // writer_patterns joined this list the day its table was created.
+    for (const table of [
+      FLAGS_TABLE,
+      FACTS_TABLE,
+      MANUSCRIPTS_TABLE,
+      USER_MILESTONES_TABLE,
+      WRITER_PATTERNS_TABLE,
+    ]) {
       const { error } = await supabase.from(table).delete().eq('user_id', userId);
       if (error && !isMissingTable(error)) return false;
     }
