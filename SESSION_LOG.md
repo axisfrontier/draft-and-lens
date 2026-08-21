@@ -995,3 +995,27 @@ Four candidates:
 **Recommendation: 3, with 1 as a later review surface.** It matches the idiom just built for continuity flags, where the control sits on the flag in §6a rather than in a settings page — the writer corrects the claim at the moment they disagree with it, which is what makes it read as a correction rather than a preference toggle. It needs no new surface. If only one thing is built, build 3; a list of previously-named patterns can follow whenever it earns its place.
 
 **Consequence for the migration, which is Nenad's to apply:** the table needs `dismissed_at` per pattern (never named again once dismissed), `vocab_version`, and the evidence `reading_ids`. The shape depends on the two decisions above, so the SQL is deliberately not written yet.
+
+### Gap 2 built end to end and verified live — 2026-08-21
+
+Three commits: `150915e` store and gate, `53b5fda` extractor, `1f7dafc` surfacing and dismissal. 165 tests green, build ✓, IP grep exit 1.
+
+**The gate is the feature.** A named pattern is the largest claim the product makes about a person — not "this draft does X" but "you do X, repeatedly". Three conditions: never after dismissal; **seen in at least two distinct WORKS**, because three revisions of one story are one piece of evidence about a writer; and not before the writer's third submission. Recording is idempotent per work, not per reading.
+
+**The extractor reads the REPORT, never the manuscript.** The reading has already judged the work under its confirmed tradition with the whole corpus behind it; a second brain judging the prose again would be an opinion nobody asked for, formed without the diagnostic and free to contradict what the writer just read. Every prompt rule is also a code check — closed vocabulary, evidence must be a real substring of the report, tradition guard — because a prompt is an instruction and the code is the guarantee.
+
+**Where Nenad's tradition constraint was interpreted rather than applied literally, and it is flagged in the code as well as here.** `withheld_payoff` is gated on tradition and fails closed (P22 names literary realism and autofiction; withholding resolution is the instrument in crime, noir and much horror). `borrowed_phrase` is NOT gated: P4 "applies to all forms using deliberate tonal or temporal contrast", so whether a borrowed phrase loses an argument is a property of the work rather than its tradition, and there is no tradition in which it is a primary instrument — a tradition test would have nothing to test against.
+
+**One quiet aside per reading, hierarchy now explicit:** method line > named pattern > nudge. Unlike the first two, a pattern is not once-ever — it stays named until the writer rejects it.
+
+**Verified live, in order:**
+- extractor on two real reports before wiring: a reading claiming restatement returned exactly one candidate with a verbatim sentence; a largely admiring reading returned **nothing** — praise is not a tendency;
+- a seeded pattern (disclosed fixture: `restatement`, two works) was named in a real reading, rendering as an amber-ruled ACROSS YOUR WORK block above the lenses, with no nudge alongside it;
+- the same real reading independently found `restatement` and incremented the count 2 → 3 with a new work id — the record path working on live output;
+- dismissal removed it, set `dismissed_at`, emptied `listPatterns`, made `isNameable` false, **and a later reading finding the same tendency did not revive it** — which is why the row is kept rather than deleted.
+
+**Correction to yesterday's record.** I reported that the lens-voice verification "was then stopped so no test data was created". That was wrong: clicking Stop aborts the client stream, but the server run completes and stores the reading. A work from that test sat on the account until now. Deleted. Worth remembering as a general fact about verification — Stop is not a cancel.
+
+**All test data removed:** `writer_patterns` empty, nudge milestones cleared, both test works soft-deleted, `Home` the only manuscript, 6 works.
+
+**Awaiting Nenad:** the seven `PATTERN_COPY` lines are placeholder and unapproved — same process as the method line and the nudges.
