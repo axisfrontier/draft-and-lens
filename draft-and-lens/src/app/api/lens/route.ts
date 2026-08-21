@@ -2,7 +2,10 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getAnthropicClient } from '../../../ai/client';
+import { isLensAuthorsOwnWork } from '../../../ai/lens-authorship';
 import { LENS_IDS, getLensSystemPrompt } from '../../../prompts/lenses';
+import { LENS_META } from '../../../prompts/lenses/meta';
+import { LENS_SELF_RECOGNITION } from '../../../prompts/lenses/self-recognition';
 import type { LensId } from '../../../prompts/lenses';
 
 export const runtime = 'nodejs';
@@ -32,6 +35,40 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
   if (typeof text !== 'string' || !text.trim()) {
     return NextResponse.json({ error: 'No text provided.' }, { status: 400 });
+  }
+
+  // ── A lens handed its own work ────────────────────────────────────────
+  // Reachable because the provenance gate asks rather than refuses: a writer
+  // who answered "it's mine" has a reading, and can now ask Carver to read
+  // Carver. The generic hold would be wrong twice here — it breaks the voice
+  // the writer came for, and "I think I've read this before" is not the honest
+  // sentence when the honest sentence is "I wrote it".
+  //
+  // Answered in character and returned immediately: no lens call, no reading
+  // of someone else's published work, and the line hands the moment back to
+  // the writer's own writing rather than ending on a refusal.
+  if (await isLensAuthorsOwnWork(text, LENS_META[lensId].name)) {
+    const encoder = new TextEncoder();
+    const line = LENS_SELF_RECOGNITION[lensId];
+    return new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          const send = (obj: Record<string, unknown>) =>
+            controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
+          send({ type: 'self_recognition' });
+          send({ type: 'text', delta: line });
+          send({ type: 'done', reply: line });
+          controller.close();
+        },
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          'Transfer-Encoding': 'chunked',
+          'Cache-Control': 'no-cache',
+        },
+      }
+    );
   }
 
   const systemPrompt = getLensSystemPrompt(
