@@ -9,8 +9,10 @@ import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
 import { checkProvenance } from '../../../ai/provenance-check';
 import { DIFFERENTIATOR_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
+import { extractPatterns } from '../../../ai/brains/pattern-extractor';
 import { selectNudge } from '../../../lib/nudges';
 import { findPublicationApparatus } from '../../../lib/provenance';
+import { recordTendencies, traditionTreatsAsFailure } from '../../../lib/writer-patterns';
 import { claimMilestone } from '../../../lib/user-milestones';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
@@ -590,6 +592,34 @@ export async function POST(req: NextRequest): Promise<Response> {
               /* extraction is best-effort; the reading is already delivered */
             }
           }
+        }
+
+        // ── Writer patterns (Depth & Scenarios spec, Part 1 Gap 2) ────────
+        // Reads the finished REPORT, never the manuscript: the reading has
+        // already judged the work under its confirmed tradition with the whole
+        // corpus behind it, and a second brain judging the prose again would
+        // be an opinion nobody asked for, formed without the diagnostic and
+        // free to contradict what the writer just read. This one only notices
+        // which corpus-named failures the READING claimed.
+        //
+        // Post-delivery and best-effort, like extraction and detection: its
+        // latency is invisible and its failure costs the writer nothing.
+        // Nothing is surfaced from it here — a tendency recorded today becomes
+        // nameable only once it has been seen in a second WORK.
+        if (readingId) {
+          const { entries: patternEntries } = await withCostTracking(async () => {
+            const tradition = result.diagnostic.tradition || 'unknown';
+            const candidates = await extractPatterns({
+              report: result.report,
+              tradition,
+              traditionAllows: (t) => traditionTreatsAsFailure(t, tradition),
+            });
+            if (candidates.length > 0) {
+              await recordTendencies({ userId, workId, readingId, candidates });
+            }
+            return candidates.length;
+          });
+          collectedEntries = [...collectedEntries, ...patternEntries];
         }
 
         // ── Contextual nudge (Depth & Scenarios spec, Part 3) ─────────────

@@ -16,6 +16,7 @@ export const MODELS = {
   bible: 'claude-sonnet-4-6',
   lens: 'claude-sonnet-4-6',
   conversation: 'claude-sonnet-4-6',
+  patternExtractor: 'claude-sonnet-4-6',
   // Extraction is structured, mechanical work with a hard verbatim-quote
   // check behind it, so the cheap tier is the right fit: a weaker extractor
   // fails by returning fewer facts, not worse ones.
@@ -141,6 +142,10 @@ export const TOKEN_LIMITS = {
   // output, and the failure mode here is a reply that stops mid-sentence in
   // front of the writer.
   fragment: 1200,
+  // At most three items, each a key plus one quoted sentence. Sized well above
+  // that because truncation in a JSON brain is total loss, not partial — the
+  // lesson of the 2026-08-20 ceiling audit.
+  patternExtractor: 1200,
   // A chapter can legitimately yield 20-30 facts, each carrying a verbatim
   // quote — the quotes dominate the budget. Sized above structuralReader
   // (2500) for that reason; truncation here silently loses facts.

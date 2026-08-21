@@ -67,6 +67,35 @@ export const TRADITION_BOUND: ReadonlySet<Tendency> = new Set([
   'borrowed_phrase',
 ]);
 
+/**
+ * Does this tradition treat a tradition-bound tendency as a failure?
+ *
+ * ONLY `withheld_payoff` is genuinely decidable from the tradition, and the
+ * corpus decides it: P22 names contemporary literary realism and autofiction
+ * as the traditions whose contract requires emotional specificity, and is
+ * explicit that withholding resolution is NOT a failure elsewhere — it is the
+ * instrument in crime, noir and much horror. So this fails closed: unless the
+ * confirmed tradition is one P22 names, the tendency is not recorded.
+ *
+ * `borrowed_phrase` is deliberately NOT gated on the tradition, and this is
+ * the one place Nenad's constraint was interpreted rather than applied
+ * literally — flagged for him rather than done silently. P4 is not a
+ * tradition rule: it "applies to all forms using deliberate tonal or temporal
+ * contrast", so whether a borrowed phrase loses an argument depends on whether
+ * THIS work is making one, which is a property of the work and not of its
+ * tradition. There is no tradition in which a borrowed phrase set against
+ * hard-won imagery is a primary instrument, so a tradition test would have
+ * nothing to test against. The protection that matters is already in place:
+ * the extractor may only restate a claim the reading made, and the reading
+ * applied P4 under the confirmed tradition with the whole corpus behind it.
+ */
+export function traditionTreatsAsFailure(tendency: Tendency, tradition: string): boolean {
+  if (tendency !== 'withheld_payoff') return true;
+  const t = tradition.toLowerCase();
+  const namedByP22 = /literary realism|autofiction|literary fiction|domestic realism/.test(t);
+  return namedByP22;
+}
+
 /** The current vocabulary era. See writer_patterns.vocab_version. */
 export const VOCAB_VERSION = 1;
 
