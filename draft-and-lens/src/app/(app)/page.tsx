@@ -72,7 +72,7 @@ type StreamEvent =
   | { type: 'nudge'; text: string }
   // Sent after `done`. Not once-ever: a pattern stays named until the writer
   // says it is not true of them.
-  | { type: 'pattern'; tendency: string; text: string }
+  | { type: 'pattern'; tendency: string; text: string; trendNote?: string }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -200,7 +200,7 @@ export default function AppHomePage() {
   const [provenanceHold, setProvenanceHold] = useState('');
   const [differentiator, setDifferentiator] = useState('');
   const [nudge, setNudge] = useState('');
-  const [pattern, setPattern] = useState<{ tendency: string; text: string } | null>(null);
+  const [pattern, setPattern] = useState<{ tendency: string; text: string; trendNote?: string } | null>(null);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
 
   const effectiveText = text.trim() || uploadedFileText;
@@ -550,7 +550,7 @@ export default function AppHomePage() {
           } else if (evt.type === 'nudge') {
             setNudge(evt.text);
           } else if (evt.type === 'pattern') {
-            setPattern({ tendency: evt.tendency, text: evt.text });
+            setPattern({ tendency: evt.tendency, text: evt.text, trendNote: evt.trendNote });
           } else if (evt.type === 'error') setError(evt.message);
         }
       }

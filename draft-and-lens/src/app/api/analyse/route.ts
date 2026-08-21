@@ -14,6 +14,7 @@ import { selectNudge } from '../../../lib/nudges';
 import { findPublicationApparatus } from '../../../lib/provenance';
 import {
   PATTERN_COPY,
+  deriveTrend,
   isNameable,
   listPatterns,
   recordTendencies,
@@ -29,6 +30,7 @@ import {
   newWorkId,
   resolveRevision,
   countSubmissions,
+  listWorks,
   storeReading,
 } from '../../../lib/readings';
 import { logSecurityEvent } from '../../../lib/security-log';
@@ -429,6 +431,15 @@ export async function POST(req: NextRequest): Promise<Response> {
           )
           .catch(() => null);
 
+        // Trajectory (Gap A) — derived, never stored. The store only records
+        // works where a tendency DID appear, so "less lately" is only
+        // knowable against the writer's full sequence of works, newest first.
+        const trendNote = namedPattern
+          ? await listWorks(userId)
+            .then((works) => deriveTrend(namedPattern.workIds, works.map((w) => w.workId)).note)
+            .catch(() => null)
+          : null;
+
         send({ type: 'done', ...payload, revision: { status } });
 
         // ── Differentiator method line (handover §6) ──────────────────────
@@ -470,6 +481,9 @@ export async function POST(req: NextRequest): Promise<Response> {
             type: 'pattern',
             tendency: namedPattern.tendency,
             text: PATTERN_COPY[namedPattern.tendency],
+            // Contextualises, never leads — and absent unless a trend was
+            // actually named, which needs three works behind it.
+            ...(trendNote ? { trendNote } : {}),
           });
         }
 

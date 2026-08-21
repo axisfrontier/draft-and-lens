@@ -113,6 +113,8 @@ export interface NamedPattern {
   /** Distinct works this has been seen in. */
   confirmedCount: number;
   firstSeen: string;
+  /** Which works — needed to derive trajectory, which absence drives. */
+  workIds: string[];
 }
 
 interface PatternRow {
@@ -245,7 +247,7 @@ export async function listPatterns(userId: string): Promise<
     const supabase = getServiceClient();
     const { data, error } = await supabase
       .from(TABLE)
-      .select('tendency, confirmed_count, first_seen, dismissed_at')
+      .select('tendency, confirmed_count, first_seen, dismissed_at, work_ids')
       .eq('user_id', userId)
       .eq('vocab_version', VOCAB_VERSION)
       .is('dismissed_at', null)
@@ -257,6 +259,7 @@ export async function listPatterns(userId: string): Promise<
         tendency: r.tendency as Tendency,
         confirmedCount: r.confirmed_count,
         firstSeen: r.first_seen,
+        workIds: r.work_ids ?? [],
         dismissedAt: r.dismissed_at,
       }));
   } catch {
@@ -323,3 +326,82 @@ export const PATTERN_COPY: Record<Tendency, string> = {
   withheld_payoff:
     "More than once now, the ending has stopped just short of the emotional specificity this tradition asks for.",
 };
+
+/**
+ * Trajectory — Gap A of the Mentor Completeness spec.
+ *
+ * "You've done this in three pieces" is observational. "You've done this in
+ * three pieces, but not in the last two" is developmental, and it is the
+ * difference between a pattern-spotter and a mentor.
+ *
+ * DERIVED, NOT STORED — and this is a deliberate departure from the spec's
+ * shape, flagged for Nenad rather than done quietly. The spec asks for `trend`
+ * and `trend_note` columns recalculated on every extraction. Deriving them at
+ * read time from data the table already holds is better on three counts: it
+ * needs no migration, there is no denormalised verdict that can drift from the
+ * evidence behind it, and it cannot go stale — a pattern that stopped
+ * appearing becomes "improving" the moment the next work is read, with no
+ * recalculation step to forget to run. If Nenad wants the verdict stored for
+ * analytics, that is a migration and this becomes its writer.
+ *
+ * WHAT MAKES A TREND HONEST HERE. The store only records works where a
+ * tendency DID appear, so absence is only meaningful against the writer's full
+ * sequence of works — which is why this takes that sequence as an argument
+ * rather than working from the pattern row alone.
+ */
+export type Trend = 'improving' | 'stable' | 'worsening' | 'insufficient_data';
+
+export interface TrendVerdict {
+  trend: Trend;
+  /** One sentence, editor's voice. Null unless a trend is actually named. */
+  note: string | null;
+}
+
+/** PLACEHOLDER COPY — not approved. Nenad's, like every writer-facing string. */
+const TREND_NOTES: Record<Exclude<Trend, 'insufficient_data'>, string> = {
+  improving:
+    "It hasn't turned up in your last couple of pieces, though — whatever you're doing about it is working.",
+  stable: "It hasn't shifted much: it is turning up about as often as it was.",
+  worsening: "It has been in each of your recent pieces — more consistently than it used to be.",
+};
+
+/**
+ * Where is this tendency going?
+ *
+ * @param patternWorkIds works the tendency appeared in (order irrelevant)
+ * @param recentWorkIdsNewestFirst the writer's works, newest first, all of them
+ *
+ * THE THREE-DATA-POINT FLOOR is the spec's, and it is doing real work: with
+ * two works there is no trajectory, only a before and an after, and calling
+ * that "improving" would dress a coin flip as development.
+ *
+ * NO POSITIVE SPIN ON STABLE, also the spec's. Stable means it has not moved.
+ * That is honest and it is not encouraging, and the note says so plainly.
+ */
+export function deriveTrend(
+  patternWorkIds: readonly string[],
+  recentWorkIdsNewestFirst: readonly string[]
+): TrendVerdict {
+  const seenIn = new Set(patternWorkIds);
+  // A trajectory needs somewhere to have travelled from: three works by the
+  // writer, and the tendency in at least two of them.
+  if (recentWorkIdsNewestFirst.length < 3 || seenIn.size < 2) {
+    return { trend: 'insufficient_data', note: null };
+  }
+
+  const lastTwo = recentWorkIdsNewestFirst.slice(0, 2);
+  const lastThree = recentWorkIdsNewestFirst.slice(0, 3);
+
+  // Absent from both of the most recent works — the writer has moved.
+  if (!lastTwo.some((id) => seenIn.has(id))) {
+    return { trend: 'improving', note: TREND_NOTES.improving };
+  }
+
+  // In every one of the last three, on a body of work large enough for that to
+  // be a change rather than simply all the evidence there is.
+  if (recentWorkIdsNewestFirst.length >= 4 && lastThree.every((id) => seenIn.has(id))) {
+    return { trend: 'worsening', note: TREND_NOTES.worsening };
+  }
+
+  return { trend: 'stable', note: TREND_NOTES.stable };
+}

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   TENDENCIES,
   TRADITION_BOUND,
+  deriveTrend,
   isNameable,
   isTendency,
 } from '../../src/lib/writer-patterns';
@@ -79,5 +80,64 @@ describe('the closed vocabulary', () => {
     expect(TRADITION_BOUND.has('borrowed_phrase')).toBe(true);
     expect(TRADITION_BOUND.size).toBe(2);
     expect(TRADITION_BOUND.has('restatement')).toBe(false);
+  });
+});
+
+/**
+ * Trajectory (Gap A). The spec's two hard rules are the point of most of
+ * these: no trend from fewer than three data points, and no positive spin on
+ * stable. A wrong "improving" is the worst outcome available here — it tells a
+ * writer they have fixed something they have not.
+ */
+describe('deriveTrend', () => {
+  const W = (n: number) => Array.from({ length: n }, (_, i) => `w${i}`); // newest first
+
+  it('says nothing until there are three works to look across', () => {
+    // With two works there is a before and an after, not a trajectory.
+    expect(deriveTrend(['w0', 'w1'], W(2)).trend).toBe('insufficient_data');
+    expect(deriveTrend(['w0', 'w1'], W(2)).note).toBeNull();
+  });
+
+  it('says nothing when the tendency has only been seen once', () => {
+    expect(deriveTrend(['w2'], W(5)).trend).toBe('insufficient_data');
+  });
+
+  it('calls it improving only when it is absent from BOTH recent works', () => {
+    // Seen in the three oldest, gone from the two newest.
+    expect(deriveTrend(['w2', 'w3', 'w4'], W(5)).trend).toBe('improving');
+    // Still present in the most recent — not improving, whatever the total.
+    expect(deriveTrend(['w0', 'w3', 'w4'], W(5)).trend).not.toBe('improving');
+    // Present in the second-newest — one clear piece is not a trajectory.
+    expect(deriveTrend(['w1', 'w3', 'w4'], W(5)).trend).not.toBe('improving');
+  });
+
+  it('calls it worsening only on a body of work big enough for it to be a change', () => {
+    // In each of the last three, across five works — it is doing more now.
+    expect(deriveTrend(['w0', 'w1', 'w2'], W(5)).trend).toBe('worsening');
+    // The same shape on exactly three works is not a change: that is simply
+    // all the evidence there is, and calling it worsening invents a trajectory.
+    expect(deriveTrend(['w0', 'w1', 'w2'], W(3)).trend).toBe('stable');
+  });
+
+  it('falls back to stable, and stable is not dressed up as progress', () => {
+    const v = deriveTrend(['w0', 'w3'], W(5));
+    expect(v.trend).toBe('stable');
+    expect(v.note).not.toMatch(/better|improv|progress|well done|good/i);
+    expect(v.note).toMatch(/hasn't shifted/i);
+  });
+
+  it('carries a note whenever it names a trend, and none when it does not', () => {
+    for (const wids of [['w2', 'w3', 'w4'], ['w0', 'w1', 'w2'], ['w0', 'w3']]) {
+      expect(deriveTrend(wids, W(5)).note).toBeTruthy();
+    }
+    expect(deriveTrend(['w0'], W(5)).note).toBeNull();
+  });
+
+  it('never states a number', () => {
+    // The spec forbids scores and percentages — false precision on qualitative
+    // data. The notes are sentences, not measurements.
+    for (const wids of [['w2', 'w3', 'w4'], ['w0', 'w1', 'w2'], ['w0', 'w3']]) {
+      expect(deriveTrend(wids, W(5)).note).not.toMatch(/\d/);
+    }
   });
 });

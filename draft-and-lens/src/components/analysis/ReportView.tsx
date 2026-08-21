@@ -163,7 +163,7 @@ export function ReportView({
   /** §5.5 — the writer marks a continuity flag intentional. */
   onReconcileFlag?: (flagId: string) => void;
   /** A tendency seen across this writer's works (Gap 2), chosen server-side. */
-  pattern?: { tendency: string; text: string };
+  pattern?: { tendency: string; text: string; trendNote?: string };
   onDismissPattern?: (tendency: string) => void;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
@@ -712,6 +712,18 @@ export function ReportView({
               }}>
                 {pattern.text}
               </p>
+              {/* Trajectory (Gap A). Beneath the pattern and never instead of
+                  it — it contextualises, it does not lead. Absent unless three
+                  works stand behind it. */}
+              {pattern.trendNote && (
+                <p style={{
+                  margin: '.5rem 0 0', fontFamily: 'var(--font-serif)',
+                  fontSize: '.88rem', lineHeight: 1.7, fontStyle: 'italic',
+                  color: 'var(--ink-soft)',
+                }}>
+                  {pattern.trendNote}
+                </p>
+              )}
               {onDismissPattern && (
                 <button
                   type="button"
