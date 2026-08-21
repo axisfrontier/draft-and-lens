@@ -1041,3 +1041,19 @@ A NARROWER QUESTION than the provenance gate asks, deliberately: that gate is fo
 **1d — two files committed** (`d9547a3`): `DraftAndLens_MentorCompleteness_Spec.md` and the standing evaluation rule plus a file pointer in `DL_ONLY_ReadFirst.md`.
 
 **Test data removed:** Chekhov work soft-deleted, patterns and nudge milestones cleared, 6 works, `Home` the only manuscript.
+
+### Stage 2 complete — trajectory (Gap A), no migration — 2026-08-21
+
+`3bd86c0`. 176 tests green, build ✓.
+
+**Derived, not stored — a deliberate departure from the spec's shape, flagged rather than done quietly.** The spec asks for `trend` and `trend_note` columns recalculated on each extraction. Deriving at read time from what the table already holds wins on three counts: no migration, no denormalised verdict that can drift from its own evidence, and it cannot go stale — a tendency that stops appearing becomes "improving" the moment the next work is read, with no recalculation step for anyone to forget. **If Nenad wants the verdict stored for analytics, that is a migration and `deriveTrend` becomes its writer.**
+
+The store only records works where a tendency DID appear, so absence is only meaningful against the writer's whole sequence of works. That is why the derivation takes that sequence rather than working from the row alone.
+
+**Both hard rules enforced and tested.** Three data points before any verdict — with two works there is a before and an after, not a trajectory, and calling that improving dresses a coin flip as development. No positive spin on stable: the note says it has not shifted, and a test asserts it contains no encouragement word. A further test asserts no note ever contains a digit — no scores, no percentages, no false precision on qualitative data. Worsening additionally needs four works behind it, because "in each of the last three, out of exactly three" is all the evidence there is rather than a change.
+
+**Verified live.** A pattern seeded against the two OLDEST works (disclosed fixture) was named in a real reading and carried the trajectory note beneath it: *"A pattern across your work — borrowed phrasing set beside your own…"* then *"It hasn't turned up in your last couple of pieces, though — whatever you're doing about it is working."* Dismissal control present, one aside only, no nudge alongside.
+
+**Open for Nenad:** the three trend notes are placeholder copy, and question 3 of the spec's open questions ("does this match the established editor voice?") is still his to answer.
+
+**Test data removed:** pattern rows and nudge milestones cleared, test work soft-deleted, 6 works.
