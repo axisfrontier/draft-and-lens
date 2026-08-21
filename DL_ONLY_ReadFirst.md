@@ -38,6 +38,7 @@ If you are about to state anything about Codex-Maths — its UI process, its rep
 - `AUDIT_CHECKLIST.md` — Level 3 periodic audit, triggers before major new features
 - `DraftAndLens_FragmentMode_Spec.md` — fragment/short-input handling and the revision loop. Design only, not built. Sequenced after Mentor mode.
 - `DraftAndLens_DepthAndScenarios_Spec.md` — tradition depth, scenarios page, contextual nudges. Design only, not built. Build order inside.
+- `DraftAndLens_MentorCompleteness_Spec.md` — progress tracking, writer-set goals, "How I remember" page. Design only, not built. Build order inside.
 
 ## Standing beta build order (updated 2026-08-21)
 
@@ -56,3 +57,14 @@ Don't reorder without Nenad's explicit instruction.
 `AUDIT_CHECKLIST.md` runs on **two** triggers, either sufficient: before any major new feature, **and every 2–3 weeks regardless of what is being built**. A feature-gated audit only ever ran when someone was already about to build; quiet weeks accrue drift nothing looks at.
 
 Every run is recorded in the checklist's own run log. **If the last recorded run is more than three weeks old, run it before anything else that session.** Last run: 2026-08-18.
+
+## Standing evaluation rule — apply at the right moment, not on a timer
+
+Before marking any feature complete, and whenever a natural pause occurs in build work (end of a spec phase, before starting UI work, before a launch decision), ask:
+
+1. **Is this the best it can be?** Would a serious editor or mentor find it genuinely useful, or merely functional?
+2. **Is anything missing that would make it substantially more valuable?** Not nice-to-haves — things whose absence means the feature doesn't fully deliver on its promise.
+3. **Is anything excessive?** Does anything clutter or undermine the core experience?
+4. **Does it hold up against the product's own standard?** "A reading, not a rewrite." No-rewrite stance under pressure. Editor voice throughout. Tradition-first.
+
+This is not a checklist to run mechanically. It's a standing instinct to apply when the moment is right. Record any findings in this file or in DraftAndLens_Internal_Research_Notes.md — not in chat.
