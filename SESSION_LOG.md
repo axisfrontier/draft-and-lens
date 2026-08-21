@@ -933,3 +933,23 @@ Queued active in `DL_ONLY_ReadFirst.md`. **Nenad approves the approach before an
 - **Does this apply to fragment mode?** A writer asking "what is this Carver paragraph doing?" is a legitimate and valuable craft question, and the fragment answer never claims the prose is theirs. My inclination: full readings decline, fragment craft questions are allowed. That is a product call about what the tool is for.
 - **The 36 lens authors specifically, or published work generally?** Broader is safer and raises the false-positive rate.
 - **What is stored on a decline?** I would count it in telemetry and store no text at all.
+
+### Lens-voice gate built and verified live — 2026-08-21
+
+`ab257f0`. 156 tests green, build ✓, IP grep exit 1. Scope per Nenad's ruling: **no author list, no enumeration of works, misses accepted.**
+
+**Gate 1 — publication apparatus, deterministic, free.** Rights formulas, permissions boilerplate, prior-publication statements, ISBNs, cataloguing, the standard disclaimer page.
+
+**A refinement worth reading, because it inverts part of the original sketch.** Bylines, title pages and copyright lines are NOT signals and are explicitly excluded. They are what a writer puts on their own manuscript — "A Novel by Jane Smith" is the most ordinary thing at the top of a submitted draft, and "© 2026 Jane Smith" is a writer asserting their own rights. Using them as evidence of published work would fire hardest on the writers who format a submission properly, and the accusation would land on someone who did nothing wrong. What survives is only apparatus a publisher adds and an author never types. Tests pin the exclusions as hard as the matches.
+
+**Gate 2 — soft model recognition, its own call.** Not folded into moderation, though moderation already runs pre-pipeline on the same opening. The two gates have OPPOSITE failure postures: moderation fails closed because the cost of letting the prohibited set through is unbounded; this fails open because the cost of a wrong refusal is an innocent writer accused of plagiarism. A single parse error in a shared call would either block legitimate work or silently disarm the safety gate, depending which default won. Runs concurrently with the other two gates, so it adds no wall clock.
+
+The model is asked whether it recognises the text, **not who wrote it**, and told not to name it. "I think I recognise this" is a true statement about its own state; "this is Carver" is a claim it cannot support.
+
+**Neither gate refuses.** The writer gets a question — *"I think I've read this before — it reads to me like something already published. If it's yours, tell me and I'll read it properly."* — and answers it in one click. `confirmedOwn` then skips both halves.
+
+**Verified against the real model, four cases:** two public-domain famous openings recognised; original minimalist prose clear; and the case that matters most, deliberately Carver-imitating ORIGINAL prose, clear — imitation is how craft is learned and must never read as a match.
+
+**Verified live on production:** a submission carrying rights boilerplate produced the hold with the confirmation button and **no pipeline ran at all**; clicking "It's mine — read it" cleared the hold and started the reading, which was then stopped so no test data was created.
+
+Fragment mode exempt, as ruled. Declines store nothing — no work, no reading, no text. The telemetry event (`provenance_declined`, added to the existing security-log union alongside `moderation_blocked`, no migration) carries the signal name only.
