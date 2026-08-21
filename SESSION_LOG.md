@@ -831,3 +831,68 @@ Priority departs from the spec's table order deliberately: what actually happene
 **4. Cross-submission pattern recognition — NOT BUILT, FLAGGED, as instructed.** It needs a `writer_patterns` table and therefore a Supabase migration Nenad applies by hand. Stopping here was the instruction. When it is picked up, the design questions already visible: what counts as evidence of a pattern (Brain 2 identifies tendencies in prose, not as structured output, so something has to extract them); how a pattern is dismissed and where that lives; and the strict gate that a pattern is never named from one submission.
 
 **Everything above ships with placeholder copy** for the nudges, awaiting approval the same way the method line was.
+
+### For Nenad on return — nudge copy, page copy review, and the Gap 2 design — 2026-08-21
+
+## 1. The three nudge lines, exactly as they stand in `src/lib/nudges.ts`
+
+| Milestone | Fires when | Copy |
+|---|---|---|
+| `nudge_ledger_tracking` | this submission contributed facts to a manuscript ledger | "I'm tracking names and details across your chapters now." |
+| `nudge_revision_memory` | a first reading, no prior submissions | "If you resubmit this revised, I'll read it against what I said here." |
+| `nudge_keep_sending` | the third submission (two prior) | "The more you send me, the more I'll notice across your work." |
+
+**One of these has an honesty problem, not a wording problem.** `nudge_keep_sending` promises that sending more work means I notice more *across* it — which is cross-submission pattern recognition, Gap 2, **not built**. As written it is a claim the product cannot keep. Either soften it to something true today (that a work in revision gets read against its own past), or hold that nudge until Gap 2 ships. My recommendation is to hold it: it is the only one of the three that has no true version at present, and it burns the writer's single showing when it fires.
+
+The other two are accurate as shipped. Note `nudge_ledger_tracking` differs from the spec's table by one word — I added "now", because the nudge fires at the moment it becomes true. Revert if you prefer the spec's version.
+
+## 2. `/how-i-read` copy review
+
+**Two false claims found and fixed immediately (`26d94b7`), not queued for approval.** A page whose whole purpose is closing the gap between what the product does and what a writer can see must not overstate it, and leaving an untrue line live while it waits for sign-off is the worse trade. Both corrected lines still need your approval.
+
+- ~~"I show you both passages so you can see what I saw rather than take my word for it"~~ — **false**. `ContinuitySection` renders a flag's `reasoning` and `explanation` only. The two evidence quotes are read during detection and never stored on the flag or displayed. Now reads: "I tell you which chapters they were so you can go and look."
+- ~~"I say what would settle it"~~ — **overclaimed**. The worth-checking tier names the innocent explanation; it does not say what evidence would resolve the question. Now reads: "I name the innocent explanation before the awkward one."
+
+**Worth your judgement, not obviously wrong:**
+- *"If a note I gave you didn't land, I'll say that too."* Part B is instructed to speak to whether a revision addressed earlier notes, so this is plausible — but it is not guaranteed by anything structural, and it is the page making a promise on the model's behalf. Softening to "where a note didn't land, I'll usually say so" would cost little.
+- *"I start keeping a ledger"* uses product vocabulary. The sentence defines it inline, so it reads acceptably — but "ledger" is a glossary term, and this is the one place the page names machinery rather than behaviour.
+
+**Clean on voice throughout otherwise** — first person, no product-speak, no competitor named, no feature lists. The banned-phrase grep returns nothing against this file.
+
+**Still true and worth keeping in mind:** the page has five scenarios, not the spec's six. Scenario 5 is cross-submission patterns and stays out until Gap 2 exists.
+
+## 3. Cross-submission pattern recognition (Gap 2) — design note, for your decision
+
+### 3a. Getting structured tendencies out of Brain 2's prose
+
+Three options considered; one recommended.
+
+**Recommended — a small extractor brain over the finished report.** Mirrors `continuity-extractor` exactly: runs post-delivery so its latency is invisible, reads the *report* rather than the manuscript (~19k chars, cheap), and returns at most two or three candidate tendencies, each with the verbatim sentence from the reading it came from. Its one law is that it may only **restate a claim the reading already made** — never generate a new judgement. That makes it structurally incapable of inventing a pattern the reading did not support, which is the same discipline that makes the continuity extractor trustworthy.
+
+**Rejected — asking Brain 2 for a JSON tail.** The analyst streams to the writer, so a machine-readable block would stream into the report view and need stripping in `parseReport`; it would sit at the very end of the longest output in the system, which is exactly where the 2026-08-20 truncation bugs lived; and it means editing the most tuned prompt in the product for a non-reading purpose.
+
+**Rejected — deriving from scores or WHAT TO REVISE.** Free, but wrong: scores are dimensions, and the revision list is per-draft and directive. Neither is a *habit*, and squeezing one out of them produces generic creative-writing advice, which the spec explicitly forbids.
+
+**The hard problem is matching, not extraction.** "Over-explains emotional states" in reading one and "the narrator names the feeling the image already showed" in reading four are the same tendency in different words; exact string matching would never join them, and there is no embedding infrastructure here. **Recommendation: a closed vocabulary of tendency keys**, drawn from the LearnedCorpus's own failure vocabulary, which the extractor must choose from rather than free-text. Matching then becomes exact on the key, the gate becomes countable, and — the real prize — every pattern is named in the corpus's terms rather than in whatever words one reading happened to use.
+
+### 3b. Where dismissal lives — and the problem the spec did not see
+
+The spec says pattern dismissal works "same dismissal logic as continuity flags". **There is no continuity flag dismissal.** `reconciled_at` is read in five places — `gatePair`, `state-locks`, `detection-pass` — and written by nothing. No route, no control, no UI. It has been the standing blocked item since 2026-08-18, and it is the same interaction that sub-question 1a's promotion path waits on.
+
+So pattern dismissal would be the **first** dismissal control in the product, not a reuse of an existing one. That is materially more work than the spec implies. Your call between:
+
+1. **Build flag dismissal first, patterns follow it.** Recommended. It unblocks 1a's promotion path as well — the storage half of which is already built and verified — so one interaction pays for two features.
+2. **Build pattern dismissal standalone.** Faster to Gap 2, leaves flags still undismissable, and risks two different dismissal idioms later.
+
+**A second mismatch:** the spec places dismissal "in the ledger view", but `/ledger/[manuscriptId]` is scoped to one manuscript and patterns are per-writer, spanning works. They have no home there. The natural place is wherever a writer sees their work as a whole — `/account`, which already lists every work — or a small per-writer page of its own.
+
+### 3c. Gate logic
+
+- **Never from one submission.** `confirmed_count >= 2` counted over **distinct works**, not distinct readings — three revisions of one story are one piece of evidence about the writer, not three.
+- **Not before the third submission**, per the spec.
+- **Dismissed patterns never resurface**, and dismissal is per-pattern, not per-reading.
+- **At most one pattern named per reading**, for the same reason nudges are capped at one: two quiet asides in one reading is clutter.
+- **The stored text is what the analyst is handed** — never a paraphrase generated at read time. Same no-fabrication law as Part B: if there is nothing real to pass, pass null.
+- **Evidence is retained** (`reading_ids`) so a named pattern can always be traced back to the readings that produced it. A pattern that cannot show its evidence should not be shown to the writer.
+
+**Not built, as instructed** — `writer_patterns` needs a migration you apply by hand. The SQL is not written yet either; it should follow the decisions above, particularly the closed-vocabulary key, which changes the table's shape.
