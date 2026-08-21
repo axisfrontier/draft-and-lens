@@ -1019,3 +1019,25 @@ Three commits: `150915e` store and gate, `53b5fda` extractor, `1f7dafc` surfacin
 **All test data removed:** `writer_patterns` empty, nudge milestones cleared, both test works soft-deleted, `Home` the only manuscript, 6 works.
 
 **Awaiting Nenad:** the seven `PATTERN_COPY` lines are placeholder and unapproved — same process as the method line and the nudges.
+
+### Stage 1 complete — page copy, lens self-recognition, two specs — 2026-08-21
+
+**1a — `/how-i-read` (`f0e3…`, see log).** "If a note I gave you didn't land, I'll say that too" removed — nothing structural guaranteed it and the page was promising on the model's behalf. Replaced with "Where I can see what changed, I'll say so." The sixth scenario is written and live: patterns across a writer's works, describing only what the feature does — named after more than one work, never from one, correctable permanently.
+
+**1b — both shipped nudge lines approved as written.** No change.
+
+**1c — lens self-recognition (`6b41c94`).** A lens handed its own work now says so in its own voice and asks for the writer's instead. 35 lines, one per lens.
+
+A NARROWER QUESTION than the provenance gate asks, deliberately: that gate is forbidden from naming anyone, because a list of authors is what Nenad ruled out. This asks one binary question about ONE author the writer already named by choosing the lens — no list, nothing enumerated. The false positive has its own flavour here — a lens claiming a writer's own prose is the product taking credit for their work — so the prompt carries the anti-imitation framing that held on the provenance check, and the floor is high. Fails open: the lens just reads the work.
+
+**Verified against the real model, six cases.** Every negative held, including original Carver-imitating prose against the Carver lens. The positive works and is author-specific: public-domain Chekhov against the Chekhov lens returns yes; the same text against Hemingway returns no.
+
+**Verified live on the deployed endpoint.** Production returned `{type: 'self_recognition'}` followed by Chekhov's line. Stated precisely because the first attempt did not: a UI lens click at 19:48 produced an ordinary reading, and the check run against that exact stored text returned true three times out of three — so the click had hit a build that predated the deploy, not a logic fault. The endpoint was then called directly from the authenticated page and behaved correctly. What is not separately exercised is ReportView rendering that text, which is the same rendering path every lens reading already uses.
+
+**Two things worth Nenad's eye:**
+- **The brief says 36 lens voices; `LENS_IDS` has 35.** Every one is covered. If a 36th is expected it is missing from the lens set, not from the copy.
+- **The provenance gate fired on Chekhov, but slowly** — a check nine seconds after submission showed no hold, and it appeared later. Not a defect (the gate runs concurrently with moderation and answers when it answers), but worth knowing that "no hold yet" is not "no hold".
+
+**1d — two files committed** (`d9547a3`): `DraftAndLens_MentorCompleteness_Spec.md` and the standing evaluation rule plus a file pointer in `DL_ONLY_ReadFirst.md`.
+
+**Test data removed:** Chekhov work soft-deleted, patterns and nudge milestones cleared, 6 works, `Home` the only manuscript.
