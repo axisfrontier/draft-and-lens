@@ -896,3 +896,40 @@ So pattern dismissal would be the **first** dismissal control in the product, no
 - **Evidence is retained** (`reading_ids`) so a named pattern can always be traced back to the readings that produced it. A pattern that cannot show its evidence should not be shown to the writer.
 
 **Not built, as instructed** — `writer_patterns` needs a migration you apply by hand. The SQL is not written yet either; it should follow the decisions above, particularly the closed-vocabulary key, which changes the table's shape.
+
+### §5.5 flag dismissal built and verified live — 2026-08-21
+
+`b19cc11`, `99ce41a`. The standing blocked item since 18 Aug. **No migration needed** — `continuity_facts` already carries `reconciled_at` AND `reconciled_reason`, both provisioned in phase 2 and never written to.
+
+Dismissal does two things because the schema keeps two kinds of memory. **The flag becomes `dismissed`**, which is what makes it permanent — a contradiction pair enters `listAdjudicatedPairs` and is never re-adjudicated; a lock violation IS recomputed every run but `storeFlags` can neither insert it (unique pair) nor promote it, because `promotes` treats dismissed as terminal in both directions. That guard was written on 20 Aug before anything could be dismissed; this is the case it existed for. **One fact is reconciled, never both** — the column is per-fact while §5.5 speaks per-pair, so marking both sides would reach past what the writer agreed to. On a state lock the writer's own lock is never the reconciled side: "she's in chapter 3 because it's a flashback" is not "the death no longer holds", and a violation in chapter 12 must still fire.
+
+**Verified against the production ledger, then live in the browser.** Script-level: violation raised at worth_checking → dismissal sets the flag dismissed, reconciles the appearance with the writer's reason, leaves the lock live → a later run under a KNOWN-LINEAR frame (maximum promotion pressure) leaves it dismissed and creates no duplicate. Browser: a seeded chapter-1 fact plus a real submission produced a genuine `contradiction` flag in §6a — "Marta Vey — eye colour" — with the quiet THIS IS INTENTIONAL control beneath it. Clicking removed the flag and the whole §6a section; the database showed `outcome = dismissed` and exactly one fact reconciled.
+
+**One defect found by that verification and fixed (`99ce41a`):** both facts sat at `sequence_index = 1`, so the "reconcile the later one" tiebreak fell through to whatever order `.in()` returned — non-deterministic across runs. Now sorted later-first then by id.
+
+**On completing sub-question 1a's promotion path — the honest position.** It was already complete before this build, and it is worth being exact about why rather than claiming credit for it here. Promotion needs two things: the frame becoming known, and flags being able to move up. Frame learning from structural maps shipped 2026-08-21 (and now runs on every submission since the word-count gate was removed); flag promotion shipped 2026-08-20 and was verified live the same day. What dismissal adds is 1a's *other* half — the suppression side — plus the guarantee that a writer's decision beats the frame becoming known later.
+
+**1a's own wording says "promote once dismissal behaviour establishes the frame", and that clause is still not implemented, deliberately.** Read carefully against §5.5, the worked example is `unreliableNarrator` — "dismiss two or three flags on the same narrator and the product asks once, quietly". It is not `nonLinear`, and it could not be: a writer dismissing an age clash as intentional is evidence the book is NON-linear, which demotes rather than promotes. Inferring a frame from dismissals therefore points the demoting way, and building it would make the ledger *less* confident, not more. Worth Nenad confirming that reading before anyone implements the clause as literally written.
+
+### Lens-voice upload — proposed approach, NO CODE WRITTEN — 2026-08-21
+
+Queued active in `DL_ONLY_ReadFirst.md`. **Nenad approves the approach before any code.**
+
+**The risk is three risks, and the third one is the one that decides the design.** A writer pastes real published Carver: (1) the reading critiques it, and "D&L told Raymond Carver his prose is thin" is a screenshot that ends the product's credibility; (2) the Carver lens is asked to read Carver, which exposes that no lens knows who wrote anything; (3) it is a plagiarism and copyright surface — we would store published text and hand back something that reads as authentication.
+
+**Nenad's proposed signal — title page, byline, known published-work markers — is right, and catches only the careless case.** Someone pasting a scanned page with a copyright line is caught cheaply and deterministically. Someone pasting the prose alone, which is the ordinary case, is not caught at all. So metadata is necessary and nowhere near sufficient.
+
+**The asymmetry that must drive the design:** a false positive is far worse than a miss. Telling a writer "this is published work" when it is their own Carver-influenced prose is an accusation of plagiarism levelled at someone who did nothing wrong — worse than the original problem, and unrecoverable in a way a missed catch is not. Any approach whose failure mode is a confident accusation is the wrong approach, and that rules out simply asking a model "is this published?" and acting on a yes.
+
+**Proposed: two tiers, and neither of them accuses.**
+
+1. **Deterministic metadata gate, pre-model, zero cost.** Byline patterns, `Copyright ©`, `First published in`, ISBN, `From the collection`, epigraph-style attributions, "by <Name>" adjacent to a title. Very high precision, near-zero false positives. On a hit, decline before any brain runs — the same place the word cap and moderation already sit.
+
+2. **A recognition question folded into an existing gate call, not a new brain — and it asks rather than tells.** Where the model recognises the text with high confidence, the writer does not get an accusation. They get something in the register of: *"I think I've read this before. If it's yours, say so and I'll read it properly."* That single reframe converts a precision problem into an interaction: a false positive costs an innocent writer one click, and a true positive costs a plagiarist their cover. It also keeps the product honest — "I think I recognise this" is a true statement about the model's state, where "this is published work by X" is a claim it cannot actually support.
+
+**What declining means:** no reading, no work or reading rows stored, nothing to the ledger, and an editor-voiced response rather than an error.
+
+**Three questions for Nenad, all genuinely his:**
+- **Does this apply to fragment mode?** A writer asking "what is this Carver paragraph doing?" is a legitimate and valuable craft question, and the fragment answer never claims the prose is theirs. My inclination: full readings decline, fragment craft questions are allowed. That is a product call about what the tool is for.
+- **The 36 lens authors specifically, or published work generally?** Broader is safer and raises the false-positive rate.
+- **What is stored on a decline?** I would count it in telemetry and store no text at all.
