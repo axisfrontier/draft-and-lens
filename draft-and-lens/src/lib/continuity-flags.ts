@@ -452,12 +452,16 @@ export async function reconcileFlag(
       id: string; source: string; sequence_index: number | null;
     }>;
     const eligible = facts.filter((f) => f.source !== 'writer');
+    // Later first, then by id — the second key is not decoration. Two facts
+    // from the SAME chapter tie on sequence, and `.in()` gives no order
+    // guarantee, so without a stable tiebreak the same dismissal could
+    // reconcile a different fact on a different run. Observed live on
+    // 2026-08-21, where both sides sat at sequence 1.
     const target =
-      eligible.length === 0
-        ? null
-        : eligible.reduce((later, f) =>
-            (f.sequence_index ?? -1) > (later.sequence_index ?? -1) ? f : later
-          );
+      [...eligible].sort((x, y) => {
+        const bySeq = (y.sequence_index ?? -1) - (x.sequence_index ?? -1);
+        return bySeq !== 0 ? bySeq : x.id.localeCompare(y.id);
+      })[0] ?? null;
 
     if (target) {
       await supabase
