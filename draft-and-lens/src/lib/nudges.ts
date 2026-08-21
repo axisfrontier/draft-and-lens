@@ -41,6 +41,8 @@ export interface NudgeContext {
   factsExtracted: number;
   /** The differentiator method line already appeared in this reading. */
   differentiatorShown: boolean;
+  /** A writer pattern was named in this reading. */
+  patternShown: boolean;
 }
 
 export interface Nudge {
@@ -67,7 +69,11 @@ const REVISION_MEMORY: Nudge = {
  * cannot drift from what the route actually does.
  */
 export function selectNudge(ctx: NudgeContext): Nudge | null {
-  if (ctx.differentiatorShown) return null;
+  // One quiet aside per reading, and a nudge is the least important of the
+  // three that can claim it. The method line is once-in-an-account; a named
+  // pattern is an observation about the writer drawn from their whole body of
+  // work. A capability hint yields to both.
+  if (ctx.differentiatorShown || ctx.patternShown) return null;
 
   // Something that just happened, and that the writer has no other way to see.
   if (ctx.factsExtracted > 0) return LEDGER_TRACKING;

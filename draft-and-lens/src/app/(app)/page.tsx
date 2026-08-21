@@ -70,6 +70,9 @@ type StreamEvent =
   | { type: 'differentiator'; text: string }
   // Sent after everything else, at most once per reading and once per account.
   | { type: 'nudge'; text: string }
+  // Sent after `done`. Not once-ever: a pattern stays named until the writer
+  // says it is not true of them.
+  | { type: 'pattern'; tendency: string; text: string }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -197,6 +200,7 @@ export default function AppHomePage() {
   const [provenanceHold, setProvenanceHold] = useState('');
   const [differentiator, setDifferentiator] = useState('');
   const [nudge, setNudge] = useState('');
+  const [pattern, setPattern] = useState<{ tendency: string; text: string } | null>(null);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
 
   const effectiveText = text.trim() || uploadedFileText;
@@ -394,6 +398,28 @@ export default function AppHomePage() {
     }
   }
 
+  /**
+   * The writer says a named pattern is not true of them.
+   *
+   * Optimistic like the flag control, and for the same reason: this is the
+   * writer correcting the largest claim the product makes about them, and
+   * making them wait to see it go reads as the tool holding its ground.
+   */
+  async function dismissPattern(tendency: string): Promise<void> {
+    const before = pattern;
+    setPattern(null);
+    try {
+      const res = await fetch('/api/patterns/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tendency }),
+      });
+      if (!res.ok) setPattern(before);
+    } catch {
+      setPattern(before);
+    }
+  }
+
   async function analyse(forceRefresh = false, confirmedOwn = false): Promise<void> {
     if (mode === null) return;
 
@@ -425,6 +451,7 @@ export default function AppHomePage() {
     setProvenanceHold('');
     setDifferentiator('');
     setNudge('');
+    setPattern(null);
     setStage('Reading your work');
     setEarlyDiagnostic(null);
     setCoverage(null);
@@ -522,6 +549,8 @@ export default function AppHomePage() {
             setDifferentiator(evt.text);
           } else if (evt.type === 'nudge') {
             setNudge(evt.text);
+          } else if (evt.type === 'pattern') {
+            setPattern({ tendency: evt.tendency, text: evt.text });
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -1400,6 +1429,8 @@ export default function AppHomePage() {
           nudge={nudge || undefined}
           onDismissNudge={() => setNudge('')}
           onReconcileFlag={reconcileFlag}
+          pattern={pattern ?? undefined}
+          onDismissPattern={dismissPattern}
           revisionStatus={revisionStatus ?? undefined}
           readAt={readAt ?? undefined}
           onFreshReadingRequest={() => analyse(true)}

@@ -12,7 +12,13 @@ import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../li
 import { extractPatterns } from '../../../ai/brains/pattern-extractor';
 import { selectNudge } from '../../../lib/nudges';
 import { findPublicationApparatus } from '../../../lib/provenance';
-import { recordTendencies, traditionTreatsAsFailure } from '../../../lib/writer-patterns';
+import {
+  PATTERN_COPY,
+  isNameable,
+  listPatterns,
+  recordTendencies,
+  traditionTreatsAsFailure,
+} from '../../../lib/writer-patterns';
 import { claimMilestone } from '../../../lib/user-milestones';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
@@ -412,6 +418,17 @@ export async function POST(req: NextRequest): Promise<Response> {
         let differentiatorShown = false;
         let factsExtracted = 0;
 
+        // A pattern is named from what was already true BEFORE this reading —
+        // listPatterns runs ahead of this reading's own tendencies being
+        // recorded below, so nothing found today can be named today. The gate
+        // needs two distinct works anyway; this makes the ordering explicit
+        // rather than relying on the count to save us.
+        const namedPattern = await listPatterns(userId)
+          .then((patterns) =>
+            patterns.find((p) => isNameable(p, priorSubmissions + 1)) ?? null
+          )
+          .catch(() => null);
+
         send({ type: 'done', ...payload, revision: { status } });
 
         // ── Differentiator method line (handover §6) ──────────────────────
@@ -437,6 +454,23 @@ export async function POST(req: NextRequest): Promise<Response> {
         ) {
           send({ type: 'differentiator', text: DIFFERENTIATOR_COPY });
           differentiatorShown = true;
+        }
+
+        // ── Writer pattern, named (Gap 2) ─────────────────────────────────
+        // Yields to the method line, outranks a nudge: one quiet aside per
+        // reading, and this is an observation about the writer drawn from
+        // their whole body of work rather than a capability hint.
+        //
+        // Unlike the method line and the nudges, this is NOT once-ever — a
+        // pattern stays true and stays named until the writer says it is not
+        // true of them, which is what the dismissal is for.
+        const patternShown = !differentiatorShown && namedPattern !== null;
+        if (patternShown && namedPattern) {
+          send({
+            type: 'pattern',
+            tendency: namedPattern.tendency,
+            text: PATTERN_COPY[namedPattern.tendency],
+          });
         }
 
         // Wall clock stops when the user has everything, not after the
@@ -631,7 +665,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         //
         // Claimed last, like the differentiator: a nudge the writer will not
         // be shown must not consume the single showing they get.
-        const nudge = selectNudge({ priorSubmissions, factsExtracted, differentiatorShown });
+        const nudge = selectNudge({ priorSubmissions, factsExtracted, differentiatorShown, patternShown });
         if (nudge && (await claimMilestone(userId, nudge.milestone).catch(() => false))) {
           send({ type: 'nudge', text: nudge.text });
         }

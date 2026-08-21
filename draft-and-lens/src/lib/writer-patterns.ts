@@ -290,3 +290,37 @@ export async function dismissPattern(userId: string, tendency: Tendency): Promis
 
 /** Exported for the account wipe (§8) — see deleteAllUserData. */
 export const WRITER_PATTERNS_TABLE = TABLE;
+
+/**
+ * What the writer is actually shown, per tendency.
+ *
+ * PLACEHOLDER COPY — not approved, not final. Same process as the method line
+ * and the nudges: Nenad approves before it reaches a writer.
+ *
+ * Three rules held throughout, because this is the product's largest claim
+ * about a person and the register decides whether it lands as mentorship or as
+ * an accusation:
+ *   • it says "across your work" or "more than once" — a pattern that does not
+ *     announce itself as a pattern reads as a note about this draft, which it
+ *     is not;
+ *   • it is developmental, never a verdict on the writer — the Mentor
+ *     addendum's register, describing a habit rather than a limitation;
+ *   • it names the corpus's distinction, not a generic craft opinion. Every
+ *     line is the plain-English form of the principle behind its key.
+ */
+export const PATTERN_COPY: Record<Tendency, string> = {
+  restatement:
+    "Across your work I keep meeting the same moment — the narration stepping in to say what the scene has already said. Of everything I've noticed, that's the one I'd watch for first.",
+  narrated_not_accumulated:
+    "Something I've seen in more than one piece of yours: the change arrives as a statement rather than as something the reader has been carrying all along.",
+  shrinking:
+    "A recurring move in your work — the narration reaches for an image, then lands somewhere smaller than the image had already got to on its own.",
+  floating_abstraction:
+    "This has come up more than once now: an abstract phrase standing in the place where the concrete work was needed.",
+  unearned_ambiguity:
+    "Across more than one piece, I've been left uncertain in a way that reads as the writing not committing, rather than as something withheld on purpose.",
+  borrowed_phrase:
+    "A pattern across your work — borrowed phrasing set beside your own, where your own is consistently the stronger of the two.",
+  withheld_payoff:
+    "More than once now, the ending has stopped just short of the emotional specificity this tradition asks for.",
+};

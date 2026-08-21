@@ -8,7 +8,7 @@ import { selectNudge } from '../../src/lib/nudges';
  * wrong one is not recoverable by a later reading getting it right.
  */
 describe('selectNudge', () => {
-  const base = { priorSubmissions: 5, factsExtracted: 0, differentiatorShown: false };
+  const base = { priorSubmissions: 5, factsExtracted: 0, differentiatorShown: false, patternShown: false };
 
   it('says nothing on an ordinary reading', () => {
     expect(selectNudge(base)).toBeNull();
@@ -20,8 +20,16 @@ describe('selectNudge', () => {
     // the method line is the more important of the two.
     expect(selectNudge({ ...base, differentiatorShown: true })).toBeNull();
     expect(
-      selectNudge({ priorSubmissions: 0, factsExtracted: 4, differentiatorShown: true })
+      selectNudge({ priorSubmissions: 0, factsExtracted: 4, differentiatorShown: true, patternShown: false })
     ).toBeNull();
+  });
+
+  it('yields to a named pattern — one quiet aside per reading', () => {
+    // A pattern is an observation about the writer drawn from their whole body
+    // of work; a nudge is a capability hint. Two asides in one reading is the
+    // clutter the one-per-reading rule exists to prevent.
+    expect(selectNudge({ ...base, factsExtracted: 3, patternShown: true })).toBeNull();
+    expect(selectNudge({ ...base, priorSubmissions: 0, patternShown: true })).toBeNull();
   });
 
   it('names the ledger when this chapter actually contributed facts', () => {
@@ -34,12 +42,12 @@ describe('selectNudge', () => {
     // the revision-memory one: the spec's rule is that a nudge fires when the
     // feature "was actually used or is directly applicable", and the first of
     // those is the stronger claim.
-    const n = selectNudge({ priorSubmissions: 0, factsExtracted: 2, differentiatorShown: false });
+    const n = selectNudge({ priorSubmissions: 0, factsExtracted: 2, differentiatorShown: false, patternShown: false });
     expect(n?.milestone).toBe('nudge_ledger_tracking');
   });
 
   it('offers revision memory on a first reading', () => {
-    const n = selectNudge({ priorSubmissions: 0, factsExtracted: 0, differentiatorShown: false });
+    const n = selectNudge({ priorSubmissions: 0, factsExtracted: 0, differentiatorShown: false, patternShown: false });
     expect(n?.milestone).toBe('nudge_revision_memory');
   });
 
@@ -57,7 +65,7 @@ describe('selectNudge', () => {
     // Not a behaviour so much as the shape of the contract: the return type
     // cannot express two, which is what makes one-per-reading structural
     // rather than a rule someone has to remember.
-    const n = selectNudge({ priorSubmissions: 0, factsExtracted: 9, differentiatorShown: false });
+    const n = selectNudge({ priorSubmissions: 0, factsExtracted: 9, differentiatorShown: false, patternShown: false });
     expect(n === null || typeof n.text === 'string').toBe(true);
   });
 });

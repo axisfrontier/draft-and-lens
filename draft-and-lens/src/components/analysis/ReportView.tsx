@@ -138,6 +138,8 @@ export function ReportView({
   nudge,
   onDismissNudge,
   onReconcileFlag,
+  pattern,
+  onDismissPattern,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -160,6 +162,9 @@ export function ReportView({
   onDismissNudge?: () => void;
   /** §5.5 — the writer marks a continuity flag intentional. */
   onReconcileFlag?: (flagId: string) => void;
+  /** A tendency seen across this writer's works (Gap 2), chosen server-side. */
+  pattern?: { tendency: string; text: string };
+  onDismissPattern?: (tendency: string) => void;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
    *  link through to its continuity ledger. Absent for a standalone piece,
@@ -683,6 +688,46 @@ export function ReportView({
               stated facts about the manuscript, not a reading of it, so they
               belong in both views rather than only the prose one. */}
           <ContinuitySection flags={continuityFlags} onReconcile={onReconcileFlag} />
+
+          {/* A named pattern (Gap 2) — the largest claim this product makes
+              about a person, so the control to reject it sits on the claim
+              itself rather than in a settings page. Same idiom as the
+              continuity flag's "this is intentional", and the same reasoning:
+              the writer corrects it where it is made. PLACEHOLDER COPY. */}
+          {pattern && (
+            <div style={{
+              margin: '1.5rem 0 0', paddingLeft: '1.25rem',
+              borderLeft: '2px solid var(--amber-d)', maxWidth: 660,
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+                letterSpacing: '.2em', textTransform: 'uppercase',
+                color: 'var(--amber-d)', marginBottom: '.4rem',
+              }}>
+                Across your work
+              </div>
+              <p style={{
+                margin: 0, fontFamily: 'var(--font-serif)', fontSize: '.92rem',
+                lineHeight: 1.75, color: 'var(--ink-mid)',
+              }}>
+                {pattern.text}
+              </p>
+              {onDismissPattern && (
+                <button
+                  type="button"
+                  onClick={() => onDismissPattern(pattern.tendency)}
+                  style={{
+                    marginTop: '.6rem', background: 'none', border: 'none', padding: 0,
+                    cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    letterSpacing: '.12em', textTransform: 'uppercase',
+                    color: 'var(--ink-faint)',
+                  }}
+                >
+                  That&apos;s not true of my work
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Contextual nudge (Depth & Scenarios spec, Part 3).
               ONE PLACEMENT for every nudge rather than the spec's per-nudge
