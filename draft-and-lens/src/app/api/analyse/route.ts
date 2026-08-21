@@ -6,9 +6,11 @@ import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor'
 import { runDetectionPass } from '../../../ai/detection-pass';
 import { moderateSubmission } from '../../../ai/moderation';
 import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
+import { checkProvenance } from '../../../ai/provenance-check';
 import { DIFFERENTIATOR_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { selectNudge } from '../../../lib/nudges';
+import { findPublicationApparatus } from '../../../lib/provenance';
 import { claimMilestone } from '../../../lib/user-milestones';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
@@ -92,6 +94,10 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const { text, mode, genre, intent, bible, skipBible, submissionType, forceRefresh } = body;
+  // The writer has answered the lens-voice question: this work is theirs. It
+  // is a claim, not proof, and it is treated as settling the matter — the gate
+  // exists to ask once, not to argue.
+  const confirmedOwn = body.confirmedOwn === true;
   // Continuity-ledger grouping (§2). Optional: absent for a standalone piece,
   // which stays the default. Ownership is verified before it is used.
   const manuscriptId = typeof body.manuscriptId === 'string' ? body.manuscriptId : null;
@@ -165,6 +171,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const [
     { result: verdict, entries: gateEntries },
     { result: decision, entries: revisionEntries },
+    { result: provenance, entries: provenanceEntries },
   ] = await Promise.all([
     withCostTracking(() => moderateSubmission(clean)),
     withCostTracking(async () => {
@@ -173,6 +180,13 @@ export async function POST(req: NextRequest): Promise<Response> {
       recordStageTiming('resolveRevision', { startedAtMs, endedAtMs: Date.now() }, 'supabase');
       return d;
     }),
+    // Lens-voice gate, soft half. Concurrent with the other two so it adds no
+    // wall clock, and skipped entirely when the writer has already told us the
+    // work is theirs — the confirmation is the answer to the only question
+    // this gate asks.
+    withCostTracking(async () =>
+      confirmedOwn ? ({ status: 'clear' } as const) : checkProvenance(clean)
+    ),
   ]);
   if (verdict.status === 'block') {
     // Minimal log — category only, NEVER the submitted text (breach hook).
@@ -218,6 +232,34 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json(
       { error: 'Something went wrong before I could start reading. Give it a moment and send it again.' },
       { status: 503 }
+    );
+  }
+
+  // ── Lens-voice gate (Internal Research Notes; scope ruled 2026-08-21) ────
+  // Two signals, no author list: the apparatus of a published edition, or the
+  // model recognising the text itself. Either one asks; NEITHER accuses. A
+  // false positive here would tell a writer their own prose is somebody
+  // else's, which is worse than the miss it prevents — so the copy is a
+  // question, the writer can answer it in one click, and `confirmedOwn` then
+  // skips both halves on the resubmission.
+  //
+  // Runs AFTER moderation so the fail-closed safety gate always wins, and
+  // before anything is stored: a declined submission writes no work, no
+  // reading, and no text anywhere. The telemetry event carries the signal
+  // name only.
+  const apparatus = confirmedOwn ? null : findPublicationApparatus(clean);
+  if (apparatus || provenance.status === 'recognised') {
+    logSecurityEvent('provenance_declined', {
+      signal: apparatus ? apparatus.signal : 'model-recognition',
+    });
+    return NextResponse.json(
+      {
+        error:
+          "I think I've read this before — it reads to me like something already published. If it's " +
+          'yours, tell me and I\'ll read it properly.',
+        provenanceHold: true,
+      },
+      { status: 409 }
     );
   }
 

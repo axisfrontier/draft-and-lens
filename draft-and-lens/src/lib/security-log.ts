@@ -13,7 +13,8 @@ export type SecurityEvent =
   | 'auth_denied' // a data endpoint was hit without a valid session (possible probing)
   | 'data_exported' // a user downloaded their data export
   | 'account_deleted' // a full account wipe ran
-  | 'moderation_blocked'; // a submission was refused by the moderation gate
+  | 'moderation_blocked' // a submission was refused by the moderation gate
+  | 'provenance_declined'; // a submission looked like already-published work
 
 export function logSecurityEvent(
   event: SecurityEvent,

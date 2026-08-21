@@ -193,6 +193,8 @@ export default function AppHomePage() {
    *  hide it — see the note where it is set. */
   const [panelShown, setPanelShown] = useState(false);
   const [fragmentHandoff, setFragmentHandoff] = useState<FragmentHandoff | null>(null);
+  /** The lens-voice gate asked whether this work is the writer's own. */
+  const [provenanceHold, setProvenanceHold] = useState('');
   const [differentiator, setDifferentiator] = useState('');
   const [nudge, setNudge] = useState('');
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
@@ -392,7 +394,7 @@ export default function AppHomePage() {
     }
   }
 
-  async function analyse(forceRefresh = false): Promise<void> {
+  async function analyse(forceRefresh = false, confirmedOwn = false): Promise<void> {
     if (mode === null) return;
 
     // Too short to read as a piece — ask instead of proceeding.
@@ -420,6 +422,7 @@ export default function AppHomePage() {
     setError('');
     setStreamed('');
     setReport('');
+    setProvenanceHold('');
     setDifferentiator('');
     setNudge('');
     setStage('Reading your work');
@@ -444,6 +447,7 @@ export default function AppHomePage() {
           text: effectiveText,
           submissionType,
           ...(forceRefresh ? { forceRefresh: true } : {}),
+          ...(confirmedOwn ? { confirmedOwn: true } : {}),
           ...(chosenManuscript ? { manuscriptId: chosenManuscript } : {}),
           ...(bibleSkip ? { skipBible: true } : bibleInput.trim() ? { bible: bibleInput.trim() } : {}),
         }),
@@ -451,7 +455,17 @@ export default function AppHomePage() {
       });
 
       if (!res.ok || res.body === null) {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        const data = (await res.json().catch(() => null)) as
+          | { error?: string; provenanceHold?: boolean }
+          | null;
+        // The lens-voice gate asked a question rather than refusing. It is not
+        // an error and must not be shown as one — the writer answers it and
+        // the same submission goes through untouched.
+        if (res.status === 409 && data?.provenanceHold) {
+          setProvenanceHold(data.error ?? '');
+          setRunning(false);
+          return;
+        }
         throw new Error(data?.error ?? `Request failed (${res.status}).`);
       }
 
@@ -1110,6 +1124,31 @@ export default function AppHomePage() {
                 letterSpacing: '.08em', color: 'var(--paper-dark)',
                 textAlign: 'center', fontStyle: 'italic',
               }}>It arrives as I write it.</p>
+
+              {provenanceHold && (
+                <div style={{
+                  marginTop: '1rem', padding: '.9rem 1.1rem',
+                  border: '1px solid var(--border-dark)', borderRadius: 14,
+                }}>
+                  <p style={{
+                    margin: 0, fontFamily: 'var(--font-serif)', fontSize: '.9rem',
+                    lineHeight: 1.7, color: 'var(--paper)',
+                  }}>
+                    {provenanceHold}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setProvenanceHold(''); void analyse(false, true); }}
+                    style={{
+                      marginTop: '.7rem', background: 'none', border: 'none', padding: 0,
+                      cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                      letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--amber-l)',
+                    }}
+                  >
+                    It&apos;s mine — read it
+                  </button>
+                </div>
+              )}
 
               {/* Fragment mode — a passage and a question, answered
                   conversationally and stored nowhere. Its own component with
