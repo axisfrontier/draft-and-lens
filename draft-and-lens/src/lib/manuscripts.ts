@@ -397,22 +397,24 @@ export async function resolveAttachment(
  * The frame properties learned about a manuscript so far (§5.1), as stored in
  * `manuscripts.narrative_frame`.
  *
- * ONLY `nonLinear` is persisted, and the omission of the other two is
- * deliberate rather than unfinished:
+ * TWO OF THE THREE ARE PERSISTED, and the third's omission is deliberate:
+ * `multiplePov` is derived live from the manuscript's own facts on every
+ * detection run (see deriveMultiplePov). Storing a second copy would be
+ * denormalisation with nothing to gain and drift to lose — the facts are
+ * already loaded, and they are the authority.
  *
- *   - `multiplePov` is derived live from the manuscript's own facts on every
- *     detection run (see deriveMultiplePov). Storing a second copy would be
- *     denormalisation with nothing to gain and drift to lose — the facts are
- *     already loaded, and they are the authority.
- *   - `unreliableNarrator` has no evidence source anywhere in the pipeline.
- *     Writing a value for it would be inventing one, and a wrong `false`
- *     promotes narration to the book's own voice — the §5.2 failure the gate
- *     exists to prevent. It stays unlearned until something can establish it.
+ * `unreliableNarrator` joined this store on 2026-08-22, when the structural
+ * reader began answering for it. It needed no migration: narrative_frame is
+ * jsonb, so a new key costs nothing. Before that it had no evidence source
+ * anywhere in the pipeline and was hard-coded null.
  */
 export interface StoredFrame {
   /** NULL means UNKNOWN and never "linear" — sub-question 1a, resolved
    *  unknown-and-demote. */
   nonLinear: boolean | null;
+  /** NULL means UNKNOWN and never "reliable". Only ever true or null: see
+   *  deriveUnreliableNarrator for why false is not writable from evidence. */
+  unreliableNarrator: boolean | null;
 }
 
 /**
@@ -438,9 +440,10 @@ export interface StoredFrame {
 export async function recordFrameEvidence(
   userId: string,
   manuscriptId: string,
-  nonLinear: boolean | null
+  evidence: { nonLinear: boolean | null; unreliableNarrator: boolean | null }
 ): Promise<StoredFrame> {
-  if (!isSupabaseConfigured()) return { nonLinear: null };
+  const unknown: StoredFrame = { nonLinear: null, unreliableNarrator: null };
+  if (!isSupabaseConfigured()) return unknown;
   try {
     const supabase = getServiceClient();
     const { data } = await supabase
@@ -450,25 +453,40 @@ export async function recordFrameEvidence(
       .eq('user_id', userId)
       .is('deleted_at', null)
       .limit(1);
-    if (!data || data.length === 0) return { nonLinear: null };
+    if (!data || data.length === 0) return unknown;
 
-    const stored = (data as unknown as Array<{ narrative_frame: StoredFrame | null }>)[0]
+    const stored = (data as unknown as Array<{ narrative_frame: Partial<StoredFrame> | null }>)[0]
       ?.narrative_frame;
-    const current = typeof stored?.nonLinear === 'boolean' ? stored.nonLinear : null;
+    const current: StoredFrame = {
+      nonLinear: typeof stored?.nonLinear === 'boolean' ? stored.nonLinear : null,
+      unreliableNarrator:
+        typeof stored?.unreliableNarrator === 'boolean' ? stored.unreliableNarrator : null,
+    };
 
-    const merged = mergeFrameEvidence(current, nonLinear);
-    if (merged === current) return { nonLinear: current };
+    const merged: StoredFrame = {
+      nonLinear: mergeFrameEvidence(current.nonLinear, evidence.nonLinear),
+      unreliableNarrator: mergeFrameEvidence(
+        current.unreliableNarrator,
+        evidence.unreliableNarrator
+      ),
+    };
+    if (
+      merged.nonLinear === current.nonLinear &&
+      merged.unreliableNarrator === current.unreliableNarrator
+    ) {
+      return current;
+    }
 
     await supabase
       .from(MANUSCRIPTS_TABLE)
-      .update({ narrative_frame: { ...(stored ?? {}), nonLinear: merged } })
+      .update({ narrative_frame: { ...(stored ?? {}), ...merged } })
       .eq('id', manuscriptId)
       .eq('user_id', userId);
-    return { nonLinear: merged };
+    return merged;
   } catch {
     // An unknown frame demotes rather than promotes, so a storage failure
     // costs precision and never correctness.
-    return { nonLinear: null };
+    return unknown;
   }
 }
 

@@ -19,6 +19,10 @@ export interface DiagnosticResult {
 
 export interface StructuralMap {
   narrativeStructure?: string;
+  /** Narrator reliability, where the TEXT establishes it. Read by deriveFrame
+   *  into NarrativeFrame.unreliableNarrator — 'unreliable' only, never the
+   *  reverse. See deriveFrame for why the mapping is one-way. */
+  narratorReliability?: string;
   timelineNotes?: string;
   structuralBeats?: string[];
   registerMap?: Array<{ position: string; quote: string; register: string; note: string }>;

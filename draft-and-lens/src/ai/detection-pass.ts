@@ -68,9 +68,8 @@ export interface DetectionPassResult {
  *
  * NULL means unknown and never "linear" — ruling 1a is unknown-and-demote, and
  * a missing structural map is not permission to assume a chronological book.
- * Only `narrativeStructure` is a real signal here; nothing in the pipeline
- * currently establishes narrator reliability or POV count as a fact, so those
- * stay null rather than being inferred from something that does not mean them.
+ * `multiplePov` is not read here at all: it comes from the manuscript's own
+ * facts, which this function does not have (see deriveMultiplePov).
  */
 export function deriveFrame(diagnostic: DiagnosticResult | undefined): NarrativeFrame {
   const structure = diagnostic?.structuralMap?.narrativeStructure?.toLowerCase().trim();
@@ -83,7 +82,44 @@ export function deriveFrame(diagnostic: DiagnosticResult | undefined): Narrative
       nonLinear = false;
     }
   }
-  return { nonLinear, unreliableNarrator: null, multiplePov: null };
+
+  return { nonLinear, unreliableNarrator: deriveUnreliableNarrator(diagnostic), multiplePov: null };
+}
+
+/**
+ * Is this narrator established as unreliable? Read off the same structural map.
+ *
+ * THE MAPPING IS ONE-WAY AND THAT IS THE WHOLE DESIGN. 'unreliable' becomes
+ * true; everything else — 'reliable', 'unclear', an unexpected string, a
+ * missing field, no map at all — becomes null. `false` is never written from
+ * here, and the asymmetry is not caution for its own sake:
+ *
+ *   • a wrong TRUE costs precision. The gate treats narration as less
+ *     authoritative than it is, so a real contradiction is demoted to
+ *     worth_checking instead of contradiction. The writer sees a softer flag.
+ *   • a wrong FALSE costs correctness. It promotes narration to the book's own
+ *     voice and hardens the tier — the §5.2 failure this gate exists to
+ *     prevent, and the one that tells a writer their book contradicts itself
+ *     when it does not.
+ *
+ * So the model is allowed to raise the caution and never to lower it. Note
+ * that `unreliableNarrator === false` is still MEANINGFUL to gatePair; it
+ * simply cannot originate here, and nothing else writes it today.
+ *
+ * Before 2026-08-22 this was hard-coded null because nothing in the pipeline
+ * established reliability at all. The structural reader already reads the whole
+ * text and already reports on narrator behaviour, so it answers one more
+ * question rather than a new brain being added for it.
+ */
+export function deriveUnreliableNarrator(
+  diagnostic: DiagnosticResult | undefined
+): boolean | null {
+  const raw = diagnostic?.structuralMap?.narratorReliability?.toLowerCase().trim();
+  if (!raw) return null;
+  // Substring rather than equality: the field is prose-ish by instruction and
+  // an answer may carry its reason with it. "unreliable" contains "reliable",
+  // so it is tested first and nothing else is tested at all.
+  return /\bunreliable\b/.test(raw) ? true : null;
 }
 
 /**
@@ -179,16 +215,17 @@ export async function runDetectionPass(args: {
   //                 back in a single call, so this submission's own evidence
   //                 counts toward the frame it is then judged under.
   //   multiplePov — derived live from the manuscript's whole fact set.
-  //   unreliable  — never learned; see StoredFrame.
+  //   unreliable  — accumulated like nonLinear and for the same reason: a
+  //                 narrator shown to be unreliable in chapter 3 does not
+  //                 become trustworthy in chapter 4. Sticky-true, never false.
   const structural = deriveFrame(args.diagnostic);
-  const frameState = await recordFrameEvidence(
-    args.userId,
-    args.manuscriptId,
-    structural.nonLinear
-  );
+  const frameState = await recordFrameEvidence(args.userId, args.manuscriptId, {
+    nonLinear: structural.nonLinear,
+    unreliableNarrator: structural.unreliableNarrator,
+  });
   const frame: NarrativeFrame = {
     nonLinear: frameState.nonLinear,
-    unreliableNarrator: null,
+    unreliableNarrator: frameState.unreliableNarrator,
     multiplePov: deriveMultiplePov(facts),
   };
   // ── State locks (§5.7) ──────────────────────────────────────────────────
