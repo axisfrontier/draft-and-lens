@@ -1221,3 +1221,53 @@ Nenad ran `manuscript_bible.sql`; both columns confirmed present from here. (The
 **The homescreen no longer carries it.** Live panel order now reads: 1 YOUR WORK → 2 WHAT IS IT? (with complete/excerpt beneath) → 3 WHERE DOES IT BELONG? → OPTIONAL → what do you want from this piece? → 4 ANALYSE.
 
 **Still outstanding from this stretch:** the panel redesign proposal (Nenad's minimum-necessary brief), and `91cf6d3` + `b6c791e` are pushed but NOT deployed — no hook has been fired since the instruction to stop deploying.
+
+### PROPOSAL — the minimum submission panel. NOT BUILT, awaiting Nenad — 2026-08-22
+
+His brief: ask the minimum necessary. Paste/upload → format → complete/excerpt → analyse. Goals move to after the reading or the account page; grouping moves to after the reading or is inferred; nothing below the Analyse button but the privacy line and the fragment link; fragment inline expansion off the homescreen.
+
+## The panel
+
+```
+1  YOUR WORK              upload box · paste box · word count
+2  WHAT IS IT?            Film script · Treatment · Story · Stage play
+                          Complete piece · Excerpt      ← sub-row, defaults to Complete
+3  ANALYSE
+
+   Your work is yours. We never train AI on it — it's sent only to generate your reading.
+   Just have a passage and a question? →
+```
+
+Three numbered steps, one optional sub-row, nothing else. No divider, because with the optional zone empty there is nothing left to divide. **Format stays mandatory** — the server never infers it (§15), and a story read as a script is a wrong reading rather than a rough one. Everything else on that panel today is either answerable later or answerable elsewhere.
+
+## What moves, and what each move costs
+
+**A. Goals → the account page and the book page.** Both surfaces already exist and are live, so this is deletion, not building.
+
+*The cost, and it is real:* a goal has to exist BEFORE a reading to be held during it, so nothing can be set for THIS piece at the moment of sending. A returning writer with standing goals is unaffected; a writer's first goal now arrives one reading later than it would have.
+
+*Optional mitigation, small build:* one line under a finished reading — "want me to hold something for next time?" — writing a goal for future readings rather than this one. It is honest about what it does, and it puts the ask where the writer has just seen what I do with it.
+
+**B. Grouping → after the reading. This is the only expensive move, and it is expensive.**
+
+Today the manuscript must be known BEFORE the run: attachment, fact extraction and contradiction detection all happen inside the same request, in that order. Moving the question after the reading means building a path that does not exist — file an EXISTING reading under a book, then run extraction and detection for it retroactively. The pieces are all there (`resolveAttachment`, `runContinuityExtractor`, `runDetectionPass`, the detach route); nothing composes them for a reading that has already been delivered.
+
+*Inference cannot replace the question, and it is worth being exact about why.* Silent auto-grouping already exists and already fires on high-confidence matches (`band: 'auto'`). But a FIRST book can never be created by inference — there is nothing to match against — and the `confirm` and `none` bands exist precisely because the evidence was not strong enough to act on alone. Inference covers the easy case and leaves the case that matters.
+
+*Recommended shape:* keep silent auto-grouping exactly as it is, and add one control to the finished reading — "this reads like part of *Home* — file it there?", or "start a book with this". The writer answers it having just read the piece, which is a better moment to ask than before I have read a word.
+
+*The cost:* the ledger fills one step later than it does now; a writer who never reaches the end of a reading never groups; and a first chapter's facts are only extracted once they say it belongs to a book.
+
+**C. The Editorial Lenses grid → the left column.** "Nothing below Analyse" removes its current home. It is marketing, and the left column is already the marketing column — it belongs under the hero paragraph rather than under the button.
+
+**D. Fragment mode → its own route (`/passage`).** The link stays exactly where it is and stops expanding a panel in place.
+
+*One detail that must not be lost in the move:* pressing Analyse on anything under 200 words currently hands the passage straight into the inline panel rather than making the writer paste it twice. With a route, that becomes a redirect carrying the passage — **via sessionStorage, never a query string**: the passage is the writer's own text and must not sit in a URL, in history, or in a server log.
+
+## Three questions, all his
+
+1. **"It arrives as I write it."** — third line under the button today. Keep it beside the privacy line, or drop it? It sets the streaming expectation, which nothing else on the panel does.
+2. **The post-reading goal line** — build it, or leave goals entirely to the account and book pages? Not building is defensible: a goal set deliberately on a quiet page may be worth more than one typed on the way past.
+3. **Grouping** — build the post-reading attach path (real work: a new route, extraction and detection for an already-delivered reading, and a control in the report), or accept auto-grouping only for now and let everything else be grouped later from the book page? The second is much cheaper and leaves a gap: a writer with one book and a second chapter that does not auto-match has no way to file it.
+
+**Nothing here is built. Approve the shape and answer 1–3 and I will build it in one pass.**
