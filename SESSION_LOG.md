@@ -1384,3 +1384,25 @@ Ran one on production. **It completed**: telemetry `outcome=completed`, 290 word
 **One thing deliberately NOT done.** Four exports are used only inside their own file — `extractAnchors`, `findAnchor`, `readableRatio`, `summarizeChange`. They are noted in the audit as tidy-up candidates, not findings, and dropping an `export` keyword changes nothing for anybody. Left alone rather than padding the count.
 
 **Also updated: the checklist's own §3 grep**, which excluded whole files and produced 15 candidates for 6 real ones. It now counts references outside the defining file only.
+
+### nudge_keep_sending was already live — verified, not changed — 2026-08-22
+
+Asked to re-enable it. **It was re-enabled on 2026-08-21 in `43bbc57`** ("the third nudge is true now, so it fires"), the same day Gap 2 shipped and made its claim true. There was no line left to change, so nothing was changed. The "one line to re-enable" note dates from before that commit and was overtaken by it the same afternoon.
+
+**Trigger verified, both halves.**
+
+*The decision* (pure, unit-tested, 10/10): fires only at `priorSubmissions === 2` — the third submission, since the count is taken BEFORE this reading is stored. It yields to a real ledger event, to the method line and to a named pattern, so it can never be the second quiet aside in a reading.
+
+*The guarantee* (against the live `user_milestones` table, temporary harness, rows removed after): first claim `true`, second `false`, third `false`. A different milestone for the same writer still claims cleanly, so the lock is per-milestone rather than per-user.
+
+**Worth knowing, and the reason the verification was worth doing at all: `user_milestones` is completely empty.** No milestone has ever been claimed by anyone in production — not the method line, not any nudge. That is explainable rather than broken: the nudges shipped on 21 August, test rows were cleared the same day, and every submission since has come from accounts already well past the trigger counts (Nenad's is at 6 live works, the others at 21 and 3). Today's smoke tests could not fire one either, for the same reason.
+
+**Consequence for anyone trying to SEE this nudge:** it cannot appear on any existing account. It needs a writer at exactly their third submission, with no facts extracted, no method line and no named pattern in that same reading. A fresh account is the only practical way to watch it happen.
+
+### Repo hygiene — the working tree is finally clean — 2026-08-22
+
+`bc578b7` commits the two build briefs (`Code_Prompt_MentorCompleteness.md`, `Code_Prompt_DepthAndScenarios.md`). They were untracked while the code they specified was live, which is the wrong way round — a future session reading those commits had no way to see what was actually asked for.
+
+`8fe25c7` ignores `Ad concepts/` (380K), `Inspiration/` (1.2M) and `draftandlens.png`, following `/Ads/` on 20 August for the same reason: reference material and marketing artwork that no line of code imports. The portraits the app serves stay tracked in `draft-and-lens/public/lenses/`.
+
+`Lens voices_images/Lucas.jpg` is left modified and uncommitted, per Nenad — a replaced source portrait that the build never reads.
