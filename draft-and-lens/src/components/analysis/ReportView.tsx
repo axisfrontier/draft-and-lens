@@ -107,6 +107,7 @@ export function ReportView({
   pattern,
   onDismissPattern,
   goalNotes = [],
+  goalPrompt = false,
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -136,6 +137,9 @@ export function ReportView({
    *  side both in what it says and whether it says anything: every note here
    *  quotes a sentence the reading actually wrote. */
   goalNotes?: ReadonlyArray<{ goalId: string; goal: string; note: string }>;
+  /** This writer holds no goals. One line says where they are set — server
+   *  decides, and it retires itself the moment they set their first. */
+  goalPrompt?: boolean;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
    *  link through to its continuity ledger. Absent for a standalone piece,
@@ -697,6 +701,24 @@ export function ReportView({
                 </div>
               ))}
             </div>
+          )}
+
+          {/* "You could set one" (Gap B, minimum-panel ruling 2026-08-22).
+              The submission panel stopped asking for a goal, and a goal has to
+              exist BEFORE a reading to be held during it — so the only honest
+              offer is for next time, and it is a pointer rather than an ask.
+              Sent only to a writer holding none, so it retires itself. */}
+          {goalPrompt && (
+            <p style={{
+              margin: '1.5rem 0 0', maxWidth: 660,
+              fontFamily: 'var(--font-serif)', fontSize: '.85rem',
+              lineHeight: 1.75, fontStyle: 'italic', color: 'var(--ink-soft)',
+            }}>
+              You can set a goal for next time in{' '}
+              <a href="/account" target="_blank" style={{ color: 'var(--amber-d)' }}>
+                your account
+              </a>.
+            </p>
           )}
 
           {/* A named pattern (Gap 2) — the largest claim this product makes

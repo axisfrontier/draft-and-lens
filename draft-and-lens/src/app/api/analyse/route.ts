@@ -22,7 +22,7 @@ import {
   traditionTreatsAsFailure,
 } from '../../../lib/writer-patterns';
 import { claimMilestone } from '../../../lib/user-milestones';
-import { createGoal, listGoalsForReading, normaliseGoal } from '../../../lib/writer-goals';
+import { listGoalsForReading } from '../../../lib/writer-goals';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
@@ -59,6 +59,8 @@ import type { AnalysisMode } from '../../../prompts/types';
  *   { type: 'continuity', flags }   §6a detection results, after `done`
  *   { type: 'goal_progress', notes } what the reading says against the writer's
  *                                    own stated goals (Gap B), after `done`
+ *   { type: 'goal_prompt' }          the writer holds no goals; one quiet line
+ *                                    points at where they are set
  *   { type: 'error', message }
  * The final `report` is authoritative — it includes the post-stream narrator
  * correction, which the streamed deltas predate.
@@ -323,23 +325,16 @@ export async function POST(req: NextRequest): Promise<Response> {
           !(await isWorkAttached(userId, manuscriptId, decision.workId));
 
         // ── Writer-set goals (Gap B) ──────────────────────────────────────
-        // Recorded BEFORE the cached-reading short-circuit below, because a
-        // goal is the writer's statement about their own work and it stands
-        // whether or not this particular submission produces a fresh reading.
-        // Scope is the writer's own choice, and 'manuscript' is honoured only
-        // where they actually filed this piece in a book — createGoal refuses
-        // a manuscript that is not theirs rather than rescoping it.
-        const typedGoal = normaliseGoal(body.goal);
-        if (typedGoal) {
-          await createGoal({
-            userId,
-            manuscriptId: body.goalScope === 'manuscript' ? manuscriptId : null,
-            goal: typedGoal,
-          });
-        }
         // Everything live that applies to this reading: standing goals, plus
         // this book's. Best-effort like every other stored context — a failure
         // here costs the goal register, never the reading.
+        //
+        // NOTHING IS WRITTEN HERE any more. The submission panel stopped asking
+        // for a goal on 2026-08-22 (minimum-panel ruling): goals are set
+        // deliberately on the account page or a book's page, and this route
+        // only reads what is already held. A goal has to exist before a reading
+        // to be held during it, which is exactly what the post-reading line
+        // now tells a writer who has none.
         const goals = await listGoalsForReading(userId, manuscriptId);
 
         // ── Character bible (moved off the submission panel, 2026-08-22) ──
@@ -524,6 +519,17 @@ export async function POST(req: NextRequest): Promise<Response> {
             ...(trendNote ? { trendNote } : {}),
           });
         }
+
+        // ── "You could set one" (Gap B, minimum-panel ruling) ─────────────
+        // Only for a writer holding NO live goals. Telling someone who already
+        // has goals that they could set one is noise, and the line disappears
+        // the moment they set their first — no milestone needed, because the
+        // condition retires it by itself.
+        //
+        // It is a pointer rather than an ask: the panel no longer takes a goal
+        // at submission, and a goal must exist BEFORE a reading to be held
+        // during it, so the only honest offer is for next time.
+        if (goals.length === 0) send({ type: 'goal_prompt' });
 
         // ── Goal progress (Gap B) ─────────────────────────────────────────
         // NOT an aside, and deliberately outside their hierarchy. The method

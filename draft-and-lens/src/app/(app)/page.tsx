@@ -68,6 +68,7 @@ type StreamEvent =
   // says it is not true of them.
   | { type: 'pattern'; tendency: string; text: string; trendNote?: string }
   | { type: 'goal_progress'; notes: Array<{ goalId: string; goal: string; note: string }> }
+  | { type: 'goal_prompt' }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -198,28 +199,11 @@ export default function AppHomePage() {
   const [differentiator, setDifferentiator] = useState('');
   const [nudge, setNudge] = useState('');
   const [pattern, setPattern] = useState<{ tendency: string; text: string; trendNote?: string } | null>(null);
-  /** What the writer typed into "what are you working toward?" this time. */
-  const [goalInput, setGoalInput] = useState('');
   /** What this reading says against the goals they already hold (Gap B). */
   const [goalNotes, setGoalNotes] = useState<Array<{ goalId: string; goal: string; note: string }>>([]);
-  /** Goals already standing, shown back so nobody types the same one twice. */
-  const [heldGoals, setHeldGoals] = useState<Array<{ id: string; goal: string; manuscriptId: string | null }>>([]);
+  /** Server says this writer holds no goals — one line points at where they live. */
+  const [goalPrompt, setGoalPrompt] = useState(false);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
-
-  // Goals already held, shown under the field. Read-only here: a writer
-  // reminding themselves what they asked for is the point, and changing one
-  // belongs where the rest of their goals live rather than mid-submission.
-  useEffect(() => {
-    if (isSignedIn !== true) return;
-    fetch('/api/goals')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { goals: Array<{ id: string; goal: string; manuscriptId: string | null }> } | null) => {
-        if (d) setHeldGoals(d.goals);
-      })
-      .catch(() => {
-        /* goals are an enhancement; never surface their failure */
-      });
-  }, [isSignedIn]);
 
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
@@ -471,6 +455,7 @@ export default function AppHomePage() {
     setNudge('');
     setPattern(null);
     setGoalNotes([]);
+    setGoalPrompt(false);
     setStage('Reading your work');
     setEarlyDiagnostic(null);
     setCoverage(null);
@@ -499,16 +484,6 @@ export default function AppHomePage() {
           // choice, and 'manuscript' is meaningless without a book to attach it
           // to — the server refuses one that is not theirs rather than
           // rescoping it to a standing goal.
-          // Scope follows the grouping choice already made above: a goal typed
-          // beside a chosen book is that book's, otherwise it is a standing one.
-          // The panel says which, so nothing here is inferred behind the
-          // writer's back.
-          ...(goalInput.trim()
-            ? {
-              goal: goalInput.trim(),
-              goalScope: chosenManuscript ? 'manuscript' : 'writer',
-            }
-            : {}),
         }),
         signal: ctrl.signal,
       });
@@ -565,20 +540,6 @@ export default function AppHomePage() {
             setBible(evt.bible);
             setRevisionStatus(evt.revision?.status ?? 'new');
             setReadAt(evt.revision?.readAt ?? null);
-            // A goal typed with this submission is now held server-side.
-            // Clearing the box and re-reading the list is what stops the same
-            // sentence being stored again on the next piece.
-            if (goalInput.trim()) {
-              setGoalInput('');
-              fetch('/api/goals')
-                .then((r) => (r.ok ? r.json() : null))
-                .then((d: { goals: Array<{ id: string; goal: string; manuscriptId: string | null }> } | null) => {
-                  if (d) setHeldGoals(d.goals);
-                })
-                .catch(() => {
-                  /* best-effort */
-                });
-            }
           } else if (evt.type === 'grouped') {
             setGroupedManuscriptId(evt.manuscriptId);
             // The undo trace, by contrast, is only surfaced when the grouping
@@ -599,6 +560,8 @@ export default function AppHomePage() {
             setPattern({ tendency: evt.tendency, text: evt.text, trendNote: evt.trendNote });
           } else if (evt.type === 'goal_progress') {
             setGoalNotes(evt.notes);
+          } else if (evt.type === 'goal_prompt') {
+            setGoalPrompt(true);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -1113,92 +1076,6 @@ export default function AppHomePage() {
                 </div>
               )}
 
-              {/* Optional divider */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginTop: '-.25rem' }}>
-                <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
-                  letterSpacing: '.16em', textTransform: 'uppercase',
-                  color: 'var(--paper-dark)',
-                }}>Optional</span>
-                <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
-              </div>
-
-              {/* What do you want from this piece? — Mentor Completeness, Gap B.
-                  The only thing left below the optional divider now that the
-                  character bible has moved to the book page.
-
-                  ONE OPTIONAL FIELD, no form. A goal is the writer's claim about
-                  themselves, so nothing here shapes it — no vocabulary, no
-                  examples presented as options, and no scope question: the
-                  grouping step above has already settled where this piece
-                  belongs, and the line under the field says where the goal lands
-                  rather than asking a second time. */}
-              <div style={{ border: '1px solid var(--border-dark)', background: 'var(--black-band)' }}>
-                <div style={{ padding: '.75rem 1rem', borderBottom: '1px solid var(--border-dark)' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
-                  }}>What do you want from this piece?</div>
-                  <div style={{
-                    fontFamily: 'var(--font-sans)', fontSize: '.85rem',
-                    color: 'var(--rule)', fontStyle: 'italic',
-                  }}>Tell me and I&apos;ll hold it while I read. It won&apos;t change what I say about the work — only add to it.</div>
-                  {/* Where the goal lands, stated rather than asked. Two pills
-                      reading FOR THIS BOOK / FOR MY WRITING made the writer
-                      compare two similar labels before they could choose; the
-                      panel already knows which case they are in, so it says so.
-                      Standing goals are still addable any time on the account
-                      page — nothing is lost but the comparison. */}
-                  <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    color: 'var(--amber-d)', marginTop: '.45rem',
-                  }}>
-                    {chosenManuscript && chosenTitle
-                      ? `A goal for ${chosenTitle}`
-                      : 'A goal for your writing'}
-                  </div>
-                </div>
-                <div style={{ padding: '.75rem 1rem' }}>
-                  <textarea
-                    value={goalInput}
-                    onChange={(e) => setGoalInput(e.target.value)}
-                    rows={2}
-                    maxLength={500}
-                    placeholder="I want this to feel more urgent. I&apos;m trying to stop over-explaining."
-                    style={{
-                      width: '100%', fontFamily: 'var(--font-sans)',
-                      fontSize: '.8rem', lineHeight: 1.7,
-                      padding: '.5rem .85rem', background: 'var(--surface-deep)',
-                      border: '1px solid var(--border-deeper)', color: 'var(--rule)',
-                      outline: 'none', resize: 'vertical', fontStyle: 'italic',
-                    }}
-                  />
-
-                  {/* Already standing. Shown so nobody types the same goal
-                      twice and nobody wonders whether the last one took. */}
-                  {heldGoals.filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript).length > 0 && (
-                    <div style={{ marginTop: '.7rem' }}>
-                      <div style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                        letterSpacing: '.14em', textTransform: 'uppercase',
-                        color: 'var(--paper-dark)', marginBottom: '.3rem',
-                      }}>Already holding</div>
-                      {heldGoals
-                        .filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript)
-                        .map((g) => (
-                          <div key={g.id} style={{
-                            fontFamily: 'var(--font-serif)', fontSize: '.8rem',
-                            lineHeight: 1.6, color: 'var(--rule)', fontStyle: 'italic',
-                          }}>&ldquo;{g.goal}&rdquo;</div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* Step 4 — Analyse */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginTop: '.5rem' }}>
                 <span style={badge(4, canAnalyse)}>4</span>
@@ -1523,6 +1400,7 @@ export default function AppHomePage() {
           continuityFlags={continuityFlags}
           differentiator={differentiator || undefined}
           goalNotes={goalNotes}
+          goalPrompt={goalPrompt}
           nudge={nudge || undefined}
           onDismissNudge={() => setNudge('')}
           onReconcileFlag={reconcileFlag}
