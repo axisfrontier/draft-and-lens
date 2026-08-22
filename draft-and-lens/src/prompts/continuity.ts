@@ -49,6 +49,20 @@ For every fact, record how it was asserted:${REGISTERS}
 
 This matters more than it looks. A character saying "your eyes are green" is not the book claiming her eyes are green — characters are wrong, mistaken and lying constantly, and that is ordinary fiction rather than an inconsistency. Mark it \`dialogue\` and let the ledger decide what to do with it. If you genuinely cannot tell which register applies, use null: an honest null lowers the fact's weight, while a confident guess corrupts it.
 
+WHOSE EYES THE PASSAGE IS SEEN THROUGH (povCharacter)
+\`povCharacter\` is the character through whose perception the passage carrying this fact is narrated — the consciousness the prose is inside. Give the character's name in lowercase, matching the entity you would use for them (\`sarah\`, not \`character:sarah\` and not \`Sarah\`).
+
+Fill it ONLY where the narration is genuinely inside one character:
+- first person — the narrator is the POV character
+- limited or close third — the prose reports what one character sees, knows, notices or assumes, and cannot report what other characters are privately thinking
+
+Use null everywhere else, and null is the common answer:
+- omniscient narration, which stands outside every character
+- a fact asserted in dialogue or in a document, where the speaker is not a viewpoint
+- any passage where you cannot tell whose perception it is
+
+WHY IT IS WORTH THE CARE. Two chapters can describe the same thing differently because two different characters are seeing it, and that is craft rather than a mistake. The ledger uses this field for exactly that: a clash between facts held by two different viewpoints is treated more gently than a clash inside one. A name guessed here removes that protection from a real disagreement, and a null loses nothing — so guess nothing.
+
 HOW CHANGEABLE IS IT (mutability)
 - immutable — cannot change: eye colour, birth date, birth order, sibling count
 - slow — can change, but should be shown changing: occupation, city, marital status
@@ -81,7 +95,7 @@ A chapter that yields three solid facts is a better result than one that yields 
 
 OUTPUT
 Return ONLY a JSON object, no prose before or after:
-{"facts":[{"entity":"character:sarah","category":"physical","attribute":"eye_colour","value":"green","mutability":"immutable","register":"narration_omniscient","povCharacter":null,"evidenceQuote":"her green eyes narrowed","confidence":0.9}]}
+{"facts":[{"entity":"character:sarah","category":"physical","attribute":"eye_colour","value":"green","mutability":"immutable","register":"narration_omniscient","povCharacter":null,"evidenceQuote":"her green eyes narrowed","confidence":0.9},{"entity":"character:tom","category":"physical","attribute":"hair_colour","value":"grey","mutability":"slow","register":"narration_pov","povCharacter":"sarah","evidenceQuote":"Tom's hair had gone grey since she saw him last","confidence":0.8}]}
 
 confidence is your own 0–1 estimate that this fact is correctly extracted and correctly categorised. Be honest and use the low end freely; a fact marked 0.4 is used more cautiously rather than discarded, so under-claiming is safe and over-claiming is not.`;
 
