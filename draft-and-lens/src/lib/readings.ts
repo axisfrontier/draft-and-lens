@@ -600,7 +600,17 @@ export async function getPriorRevisionNotes(
   }
 }
 
-/** Complete, portable export of everything stored for a user (GDPR §20). */
+/**
+ * Complete, portable export of everything stored for a user (GDPR §20).
+ *
+ * EVERY PER-USER TABLE BELONGS HERE, exactly as it does in deleteAllUserData,
+ * and for a related reason: that function's claim is that nothing is left
+ * behind, and this one's is that nothing is held back. Both claims are legal
+ * statements rather than features. writer_patterns was missing from this list
+ * from the day its table was created until 2026-08-22 — a writer could ask for
+ * everything held about them and not be shown the product's largest claim ABOUT
+ * them. user_milestones was missing for the same span.
+ */
 export interface UserDataExport {
   exportedAt: string;
   account: string;
@@ -635,6 +645,16 @@ export interface UserDataExport {
    *  verbatim. Set-aside goals are included — the export is everything held,
    *  not everything surfaced. */
   writerGoals: Array<Record<string, unknown>>;
+  /** Named tendencies across the writer's works (Gap 2). The product's largest
+   *  claim ABOUT a person — "you do this, repeatedly" — which is precisely why
+   *  it is theirs to see. Dismissed rows included: a writer is entitled to know
+   *  the service still holds the claim they rejected, and why it stays (a
+   *  deleted row would simply be recreated by the next reading). */
+  writerPatterns: Array<Record<string, unknown>>;
+  /** Once-ever lines already shown to this writer. Not content and not
+   *  interesting to read, but it is a row keyed to them and this export claims
+   *  to be everything stored — the claim is either true or it is not. */
+  userMilestones: Array<Record<string, unknown>>;
 }
 
 export async function exportUserData(userId: string): Promise<UserDataExport> {
@@ -646,6 +666,8 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     continuityFacts: [],
     continuityFlags: [],
     writerGoals: [],
+    writerPatterns: [],
+    userMilestones: [],
   };
   if (!isSupabaseConfigured()) return base;
   try {
@@ -681,6 +703,12 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
 
     const goals = await supabase.from(WRITER_GOALS_TABLE).select('*').eq('user_id', userId);
     if (goals.data) base.writerGoals = goals.data as unknown as Array<Record<string, unknown>>;
+
+    const patterns = await supabase.from(WRITER_PATTERNS_TABLE).select('*').eq('user_id', userId);
+    if (patterns.data) base.writerPatterns = patterns.data as unknown as Array<Record<string, unknown>>;
+
+    const milestones = await supabase.from(USER_MILESTONES_TABLE).select('*').eq('user_id', userId);
+    if (milestones.data) base.userMilestones = milestones.data as unknown as Array<Record<string, unknown>>;
 
     const { data, error } = await supabase
       .from(TABLE)
