@@ -11,8 +11,7 @@ import {
 
 const LINKS: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/about', label: 'About' },
-  { href: '/how-i-read', label: 'How I read' },
-  { href: '/how-i-remember', label: 'How I remember' },
+  { href: '/how-it-works', label: 'How it works' },
   { href: '/glossary', label: 'Glossary' },
   { href: '/feedback', label: 'Feedback' },
 ];
