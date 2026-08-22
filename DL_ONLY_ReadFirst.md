@@ -44,6 +44,8 @@ If you are about to state anything about Codex-Maths — its UI process, its rep
 
 Items 1–4 of the 2026-08-18 order are **done and verified live**: detection, timeline reasoning (ledger phase 3), mentor mode, and the differentiator line. Also shipped since: fragment mode, the tradition depth gap, `/how-i-read`, contextual nudges, and §5.5 flag dismissal.
 
+**Mentor Completeness (all four stages) shipped 2026-08-21/22:** lens self-recognition and the sixth `/how-i-read` scenario (stage 1), trajectory / Gap A (stage 2), writer-set goals / Gap B including the `writer_goals` migration (stage 3), and `/how-i-remember` plus the horizon line / Gap C (stage 4). **Stages 3 and 4 have NOT been checked in a browser** — the Chrome extension was offline; see the SESSION_LOG entry for exactly what is unseen.
+
 **Active queue:**
 
 1. **Lens-voice upload edge case — ACTIVE, approach to be agreed before code.** A writer pasting real published prose by one of the 36 lens voices (actual Carver, actual Hemingway) currently gets a reading of it as if it were their own work — and a lens can end up reading its own author's prose back to them. That is a trust and credibility risk, not a curiosity. Was deferred as "worth building once detection exists and is stable" (`DraftAndLens_Internal_Research_Notes.md`); detection is now stable, so it is live. Proposed approach lives in `SESSION_LOG.md` — **Nenad approves the approach before any code is written.**

@@ -1057,3 +1057,56 @@ The store only records works where a tendency DID appear, so absence is only mea
 **Open for Nenad:** the three trend notes are placeholder copy, and question 3 of the spec's open questions ("does this match the established editor voice?") is still his to answer.
 
 **Test data removed:** pattern rows and nudge milestones cleared, test work soft-deleted, 6 works.
+
+### Lens voice 36 — Lucas is NOT missing; the odd file is `hatten.jpg` — 2026-08-22
+
+Checked before building anything, because it was framed as a one-line fix and was not one.
+
+**`lucas` has been in `LENS_IDS` all along** — index 22 of 35, with meta, a craft philosophy, a prompt, a self-recognition line and `public/lenses/lucas.jpg`. `DraftAndLens_NewLensVoices_Profiles.md` carries a full **GEORGE LUCAS** profile. Nothing about him is missing, and adding him would have created a duplicate id.
+
+**Where the "36" comes from:** `Lens voices_images/` holds **36** portraits and the app holds **35**. The extra file is `hatten.jpg` — a young person, no profile in the profiles doc (whose own header says "All 35 voices"), and **no reference anywhere in the repo or the app**. So the count mismatch is one unidentified image, not a missing voice.
+
+**Not actioned, because it is Nenad's call and needs something only he has.** A 36th lens is not an id in an array: it needs a name, a craft philosophy in that voice, a lens prompt, a descriptor, a category and a self-recognition line. If `hatten.jpg` is meant to be someone, say who and the profile can be written. If it is a stray, it should be deleted so the folder stops implying a voice that does not exist.
+
+(`Lens voices_images/Lucas.jpg` also shows as modified in git — a replaced portrait, uncommitted since before this session. The app serves `public/lenses/lucas.jpg`, which is a separate file, so nothing in the product changed.)
+
+### Stage 3 complete — writer-set goals (Gap B), migration applied — 2026-08-22
+
+Five commits: `a50a6c9` store, `66d3e60` routes, `7224c9c` pipeline, `998481f` + `a15a766` UI, `c6211cf` a voice fix found by live verification. 213 tests green, build ✓, IP grep clean.
+
+**The migration was applied by Nenad before this session and verified from here** — `writer_goals` exists with every expected column. `deleteAllUserData` now includes it (the migration footer's required follow-up) and so does `exportUserData`.
+
+**The design line that governs everything here: a goal is a LENS, never a rubric.** The tradition is locked by Brain 1 and decides the standard the work answers to (P1); a goal is what the writer was reaching for inside that standard. Admitting a goal as a standard would let a writer redefine what counts as good in their own work — the one thing an editor cannot allow — and would quietly turn every reading into a compliance check against a sentence typed at upload. The directive says so and explicitly permits saying, kindly, when a goal pulls against what the tradition needs.
+
+**Two brains, deliberately.** Brain 2 holds the goals while it reads. A second, post-delivery brain reads the finished REPORT — never the manuscript — and turns what the reading already found to face what the writer said they wanted. Same architecture as the pattern extractor and for the same reason: a brain judging the prose again, against a standard the writer set, is exactly what Gap B may not do. `validateGoalNotes` is the guarantee behind the prompt: verbatim evidence from the report, a goal id we actually asked about, no score in any dress, at most two notes.
+
+**Verified against the real model, four cases.** A report bearing on the goal produced a quoting, developmental note. A goal the reading never touches produced silence. **A goal pulling against the tradition — "I want every scene to end on a twist", against a pastoral — produced silence rather than a scolding**, which was the case most likely to embarrass the product. The fourth found a real defect: the note said "the report points to the third scene", the product describing its own machinery to the person it is talking to. Rule 6 now forbids naming the report, the reading, the analysis or the notes — the editor wrote it, so the editor says "I". Re-verified: same finding, same quote, first person.
+
+**Verified against the production table** (temporary harness, removed): create, list, reword and set aside all work; a manuscript id that is not the writer's is refused rather than rescoped; another user can neither reword nor set aside; a set-aside goal is kept with `dismissed_at` and never listed again. All test rows deleted, zero left.
+
+**Decisions taken, worth knowing before anything is built on top:**
+- **Scope follows the writer's choice, and the choice is only offered when it exists.** With a book selected they pick "for this book" or "for my writing"; without one there is a single honest answer and no control is shown. The server refuses a foreign manuscript instead of silently rescoping — quietly turning "what I want for this book" into "what I want for my writing" would put words in their mouth and read the next unrelated piece against it.
+- **Goal progress sits OUTSIDE the one-aside-per-reading hierarchy** and above the named pattern. The method line, a pattern and a nudge are things the product volunteers; this is the only thing on the page the writer asked for.
+- **No control on the goal note in the reading.** A goal is set aside where a writer's goals live — the account for standing ones, the book's ledger for a book's — not inside one reading of one piece.
+- **Goal notes are not stored.** Like the method line, the pattern and the nudge, they exist only in the live reading; reloading a stored reading shows the reading, not the aside. Storing them is a migration if Nenad wants it.
+- **"Set aside", never "dismiss", in every writer-facing string.** A pattern is dismissed because it was wrong about them; a goal is set aside because they moved on — or because they got there, and the product cannot tell which.
+
+**Open for Nenad:**
+- The seven `PATTERN_COPY` lines and the three trend notes are still placeholder (unchanged from Stage 2). The goal-progress copy is model-written per reading, so there is no fixed string to approve — but the FIELD copy on the submit panel, the account and ledger blurbs, and the Gap C nudge line are all mine and unapproved.
+- `writer_patterns` is still absent from `exportUserData` — pre-existing, not introduced here, and worth fixing since a named pattern is a statement the service stores about a writer. Not touched, because it is unrelated to this change.
+
+### Stage 4 complete — /how-i-remember and the horizon line — 2026-08-22
+
+`06b0cb1` nudge, `6239c95` page and nav. Build ✓, deployed.
+
+**The page describes only what runs today** — revision memory, a habit named after more than one work, trajectory (including that stable is never dressed up), and a goal held across readings without ever being scored. Same discipline that kept the sixth scenario off `/how-i-read` until Gap 2 existed. No comparison table, no feature matrix, no free-versus-paid framing: a table would make the reading relationship look like a plan, and what is on offer is that somebody remembers your work.
+
+**Where Gap C was interpreted rather than followed literally.** The spec puts its quiet line "after a first reading". A first reading already carries the approved revision-memory nudge, and two quiet asides in one reading is precisely the clutter the one-per-reading rule exists to prevent — and displacing approved copy with unapproved copy is not my call. **The line fires on the SECOND reading instead**, the only slot in the sequence not already spoken for (0 revision memory, 2 the compounding line). The claim is truer there: the writer has seen two readings and can feel what a single one does not know. No migration — `user_milestones.milestone` is free text for exactly this.
+
+**Not tier-gated, because no tier gate exists yet.** Gap C describes the line as free-tier. Nudges are shown to everyone today; when mentor tiering lands, this line is one of the strings that needs a gate.
+
+### ⚠️ Browser verification NOT done this session — extension offline
+
+The Chrome extension would not connect (reported not installed/running on every attempt), so the standing "verify live in the browser" rule could not be met for Stages 3 and 4. What WAS verified: production build, full suite, IP bundle grep, the goal-progress brain against the real model, the goals store against the production table, and — on the deployed site — that the route and the new nav entry exist (`/how-i-remember` redirects through the beta gate with `?next=/how-i-remember`, and the gate page renders the "How I remember" link; `/api/goals` answers 307 to the gate rather than 404).
+
+**Still unseen in a browser, and worth ten minutes when the extension is back:** the goal field on the submit panel (and its scope control appearing only once a book is chosen), the goal note rendering above the pattern block in a real reading, the `GoalList` on `/account` and on a book's ledger page, and the `/how-i-remember` page itself signed in.
