@@ -1289,3 +1289,19 @@ Today the manuscript must be known BEFORE the run: attachment, fact extraction a
 **Test data removed:** the reading was soft-deleted through the app's own path (so its cascades ran), and the `restatement` pattern row it created was cleared. Account is back to 6 works, no goals, no patterns, `Home` still `bible: null`.
 
 **One durable note about driving this panel from the browser tools:** typing into the paste box with the `type` action does not reach it — three separate attempts landed nothing, on both the old panel and the new one. What works is setting the value through the native `HTMLTextAreaElement` setter and dispatching an `input` event, so React registers the change. Worth using directly next time rather than rediscovering it.
+
+### Two extraction defects fixed — 2026-08-22
+
+`e8b4216`. Both were found while verifying the povCharacter fix, both predate this session, and neither failed anything: the ledger simply filled with facts that could never meet each other, which is the quietest way for a continuity feature to be useless.
+
+**1 — a belief filed under the thinker.** "He thought her eyes were grey" extracted as `character:dessie eye_colour=grey`. The claim is about Marta. Filed under Dessie it invents a property he does not have, and the disagreement that matters — her eyes green in narration, grey in his head — had nothing to meet, because the two facts sat under different entities.
+
+The rule now LEADS the register section rather than sitting after it, because that is exactly where the mistake is made, and it carries the real failure as its worked example. The holder of a belief already has two fields of its own: `register` and `povCharacter`.
+
+**2 — a qualifier inside an attribute name.** `hair_colour_location = "grey at the sides"`. Facts are matched by entity + attribute, so that fact could only ever be compared with another that phrased its qualifier identically. The existing rule covered comparatives and childhood qualifiers but not "where on the body", so the observed failure joins the WRONG list and the general form is now stated: qualifiers belong in the value, always — where on the body, at what age, under what light, according to whom.
+
+**Both are prompt rules, and that is not laziness.** No code check can know whose property a claim is, or tell a property name from a qualifier. What the tests pin is the presence of the rules, since losing them would be silent in exactly the way the original defects were.
+
+**Verified against the real model on the exact passage that produced both.** The belief now files as `character:marta | eye_colour = grey | register=interiority | pov=dessie`, and the hair fact as `character:dessie | hair_colour = grey at the sides`.
+
+**Worth noticing what that unlocks:** Marta's eye colour is now claimed twice on the same entity and attribute — green in narration, grey in Dessie's head. That is the first time those two claims have been able to disagree at all. They should NOT surface as a contradiction, because `interiority` is not the book asserting anything (§5.2) — a character being wrong about someone's eyes is ordinary fiction. It is a good live test of the register gate once a real two-POV chapter goes through.
