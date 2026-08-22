@@ -44,7 +44,7 @@ If you are about to state anything about Codex-Maths — its UI process, its rep
 
 Items 1–4 of the 2026-08-18 order are **done and verified live**: detection, timeline reasoning (ledger phase 3), mentor mode, and the differentiator line. Also shipped since: fragment mode, the tradition depth gap, `/how-i-read`, contextual nudges, and §5.5 flag dismissal.
 
-**Mentor Completeness (all four stages) shipped 2026-08-21/22:** lens self-recognition and the sixth `/how-i-read` scenario (stage 1), trajectory / Gap A (stage 2), writer-set goals / Gap B including the `writer_goals` migration (stage 3), and `/how-i-remember` plus the horizon line / Gap C (stage 4). **Stages 3 and 4 have NOT been checked in a browser** — the Chrome extension was offline; see the SESSION_LOG entry for exactly what is unseen.
+**Mentor Completeness (all four stages) shipped 2026-08-21/22:** lens self-recognition and the sixth `/how-i-read` scenario (stage 1), trajectory / Gap A (stage 2), writer-set goals / Gap B including the `writer_goals` migration (stage 3), and `/how-i-remember` plus the horizon line / Gap C (stage 4). **`/how-i-read` and `/how-i-remember` were merged into `/how-it-works` (two tabs) on 2026-08-22** — one nav entry, copy unchanged, both old routes redirect. **The signed-in half of stages 3 and 4 has still NOT been checked in a browser**; see the SESSION_LOG entry for exactly what is unseen.
 
 **Active queue:**
 

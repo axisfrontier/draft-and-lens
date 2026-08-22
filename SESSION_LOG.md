@@ -1110,3 +1110,31 @@ Five commits: `a50a6c9` store, `66d3e60` routes, `7224c9c` pipeline, `998481f` +
 The Chrome extension would not connect (reported not installed/running on every attempt), so the standing "verify live in the browser" rule could not be met for Stages 3 and 4. What WAS verified: production build, full suite, IP bundle grep, the goal-progress brain against the real model, the goals store against the production table, and — on the deployed site — that the route and the new nav entry exist (`/how-i-remember` redirects through the beta gate with `?next=/how-i-remember`, and the gate page renders the "How I remember" link; `/api/goals` answers 307 to the gate rather than 404).
 
 **Still unseen in a browser, and worth ten minutes when the extension is back:** the goal field on the submit panel (and its scope control appearing only once a book is chosen), the goal note rendering above the pattern block in a real reading, the `GoalList` on `/account` and on a book's ledger page, and the `/how-i-remember` page itself signed in.
+
+### /how-i-read + /how-i-remember merged into /how-it-works — verified live — 2026-08-22
+
+`0b747bd`. Nenad's call: one page, two tabs — "A reading" and "Over time" — one nav entry, copy untouched.
+
+**Structural only, and proved so rather than asserted.** Every text block was extracted from both old files and checked against the new one: 94 blocks, none missing. The single thing that did not survive is each page's own eyebrow ("How I read", "How I remember") — those were page identity and the tab labels are that now. Both `<h1>`s and every paragraph are verbatim.
+
+**Tab state is in the URL and written with `replaceState`, never `pushState`.** Close must still return the writer to the reading they came from; an entry per tab click would leave them pressing Close through their own browsing of the page. Verified live: glossary → how-it-works → two tab switches → Close landed back on the glossary.
+
+**Both old routes redirect rather than 404** (`next.config.mjs`), and `/how-i-remember` lands on `?tab=over-time` — the half it named. **Not permanent redirects**: a 308 is cached hard by browsers and would outlive any decision to split the pages again. These are courtesy redirects for links shared during the beta, not a URL commitment.
+
+`leave-page.ts`'s fallback path list now names `how-it-works` — miss that and Close strands anyone who arrived in the same tab, which is the trap the route hit when `/how-i-read` first shipped.
+
+### Chrome extension — what "not connected" actually meant — 2026-08-22
+
+Diagnosed after it blocked every live check earlier in the session. **Nothing was wrong with the install:** Claude 1.0.85, Default profile, Web Store install, `<all_urls>` and `claude.ai` permissions granted, service worker started that morning, and Claude Code authenticated as the same account (nenad.kojic@gmail.com, confirmed from `~/.claude.json`).
+
+**What was missing was the account-level pairing.** `list_connected_browsers` returned an empty list and the connect broadcast reached nothing — the extension was running but not registered to the account. Opening the extension panel in Chrome fixed it and a browser registered immediately.
+
+**Worth remembering:** "the extension is not connected" does not mean it is missing or disabled. Check `list_connected_browsers` first — an empty list is a pairing problem and the fix is the extension panel, not a reinstall. Also on this machine: both `/Applications/Google Chrome.app` and `/Applications/Google Chrome 2.app` exist and the running browser is the "2" copy; same profile, so extensions load either way, but it is worth tidying.
+
+### GDPR export completed, and a guard so it stays complete — 2026-08-22
+
+`d784630`. `writer_patterns` had been absent from `exportUserData` since the day its table was created: a writer could ask for everything held about them and not be shown the product's largest claim ABOUT them. Dismissed rows are included deliberately — a writer is entitled to know the row is kept and why it has to be.
+
+`user_milestones` had the same gap and was added with it. **Flagged rather than assumed:** it was not in the brief, it is not content, and reverting it is one line.
+
+**The real fix is `tests/lib/user-data-completeness.test.ts`.** Both claims — nothing left behind, nothing held back — are hand-maintained lists, and both have now been wrong in exactly the same way (`user_milestones` missed the deletion list on 21 Aug, `writer_patterns` missed the export from the start). The guard discovers per-user tables from the source — a `src/lib` module exporting a `*_TABLE` constant — and fails if either function misses one, so the next table breaks a test on the day it is written rather than the day a writer asks for their data. Verified by deletion: removing the new query turns it red.
