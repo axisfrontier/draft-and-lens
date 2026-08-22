@@ -129,8 +129,6 @@ export default function AppHomePage() {
   const [uploadedFileText, setUploadedFileText] = useState('');
   const [uploadError, setUploadError] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [bibleInput, setBibleInput] = useState('');
-  const [bibleSkip, setBibleSkip] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const progressBannerRef = useRef<HTMLDivElement>(null);
@@ -202,8 +200,6 @@ export default function AppHomePage() {
   const [pattern, setPattern] = useState<{ tendency: string; text: string; trendNote?: string } | null>(null);
   /** What the writer typed into "what are you working toward?" this time. */
   const [goalInput, setGoalInput] = useState('');
-  /** Which scope that goal is for. Only offered once a book is chosen. */
-  const [goalScope, setGoalScope] = useState<'manuscript' | 'writer'>('manuscript');
   /** What this reading says against the goals they already hold (Gap B). */
   const [goalNotes, setGoalNotes] = useState<Array<{ goalId: string; goal: string; note: string }>>([]);
   /** Goals already standing, shown back so nobody types the same one twice. */
@@ -503,13 +499,16 @@ export default function AppHomePage() {
           // choice, and 'manuscript' is meaningless without a book to attach it
           // to — the server refuses one that is not theirs rather than
           // rescoping it to a standing goal.
+          // Scope follows the grouping choice already made above: a goal typed
+          // beside a chosen book is that book's, otherwise it is a standing one.
+          // The panel says which, so nothing here is inferred behind the
+          // writer's back.
           ...(goalInput.trim()
             ? {
               goal: goalInput.trim(),
-              goalScope: chosenManuscript && goalScope === 'manuscript' ? 'manuscript' : 'writer',
+              goalScope: chosenManuscript ? 'manuscript' : 'writer',
             }
             : {}),
-          ...(bibleSkip ? { skipBible: true } : bibleInput.trim() ? { bible: bibleInput.trim() } : {}),
         }),
         signal: ctrl.signal,
       });
@@ -769,7 +768,7 @@ export default function AppHomePage() {
                   fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                   letterSpacing: '.14em', textTransform: 'uppercase',
                   color: 'var(--paper)', fontWeight: 500,
-                }}>Add your work</span>
+                }}>Your work</span>
               </div>
 
               {/* Drop zone */}
@@ -905,7 +904,7 @@ export default function AppHomePage() {
                     fontFamily: 'var(--font-mono)', fontSize: '.72rem',
                     letterSpacing: '.14em', textTransform: 'uppercase',
                     color: 'var(--paper)', fontWeight: 500,
-                  }}>What are you submitting?</span>
+                  }}>What is it?</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.4rem' }}>
                   {TYPES.map((t) => (
@@ -931,12 +930,14 @@ export default function AppHomePage() {
                 </div>
               </div>
 
-              {/* Complete piece vs excerpt */}
-              <div style={{ borderRadius: 14, padding: '.5rem 1rem 0', margin: '0 -1rem' }}>
+              {/* Complete piece vs excerpt — the second half of "what is it?",
+                  so it sits under that heading as a quiet sub-label rather than
+                  as its own unlabelled question. */}
+              <div style={{ borderRadius: 14, padding: '.15rem 1rem .5rem', margin: '0 -1rem' }}>
                 <div style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
                   letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: 'var(--paper)', fontWeight: 500, marginBottom: '.7rem',
+                  color: 'var(--paper-dark)', marginBottom: '.5rem',
                 }}>Complete piece or excerpt?</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.4rem' }}>
                   {(
@@ -967,166 +968,6 @@ export default function AppHomePage() {
                 </div>
               </div>
 
-              {/* Optional divider */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginTop: '-.25rem' }}>
-                <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
-                  letterSpacing: '.16em', textTransform: 'uppercase',
-                  color: 'var(--paper-dark)',
-                }}>Optional</span>
-                <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
-              </div>
-
-              {/* Character bible */}
-              <div style={{ border: '1px solid var(--border-dark)', background: 'var(--black-band)' }}>
-                <div style={{
-                  padding: '.75rem 1rem', borderBottom: '1px solid var(--border-dark)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                }}>
-                  <div>
-                    <div style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                      letterSpacing: '.14em', textTransform: 'uppercase',
-                      color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
-                    }}>Character bible</div>
-                    <div style={{
-                      fontFamily: 'var(--font-sans)', fontSize: '.85rem',
-                      color: 'var(--rule)', fontStyle: 'italic',
-                    }}>I build this from what you send me.</div>
-                  </div>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '.4rem',
-                    cursor: 'pointer', flexShrink: 0, marginLeft: '1rem',
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={bibleSkip}
-                      onChange={(e) => setBibleSkip(e.target.checked)}
-                      style={{ width: 13, height: 13, accentColor: 'var(--amber-d)' }}
-                    />
-                    <span style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '.65rem',
-                      letterSpacing: '.12em', textTransform: 'uppercase',
-                      color: 'var(--rule)',
-                    }}>Skip</span>
-                  </label>
-                </div>
-                <div style={{ padding: '.75rem 1rem' }}>
-                  <label style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    color: 'var(--amber-l)', fontWeight: 500,
-                    display: 'block', marginBottom: '.4rem',
-                  }}>
-                    Paste your own to use instead{' '}
-                    <span style={{ color: 'var(--rule)' }}>(optional)</span>
-                  </label>
-                  <textarea
-                    value={bibleInput}
-                    onChange={(e) => setBibleInput(e.target.value)}
-                    rows={3}
-                    placeholder="Characters, traits, relationships, voice patterns, wants, history — anything I should know."
-                    style={{
-                      width: '100%', fontFamily: 'var(--font-sans)',
-                      fontSize: '.8rem', lineHeight: 1.7,
-                      padding: '.5rem .85rem', background: 'var(--surface-deep)',
-                      border: '1px solid var(--border-deeper)', color: 'var(--rule)',
-                      outline: 'none', resize: 'vertical', fontStyle: 'italic',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* What do you want from this piece? — Mentor Completeness, Gap B.
-                  Sits ALONGSIDE the bible field rather than replacing it: the
-                  bible tells me about the book, this tells me about the writer's
-                  intent for it, and they are not the same thing.
-
-                  ONE OPTIONAL FIELD, no form. A goal is the writer's claim about
-                  themselves, so nothing here shapes it — no vocabulary, no
-                  examples presented as options, no required scope. The scope
-                  control appears only when there is a book to attach a goal to,
-                  because "for this book" is meaningless without one. */}
-              <div style={{ border: '1px solid var(--border-dark)', background: 'var(--black-band)' }}>
-                <div style={{ padding: '.75rem 1rem', borderBottom: '1px solid var(--border-dark)' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
-                  }}>What do you want from this piece?</div>
-                  <div style={{
-                    fontFamily: 'var(--font-sans)', fontSize: '.85rem',
-                    color: 'var(--rule)', fontStyle: 'italic',
-                  }}>Tell me and I&apos;ll hold it while I read. It won&apos;t change what I say about the work — only add to it.</div>
-                </div>
-                <div style={{ padding: '.75rem 1rem' }}>
-                  <textarea
-                    value={goalInput}
-                    onChange={(e) => setGoalInput(e.target.value)}
-                    rows={2}
-                    maxLength={500}
-                    placeholder="I want this to feel more urgent. I&apos;m trying to stop over-explaining."
-                    style={{
-                      width: '100%', fontFamily: 'var(--font-sans)',
-                      fontSize: '.8rem', lineHeight: 1.7,
-                      padding: '.5rem .85rem', background: 'var(--surface-deep)',
-                      border: '1px solid var(--border-deeper)', color: 'var(--rule)',
-                      outline: 'none', resize: 'vertical', fontStyle: 'italic',
-                    }}
-                  />
-
-                  {/* Scope. Only where a book has been chosen — otherwise there
-                      is one honest answer and no choice to offer. */}
-                  {chosenManuscript && goalInput.trim() !== '' && (
-                    <div style={{ display: 'flex', gap: '.4rem', marginTop: '.5rem', flexWrap: 'wrap' }}>
-                      {([
-                        { value: 'manuscript' as const, label: 'For this book' },
-                        { value: 'writer' as const, label: 'For my writing' },
-                      ]).map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => setGoalScope(opt.value)}
-                          disabled={running}
-                          style={{
-                            fontFamily: 'var(--font-mono)', fontSize: '.6rem',
-                            letterSpacing: '.14em', textTransform: 'uppercase',
-                            padding: '.35rem .7rem',
-                            background: goalScope === opt.value ? 'var(--amber)' : 'transparent',
-                            color: goalScope === opt.value ? 'var(--black-band)' : 'var(--paper-dark)',
-                            border: `1px solid ${goalScope === opt.value ? 'var(--amber)' : 'var(--border-deeper)'}`,
-                            cursor: 'pointer', borderRadius: 8,
-                          }}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Already standing. Shown so nobody types the same goal
-                      twice and nobody wonders whether the last one took. */}
-                  {heldGoals.filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript).length > 0 && (
-                    <div style={{ marginTop: '.7rem' }}>
-                      <div style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.58rem',
-                        letterSpacing: '.14em', textTransform: 'uppercase',
-                        color: 'var(--paper-dark)', marginBottom: '.3rem',
-                      }}>Already holding</div>
-                      {heldGoals
-                        .filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript)
-                        .map((g) => (
-                          <div key={g.id} style={{
-                            fontFamily: 'var(--font-serif)', fontSize: '.8rem',
-                            lineHeight: 1.6, color: 'var(--rule)', fontStyle: 'italic',
-                          }}>&ldquo;{g.goal}&rdquo;</div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* Upload error */}
               {uploadError && (
                 <div style={{
@@ -1141,7 +982,23 @@ export default function AppHomePage() {
                 }} role="alert">{uploadError}</div>
               )}
 
-              {/* Continuity grouping — §2 option C. One line, one control:
+              {/* Step 3 — where does it belong? */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', margin: '.6rem 0 -.2rem' }}>
+                <span style={badge(3)}>3</span>
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+                  letterSpacing: '.14em', textTransform: 'uppercase',
+                  color: 'var(--paper)', fontWeight: 500,
+                }}>Where does it belong?</span>
+              </div>
+
+              {/* Step 3 — where does it belong? Grouping was the last thing
+                  on the panel, below the optional divider, though it is not
+                  optional in the way a goal is: it is a fact about the work,
+                  and it decides whether a ledger gets anything at all. It is a
+                  numbered step now, in the order Nenad approved.
+
+                  Continuity grouping — §2 option C. One line, one control:
                   ruling 2 was explicit that this must be a single lightweight
                   confirm/adjust, not a form. Only appears once there is
                   something to group against. */}
@@ -1256,9 +1113,95 @@ export default function AppHomePage() {
                 </div>
               )}
 
-              {/* Step 3 — Analyse */}
+              {/* Optional divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginTop: '-.25rem' }}>
+                <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
+                  letterSpacing: '.16em', textTransform: 'uppercase',
+                  color: 'var(--paper-dark)',
+                }}>Optional</span>
+                <div style={{ flex: 1, borderTop: '1px solid var(--border-deeper)' }} />
+              </div>
+
+              {/* What do you want from this piece? — Mentor Completeness, Gap B.
+                  The only thing left below the optional divider now that the
+                  character bible has moved to the book page.
+
+                  ONE OPTIONAL FIELD, no form. A goal is the writer's claim about
+                  themselves, so nothing here shapes it — no vocabulary, no
+                  examples presented as options, and no scope question: the
+                  grouping step above has already settled where this piece
+                  belongs, and the line under the field says where the goal lands
+                  rather than asking a second time. */}
+              <div style={{ border: '1px solid var(--border-dark)', background: 'var(--black-band)' }}>
+                <div style={{ padding: '.75rem 1rem', borderBottom: '1px solid var(--border-dark)' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                    letterSpacing: '.14em', textTransform: 'uppercase',
+                    color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
+                  }}>What do you want from this piece?</div>
+                  <div style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '.85rem',
+                    color: 'var(--rule)', fontStyle: 'italic',
+                  }}>Tell me and I&apos;ll hold it while I read. It won&apos;t change what I say about the work — only add to it.</div>
+                  {/* Where the goal lands, stated rather than asked. Two pills
+                      reading FOR THIS BOOK / FOR MY WRITING made the writer
+                      compare two similar labels before they could choose; the
+                      panel already knows which case they are in, so it says so.
+                      Standing goals are still addable any time on the account
+                      page — nothing is lost but the comparison. */}
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                    letterSpacing: '.14em', textTransform: 'uppercase',
+                    color: 'var(--amber-d)', marginTop: '.45rem',
+                  }}>
+                    {chosenManuscript && chosenTitle
+                      ? `A goal for ${chosenTitle}`
+                      : 'A goal for your writing'}
+                  </div>
+                </div>
+                <div style={{ padding: '.75rem 1rem' }}>
+                  <textarea
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    rows={2}
+                    maxLength={500}
+                    placeholder="I want this to feel more urgent. I&apos;m trying to stop over-explaining."
+                    style={{
+                      width: '100%', fontFamily: 'var(--font-sans)',
+                      fontSize: '.8rem', lineHeight: 1.7,
+                      padding: '.5rem .85rem', background: 'var(--surface-deep)',
+                      border: '1px solid var(--border-deeper)', color: 'var(--rule)',
+                      outline: 'none', resize: 'vertical', fontStyle: 'italic',
+                    }}
+                  />
+
+                  {/* Already standing. Shown so nobody types the same goal
+                      twice and nobody wonders whether the last one took. */}
+                  {heldGoals.filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript).length > 0 && (
+                    <div style={{ marginTop: '.7rem' }}>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase',
+                        color: 'var(--paper-dark)', marginBottom: '.3rem',
+                      }}>Already holding</div>
+                      {heldGoals
+                        .filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript)
+                        .map((g) => (
+                          <div key={g.id} style={{
+                            fontFamily: 'var(--font-serif)', fontSize: '.8rem',
+                            lineHeight: 1.6, color: 'var(--rule)', fontStyle: 'italic',
+                          }}>&ldquo;{g.goal}&rdquo;</div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Step 4 — Analyse */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginTop: '.5rem' }}>
-                <span style={badge(3, canAnalyse)}>3</span>
+                <span style={badge(4, canAnalyse)}>4</span>
                 <button
                   type="button"
                   onClick={() => analyse()}

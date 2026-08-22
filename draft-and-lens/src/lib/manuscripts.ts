@@ -531,3 +531,83 @@ export async function detachReading(userId: string, readingId: string): Promise<
     return false;
   }
 }
+
+/** A book's character bible, and whether the writer asked for none. */
+export interface ManuscriptBible {
+  bible: string | null;
+  skip: boolean;
+}
+
+/** Matches manuscripts_bible_length_chk. Cut rather than refused. */
+export const MAX_BIBLE_LENGTH = 20_000;
+
+/**
+ * The bible held for one book.
+ *
+ * Returns null when the manuscript is not this writer's, which is also how a
+ * forged id is refused — the same posture every function in this file takes,
+ * and the reason ownership is checked in the data layer rather than the route.
+ *
+ * Degrades to `{ bible: null, skip: false }` shape only through the caller: a
+ * missing column (migration not yet applied) returns null here, and a null
+ * bible means the reading behaves exactly as it did before this feature — Brain
+ * 5 builds one from the text. Failing closed costs a writer their pasted bible
+ * on one reading; failing open would mean sending another book's cast into
+ * this one.
+ */
+export async function getManuscriptBible(
+  userId: string,
+  manuscriptId: string
+): Promise<ManuscriptBible | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from(MANUSCRIPTS_TABLE)
+      .select('bible, bible_skip')
+      .eq('id', manuscriptId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .limit(1);
+    const row = (data as unknown as Array<{ bible: string | null; bible_skip: boolean }> | null)?.[0];
+    if (error || !row) return null;
+    return { bible: row.bible?.trim() || null, skip: row.bible_skip === true };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Write the bible for one book. Ownership is part of the update, not a check
+ * before it, so there is no window between the two.
+ */
+export async function setManuscriptBible(
+  userId: string,
+  manuscriptId: string,
+  next: { bible?: string | null; skip?: boolean }
+): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const supabase = getServiceClient();
+    const patch: Record<string, unknown> = {};
+    if (next.bible !== undefined) {
+      const clean = next.bible?.trim() ?? '';
+      patch.bible = clean ? clean.slice(0, MAX_BIBLE_LENGTH) : null;
+    }
+    if (next.skip !== undefined) patch.bible_skip = next.skip;
+    if (Object.keys(patch).length === 0) return false;
+
+    const { data, error } = await supabase
+      .from(MANUSCRIPTS_TABLE)
+      .update(patch)
+      .eq('id', manuscriptId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      // An update matching zero rows succeeds with no error, so the row count
+      // is the only honest signal that anything changed.
+      .select('id');
+    return !error && Array.isArray(data) && data.length > 0;
+  } catch {
+    return false;
+  }
+}

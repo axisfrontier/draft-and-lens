@@ -26,7 +26,7 @@ import { createGoal, listGoalsForReading, normaliseGoal } from '../../../lib/wri
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
-import { isWorkAttached, resolveAttachment } from '../../../lib/manuscripts';
+import { getManuscriptBible, isWorkAttached, resolveAttachment } from '../../../lib/manuscripts';
 import {
   getPriorRevisionNotes,
   newWorkId,
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "Sign in first and I'll read this." }, { status: 401 });
   }
 
-  const { text, mode, genre, intent, bible, skipBible, submissionType, forceRefresh } = body;
+  const { text, mode, genre, intent, submissionType, forceRefresh } = body;
   // The writer has answered the lens-voice question: this work is theirs. It
   // is a claim, not proof, and it is treated as settling the matter — the gate
   // exists to ask once, not to argue.
@@ -342,6 +342,16 @@ export async function POST(req: NextRequest): Promise<Response> {
         // here costs the goal register, never the reading.
         const goals = await listGoalsForReading(userId, manuscriptId);
 
+        // ── Character bible (moved off the submission panel, 2026-08-22) ──
+        // It is a fact about a BOOK, not about one submission, so it is read
+        // from the manuscript this piece is filed under rather than sent by the
+        // client. A standalone piece has none, and Brain 5 builds one from the
+        // text exactly as it always did.
+        //
+        // Ownership is checked inside getManuscriptBible, so a forged
+        // manuscriptId returns null rather than another writer's cast list.
+        const bookBible = manuscriptId ? await getManuscriptBible(userId, manuscriptId) : null;
+
         if (decision.kind === 'unchanged' && !groupingIsUnfiled) {
           send({ type: 'done', ...decision.reading, revision: { status: 'unchanged', readAt: decision.readAt } });
           const now = Date.now();
@@ -385,8 +395,8 @@ export async function POST(req: NextRequest): Promise<Response> {
             text: clean,
             genre: typeof genre === 'string' ? genre : undefined,
             intent: typeof intent === 'string' ? intent : undefined,
-            bible: typeof bible === 'string' ? bible : undefined,
-            skipBible: skipBible === true,
+            bible: bookBible?.bible ?? undefined,
+            skipBible: bookBible?.skip === true,
             submissionType: cleanSubmissionType,
             // Word-limit enforcement happens BEFORE any API call inside the
             // pipeline (computeCoverage runs before Brain 1). Law upheld.

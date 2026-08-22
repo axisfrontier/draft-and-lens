@@ -9,15 +9,20 @@ import {
   unlockFact,
   type LockKind,
 } from '../../../../lib/continuity';
-import { listChapters } from '../../../../lib/manuscripts';
+import {
+  getManuscriptBible,
+  listChapters,
+  setManuscriptBible,
+} from '../../../../lib/manuscripts';
 import { logSecurityEvent } from '../../../../lib/security-log';
 
 /**
  * The ledger for one manuscript (§6b) and the lock actions on it (§5.7).
  *
- *   GET    — the accumulated facts, grouped by entity
+ *   GET    — the accumulated facts, grouped by entity, plus this book's bible
  *   POST   — add a writer-authored lock directly
- *   PATCH  — promote an existing fact to a lock, or release one
+ *   PATCH  — promote an existing fact to a lock, release one, or write the
+ *            book's character bible
  *   DELETE — soft-delete a ledger row
  *
  * Ownership is enforced in the data layer on every call, not here: the
@@ -61,11 +66,15 @@ export async function GET(_req: NextRequest, { params }: Params): Promise<Respon
   // Chapters come back alongside the facts so the view can show what is
   // grouped into this manuscript, not just what was extracted from it — the
   // correction surface for a wrong grouping (§2).
-  const [entities, chapters] = await Promise.all([
+  // The bible rides along with the ledger because they are read by the same
+  // page in the same breath. It is null when the migration has not been
+  // applied, which the view treats as "no bible", not as an error.
+  const [entities, chapters, bible] = await Promise.all([
     listLedger(user, params.manuscriptId),
     listChapters(user, params.manuscriptId),
+    getManuscriptBible(user, params.manuscriptId),
   ]);
-  return NextResponse.json({ entities, chapters });
+  return NextResponse.json({ entities, chapters, bible });
 }
 
 export async function POST(req: NextRequest, { params }: Params): Promise<Response> {
@@ -112,7 +121,7 @@ export async function POST(req: NextRequest, { params }: Params): Promise<Respon
   return NextResponse.json({ factId }, { status: 201 });
 }
 
-export async function PATCH(req: NextRequest, _ctx: Params): Promise<Response> {
+export async function PATCH(req: NextRequest, { params }: Params): Promise<Response> {
   const user = await requireUser('PATCH /api/ledger/[manuscriptId]');
   if (typeof user !== 'string') return user;
 
@@ -124,6 +133,32 @@ export async function PATCH(req: NextRequest, _ctx: Params): Promise<Response> {
   }
 
   const { factId, action, lockKind, lockFromSequence } = body;
+
+  // The book's character bible. Handled before the factId guard because it is
+  // the one action here that is about the manuscript rather than about a fact
+  // in it — the panel field it replaces was per-submission and stored nowhere.
+  if (action === 'bible') {
+    const bible = body.bible;
+    const skip = body.skip;
+    if (bible !== undefined && bible !== null && typeof bible !== 'string') {
+      return badRequest('bible must be a string or null.');
+    }
+    if (skip !== undefined && typeof skip !== 'boolean') {
+      return badRequest('skip must be a boolean.');
+    }
+    const done = await setManuscriptBible(user, params.manuscriptId, {
+      ...(bible === undefined ? {} : { bible: bible as string | null }),
+      ...(skip === undefined ? {} : { skip }),
+    });
+    if (!done) {
+      return NextResponse.json(
+        { error: "I couldn't save that. The book still has what it had." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   if (typeof factId !== 'string' || !factId) return badRequest('factId is required.');
 
   if (action === 'unlock') {
@@ -145,7 +180,7 @@ export async function PATCH(req: NextRequest, _ctx: Params): Promise<Response> {
     return NextResponse.json({ ok: true });
   }
 
-  return badRequest('action must be "lock" or "unlock".');
+  return badRequest('action must be "lock", "unlock" or "bible".');
 }
 
 export async function DELETE(req: NextRequest, _ctx: Params): Promise<Response> {

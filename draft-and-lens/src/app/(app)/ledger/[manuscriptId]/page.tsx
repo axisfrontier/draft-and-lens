@@ -75,6 +75,10 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
   const { isSignedIn } = useAuth();
   const [entities, setEntities] = useState<LedgerEntity[] | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  /** This book's character bible — moved here from the submission panel. */
+  const [bible, setBible] = useState('');
+  const [bibleSkip, setBibleSkip] = useState(false);
+  const [bibleSaved, setBibleSaved] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [lockingFact, setLockingFact] = useState<string | null>(null);
@@ -92,9 +96,17 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
   const load = useCallback(() => {
     fetch(`/api/ledger/${params.manuscriptId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Could not load this ledger.'))))
-      .then((d: { entities: LedgerEntity[]; chapters?: Chapter[] }) => {
+      .then((d: {
+        entities: LedgerEntity[];
+        chapters?: Chapter[];
+        bible?: { bible: string | null; skip: boolean } | null;
+      }) => {
         setEntities(d.entities);
         setChapters(d.chapters ?? []);
+        // Null covers both "no bible written" and "migration not applied yet",
+        // and both mean the same thing to this view: an empty box.
+        setBible(d.bible?.bible ?? '');
+        setBibleSkip(d.bible?.skip === true);
       })
       .catch((e: Error) => setError(e.message));
   }, [params.manuscriptId]);
@@ -103,6 +115,31 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
     if (isSignedIn !== true) return;
     load();
   }, [isSignedIn, load]);
+
+  /**
+   * Save this book's character bible. Its own function rather than a branch in
+   * act(): act() is keyed on a fact id and reloads the whole ledger, and
+   * neither applies to a field that belongs to the book itself.
+   */
+  async function saveBible(next: { bible?: string; skip?: boolean }): Promise<void> {
+    setError('');
+    setBibleSaved(false);
+    try {
+      const res = await fetch(`/api/ledger/${params.manuscriptId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bible', ...next }),
+      });
+      if (!res.ok) {
+        const d = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(d?.error ?? "I couldn't save that. The book still has what it had.");
+        return;
+      }
+      setBibleSaved(true);
+    } catch {
+      setError("I couldn't save that. The book still has what it had.");
+    }
+  }
 
   async function act(body: Record<string, unknown>, method: 'PATCH' | 'DELETE', factId: string) {
     setBusy(factId);
@@ -232,6 +269,90 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
         </button>
       </div>
       <h1 className="mt-4 font-serif text-2xl">What this book has established</h1>
+
+      {/* This book's character bible. Moved off the submission panel on
+          2026-08-22: it was a per-submission field, stored nowhere and re-typed
+          on every chapter, when a bible is a fact about a BOOK — same cast,
+          same relationships, across everything filed under it.
+
+          A standalone piece has nowhere to put one, and that is the accepted
+          cost of the move: Brain 5 still builds a bible from the text, the
+          writer just cannot hand one over. */}
+      {isSignedIn === true && (
+        <section style={{ maxWidth: 660, marginTop: '3rem' }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: '.62rem',
+            letterSpacing: '.18em', textTransform: 'uppercase',
+            color: 'var(--amber-d)', marginBottom: '.35rem',
+          }}>Character bible</div>
+          <p style={{
+            fontFamily: 'var(--font-sans)', fontSize: '.85rem', lineHeight: 1.7,
+            color: 'var(--ink-soft)', margin: '0 0 1rem',
+          }}>
+            I build one from what you send me. Write your own here and I&apos;ll use
+            it instead, on every chapter of this book.
+          </p>
+
+          <textarea
+            value={bible}
+            onChange={(e) => { setBible(e.target.value); setBibleSaved(false); }}
+            rows={6}
+            maxLength={20000}
+            disabled={bibleSkip}
+            placeholder="Characters, traits, relationships, voice patterns, wants, history — anything I should know."
+            style={{
+              width: '100%', fontFamily: 'var(--font-sans)', fontSize: '.85rem',
+              lineHeight: 1.7, padding: '.6rem .8rem', background: 'var(--paper)',
+              border: '1px solid var(--rule)', color: 'var(--ink)',
+              outline: 'none', resize: 'vertical',
+              opacity: bibleSkip ? 0.5 : 1,
+            }}
+          />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '.6rem' }}>
+            <button
+              type="button"
+              onClick={() => saveBible({ bible })}
+              disabled={bibleSkip}
+              style={{
+                background: 'none', border: '1px solid var(--rule)', borderRadius: 4,
+                padding: '.25rem .6rem', cursor: bibleSkip ? 'not-allowed' : 'pointer',
+                fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                letterSpacing: '.1em', textTransform: 'uppercase',
+                color: 'var(--ink-soft)', opacity: bibleSkip ? 0.5 : 1,
+              }}
+            >
+              Save
+            </button>
+
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer',
+              fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+              letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-faint)',
+            }}>
+              <input
+                type="checkbox"
+                checked={bibleSkip}
+                onChange={(e) => {
+                  const skip = e.target.checked;
+                  setBibleSkip(skip);
+                  void saveBible({ skip });
+                }}
+                style={{ width: 13, height: 13, accentColor: 'var(--amber-d)' }}
+              />
+              Don&apos;t keep one for this book
+            </label>
+
+            {bibleSaved && (
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                letterSpacing: '.1em', textTransform: 'uppercase',
+                color: 'var(--ink-faint)',
+              }}>Saved</span>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* This book's goals (Gap B). At manuscript level rather than in the
           account, per the spec: a goal for one book belongs where the writer is
