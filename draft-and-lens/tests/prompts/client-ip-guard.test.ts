@@ -149,13 +149,23 @@ describe('prompts integrity', () => {
   });
 });
 
+/**
+ * WHY THIS SKIPS RATHER THAN PASSES WHEN THERE IS NO BUILD.
+ *
+ * It used to run `expect(true).toBe(true)` and return, so on a machine with no
+ * `.next/static` — a fresh clone, CI before the build step, anyone running the
+ * suite without building — the test guarding the IP boundary reported GREEN
+ * having read nothing at all. A green tick that means "I did not look" is worse
+ * than a red one on the one check the project calls non-negotiable.
+ *
+ * `it.skipIf` says so out loud: the run prints it as skipped, and nobody reads
+ * a pass that was never earned.
+ */
+const HAS_BUILD = fs.existsSync(path.join(root, '.next', 'static'));
+
 describe('built client bundle guard (run after next build)', () => {
-  it('no prompt phrase in .next/static chunks when build exists', () => {
+  it.skipIf(!HAS_BUILD)('no prompt phrase in .next/static chunks', () => {
     const staticDir = path.join(root, '.next', 'static');
-    if (!fs.existsSync(staticDir)) {
-      expect(true).toBe(true);
-      return;
-    }
     const chunks: string[] = [];
     const walk = (dir: string) => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
