@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getServiceClient, isSupabaseConfigured } from './supabase-server';
 import { USER_MILESTONES_TABLE } from './user-milestones';
+import { WRITER_GOALS_TABLE } from './writer-goals';
 import { WRITER_PATTERNS_TABLE } from './writer-patterns';
 
 /**
@@ -390,10 +391,16 @@ export async function deleteAllUserData(userId: string): Promise<boolean> {
     // row behind, so a writer who deleted their account and returned would
     // silently never be shown a once-per-account line again. That is a false
     // deletion claim, which is a legal statement and not merely a bug.
-    // writer_patterns joined this list the day its table was created.
+    // writer_patterns joined this list the day its table was created, and
+    // writer_goals on the day of its own — a goal is the writer's own sentence
+    // about what they are trying to do, which is the last thing that should
+    // survive them asking for everything to be deleted. It sits before
+    // MANUSCRIPTS_TABLE for the same reason the flags do: a manuscript-scoped
+    // goal references it.
     for (const table of [
       FLAGS_TABLE,
       FACTS_TABLE,
+      WRITER_GOALS_TABLE,
       MANUSCRIPTS_TABLE,
       USER_MILESTONES_TABLE,
       WRITER_PATTERNS_TABLE,
@@ -623,6 +630,11 @@ export interface UserDataExport {
    *  are: a flag is a statement this service has stored about the writer's
    *  book, so it is theirs to export. */
   continuityFlags: Array<Record<string, unknown>>;
+  /** Writer-set goals (Gap B). The clearest case in this whole export: these
+   *  are the writer's own sentences about what they are trying to do, stored
+   *  verbatim. Set-aside goals are included — the export is everything held,
+   *  not everything surfaced. */
+  writerGoals: Array<Record<string, unknown>>;
 }
 
 export async function exportUserData(userId: string): Promise<UserDataExport> {
@@ -633,6 +645,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     manuscripts: [],
     continuityFacts: [],
     continuityFlags: [],
+    writerGoals: [],
   };
   if (!isSupabaseConfigured()) return base;
   try {
@@ -665,6 +678,9 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
 
     const flags = await supabase.from(FLAGS_TABLE).select('*').eq('user_id', userId);
     if (flags.data) base.continuityFlags = flags.data as unknown as Array<Record<string, unknown>>;
+
+    const goals = await supabase.from(WRITER_GOALS_TABLE).select('*').eq('user_id', userId);
+    if (goals.data) base.writerGoals = goals.data as unknown as Array<Record<string, unknown>>;
 
     const { data, error } = await supabase
       .from(TABLE)
