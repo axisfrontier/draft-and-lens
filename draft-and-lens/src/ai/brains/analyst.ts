@@ -9,13 +9,8 @@ import {
   prependNarratorVerdicts,
 } from '../../prompts/analyst';
 import { buildGoalDirective } from '../../prompts/fragments/goals';
-import { buildPartialReadDirective } from '../../prompts/fragments/partial-read';
 import { buildRevisionDirective } from '../../prompts/fragments/revision';
-import type {
-  AnalysisMode,
-  CoverageSignal,
-  DiagnosticResult,
-} from '../../prompts/types';
+import type { AnalysisMode, DiagnosticResult } from '../../prompts/types';
 import { cachedSystemBlock, getAnthropicClient } from '../client';
 import { adaptiveAnalystConfig } from '../config';
 import { recordBrainUsage } from '../cost-tracker';
@@ -37,7 +32,6 @@ export interface AnalystInput {
   wordCount: number;
   pageEst: number;
   diagnostic: DiagnosticResult;
-  coverage: CoverageSignal;
   /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
   revisionNote?: string;
   /** Real stored WHAT TO REVISE text from the prior reading, or null. Never a
@@ -64,7 +58,6 @@ export async function runAnalyst(
     wordCount,
     pageEst,
     diagnostic,
-    coverage,
     revisionNote,
     priorRevisionNotes,
     submissionType,
@@ -93,10 +86,6 @@ export async function runAnalyst(
     pageEst,
     bible,
   });
-  if (coverage.truncated) {
-    userPrompt =
-      buildPartialReadDirective(coverage.wordsRead, coverage.wordsTotal) + userPrompt;
-  }
   userPrompt = prependNarratorVerdicts(userPrompt, diagnostic);
   // What the writer said they were trying to do (Gap B) — above the report
   // request, below the revision context. A goal is context the reading holds

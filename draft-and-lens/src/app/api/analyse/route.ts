@@ -5,7 +5,7 @@ import { recordStageTiming, withCostTracking, type CostEntry } from '../../../ai
 import { runContinuityExtractor } from '../../../ai/brains/continuity-extractor';
 import { runDetectionPass } from '../../../ai/detection-pass';
 import { moderateSubmission } from '../../../ai/moderation';
-import { FREE_WORD_LIMIT, runAnalysisPipeline } from '../../../ai/orchestrator';
+import { runAnalysisPipeline } from '../../../ai/orchestrator';
 import { checkProvenance } from '../../../ai/provenance-check';
 import { DIFFERENTIATOR_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
@@ -48,14 +48,14 @@ import type { AnalysisMode } from '../../../prompts/types';
  *   - NO auth / rate-limit / tier gating yet (local-only; the security spine is
  *     re-added before any deploy — Architecture §09, Stage H).
  *   - mode is REQUIRED and validated; the server never infers it (§15).
- *   - the word limit is enforced BEFORE any Anthropic call (a law): `wordLimit`
- *     is passed into runAnalysisPipeline, which truncates via computeCoverage
- *     before the first brain runs.
+ *   - the word cap is enforced BEFORE any Anthropic call (a law): a submission
+ *     over TESTER_WORD_CAP is refused here, so nothing is ever truncated and
+ *     every reading is of the whole text.
  *
  * Response: newline-delimited JSON (NDJSON). One object per line:
  *   { type: 'stage', stage, title }   pipeline stage transitions (§15)
  *   { type: 'text',  delta }          live Brain 2 text deltas (anchors intact)
- *   { type: 'done',  report, diagnostic, coverage, scores, market, bible }
+ *   { type: 'done',  report, diagnostic, scores, market, bible }
  *   { type: 'continuity', flags }   §6a detection results, after `done`
  *   { type: 'goal_progress', notes } what the reading says against the writer's
  *                                    own stated goals (Gap B), after `done`
@@ -393,9 +393,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             bible: bookBible?.bible ?? undefined,
             skipBible: bookBible?.skip === true,
             submissionType: cleanSubmissionType,
-            // Word-limit enforcement happens BEFORE any API call inside the
-            // pipeline (computeCoverage runs before Brain 1). Law upheld.
-            wordLimit: FREE_WORD_LIMIT,
             revisionNote,
             priorRevisionNotes,
             // Held alongside the tradition, never as a rubric — the tradition
@@ -434,14 +431,12 @@ export async function POST(req: NextRequest): Promise<Response> {
           }
         );
 
-        // Send the coverage signal WITHOUT readText — never echo the user's
-        // own submitted text back to the client (§13 banner needs the rest).
-        const { truncated, wordsRead, wordsTotal, fractionRead, coverage } =
-          result.coverage;
+        // No coverage signal any more. Every submission is read whole — the
+        // cap above refuses rather than truncates — so there was nothing left
+        // for it to describe (2026-08-22 audit).
         const payload = {
           report: result.report,
           diagnostic: result.diagnostic,
-          coverage: { truncated, wordsRead, wordsTotal, fractionRead, coverage },
           scores: result.scores,
           market: result.market,
           bible: result.bible,
@@ -762,7 +757,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         // recommendation, not actioned here.
         await logSubmissionCost({
           submissionId: workId,
-          wordCount: result.coverage.wordsRead,
+          wordCount: result.wordCount,
           mode,
           submissionType: cleanSubmissionType,
           entries: result.costEntries,
@@ -770,7 +765,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
         await logSubmissionTelemetry({
           runId,
-          wordCount: result.coverage.wordsRead,
+          wordCount: result.wordCount,
           mode,
           submissionType: cleanSubmissionType,
           traditionValue: result.diagnostic.tradition || null,

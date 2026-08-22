@@ -2,7 +2,6 @@ import 'server-only';
 
 import type {
   AnalysisMode,
-  CoverageSignal,
   DiagnosticResult,
   MarketResult,
   ScoreResult,
@@ -26,9 +25,6 @@ import { withCostTracking, type CostEntry } from './cost-tracker';
  * locked. The pipeline is never collapsed into one mega-prompt.
  */
 
-/** Free-tier word cap — the opening this many words are read (Architecture §13). */
-export const FREE_WORD_LIMIT = 10_000;
-
 const MODE_LABELS: Record<AnalysisMode, string> = {
   script: 'Script',
   story: 'Story',
@@ -44,8 +40,6 @@ export interface PipelineInput {
   bible?: string;
   /** Skip Brain 5 (writer supplied a bible or opted out). */
   skipBible?: boolean;
-  /** Tier word limit; defaults to the free-tier cap. */
-  wordLimit?: number;
   /** When this submission is a revision, a magnitude+location note (CHANGE 3). */
   revisionNote?: string;
   /** Prior reading's revision list, when this is a revision (Mentor Part B). */
@@ -85,33 +79,15 @@ export interface PipelineCallbacks {
 
 export interface PipelineResult {
   diagnostic: DiagnosticResult;
-  coverage: CoverageSignal;
+  /** Words the brains actually read. Every submission is read whole — the
+   *  route's word cap is the only limit, and it refuses rather than truncates. */
+  wordCount: number;
   report: string;
   scores: ScoreResult | null;
   market: MarketResult | null;
   bible: string;
   /** Per-brain token usage collected during this run, for cost logging. */
   costEntries: CostEntry[];
-}
-
-/** Compute the read boundary — truncates to the tier limit on a word boundary (§13). */
-export function computeCoverage(text: string, wordLimit: number): CoverageSignal {
-  const allWords = text.split(/\s+/).filter(Boolean);
-  const wordsTotal = allWords.length;
-  const truncated = wordsTotal > wordLimit;
-  const readWords = truncated ? allWords.slice(0, wordLimit) : allWords;
-  const readText = truncated ? readWords.join(' ') : text;
-  const wordsRead = readWords.length;
-  return {
-    truncated,
-    wordsRead,
-    wordsTotal,
-    fractionRead: wordsTotal ? wordsRead / wordsTotal : 1,
-    coverage: truncated
-      ? `first ${wordsRead.toLocaleString()} of ${wordsTotal.toLocaleString()} words`
-      : 'full text',
-    readText,
-  };
 }
 
 export async function runAnalysisPipeline(
@@ -127,10 +103,12 @@ async function runPipelineBody(
   cb: PipelineCallbacks
 ): Promise<Omit<PipelineResult, 'costEntries'>> {
   const genre = input.genre || 'Auto-detect';
-  const wordLimit = input.wordLimit ?? FREE_WORD_LIMIT;
-  const coverage = computeCoverage(input.text, wordLimit);
-  const text = coverage.readText;
-  const wordCount = coverage.wordsRead;
+  // Read whole, always. Partial reads were removed on 2026-08-22: the route
+  // refuses anything over TESTER_WORD_CAP before the pipeline starts, so
+  // nothing could ever be truncated and everything downstream of that idea —
+  // the coverage signal, the partial-read directive, the banner — was dead.
+  const text = input.text;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
   const modeLabel = MODE_LABELS[input.mode];
   const pageEst =
     input.mode === 'script'
@@ -189,7 +167,6 @@ async function runPipelineBody(
         wordCount,
         pageEst,
         diagnostic,
-        coverage,
         revisionNote: input.revisionNote,
         priorRevisionNotes: input.priorRevisionNotes,
         submissionType: input.submissionType,
@@ -238,5 +215,5 @@ async function runPipelineBody(
 
   void title; // title is surfaced via diagnostic; market uses its own recognition.
 
-  return { diagnostic, coverage, report, scores, market, bible };
+  return { diagnostic, wordCount, report, scores, market, bible };
 }

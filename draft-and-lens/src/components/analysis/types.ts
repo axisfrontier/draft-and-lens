@@ -8,14 +8,6 @@
  * client-safe. Keep in sync with src/prompts/types.ts.
  */
 
-export interface Coverage {
-  truncated: boolean;
-  wordsRead: number;
-  wordsTotal: number;
-  fractionRead: number;
-  coverage: string;
-}
-
 export interface Diagnostic {
   tradition: string;
   register: string;
@@ -54,7 +46,6 @@ export interface DonePayload {
   type: 'done';
   report: string;
   diagnostic: Diagnostic;
-  coverage: Coverage;
   scores: Scores | null;
   market: Market | null;
   bible: string;

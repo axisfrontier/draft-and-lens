@@ -10,7 +10,6 @@ import { TermTooltip } from '@/components/glossary/TermTooltip';
 import { LENS_NAMES } from '@/components/lenses/lens-directory';
 import type {
   ContinuityFlag,
-  Coverage,
   Diagnostic,
   Market,
   Mode,
@@ -47,7 +46,6 @@ type StreamEvent =
       type: 'done';
       report: string;
       diagnostic: Diagnostic;
-      coverage: Coverage;
       scores: Scores | null;
       market: Market | null;
       bible: string;
@@ -117,7 +115,6 @@ export default function AppHomePage() {
   const [streamed, setStreamed] = useState('');
   const [report, setReport] = useState('');
   const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
-  const [coverage, setCoverage] = useState<Coverage | null>(null);
   const [scores, setScores] = useState<Scores | null>(null);
   const [market, setMarket] = useState<Market | null>(null);
   const [bible, setBible] = useState('');
@@ -458,7 +455,6 @@ export default function AppHomePage() {
     setGoalPrompt(false);
     setStage('Reading your work');
     setEarlyDiagnostic(null);
-    setCoverage(null);
     setDiagnostic(null);
     setScores(null);
     setMarket(null);
@@ -534,7 +530,6 @@ export default function AppHomePage() {
           else if (evt.type === 'done') {
             setReport(evt.report);
             setDiagnostic(evt.diagnostic);
-            setCoverage(evt.coverage);
             setScores(evt.scores);
             setMarket(evt.market);
             setBible(evt.bible);
@@ -1394,7 +1389,6 @@ export default function AppHomePage() {
           market={market}
           bible={bible}
           submittedText={text || uploadedFileText}
-          coverage={coverage}
           mode={mode ?? undefined}
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}

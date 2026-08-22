@@ -37,11 +37,17 @@ const MATCH_CANDIDATES = 12;
 export interface ReadingPayload {
   report: string;
   diagnostic: unknown;
-  coverage: unknown;
   scores: unknown;
   market: unknown;
   bible: string;
 }
+
+/**
+ * NOTE ON READINGS STORED BEFORE 2026-08-22: their `reading_json` also carries
+ * a `coverage` object, from the partial-read handling removed that day. Nothing
+ * reads it, and the extra key is harmless — this type describes what is written
+ * now, not everything every stored row happens to contain.
+ */
 
 interface ReadingRow {
   work_id: string;

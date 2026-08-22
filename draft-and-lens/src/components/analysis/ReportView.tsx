@@ -13,13 +13,12 @@ import { BiblePanel } from './BiblePanel';
 import { ContinuitySection } from './ContinuitySection';
 import { CraftDirectives } from './CraftDirectives';
 import { MarketPanel } from './MarketPanel';
-import { PartialReadBanner } from './PartialReadBanner';
 import { ReportSection } from './ReportSection';
 import { ScoresDashboard } from './ScoresDashboard';
 import { StoryArc } from './StoryArc';
 import { VerdictBand } from './VerdictBand';
 import { extractVerdict, parseReport } from './report';
-import type { ContinuityFlag, Coverage, Diagnostic, Market, Scores } from './types';
+import type { ContinuityFlag, Diagnostic, Market, Scores } from './types';
 
 /**
  * Dashboard/Story Arc render collapsed by default (native <details>). A plain
@@ -93,7 +92,6 @@ export function ReportView({
   market,
   bible,
   submittedText,
-  coverage,
   mode,
   revisionStatus,
   readAt,
@@ -115,7 +113,6 @@ export function ReportView({
   market: Market | null;
   bible: string;
   submittedText: string;
-  coverage: Coverage | null;
   mode?: string;
   revisionStatus?: string;
   readAt?: string;
@@ -388,7 +385,6 @@ export function ReportView({
       }}>
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 3rem 8rem' }}>
 
-          <PartialReadBanner coverage={coverage} />
 
           {revisionStatus === 'unchanged' && (
             <div style={{

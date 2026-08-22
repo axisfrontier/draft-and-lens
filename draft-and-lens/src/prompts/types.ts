@@ -48,15 +48,6 @@ export interface NarratorVerdicts {
   verdicts: NarratorVerdict[];
 }
 
-export interface CoverageSignal {
-  truncated: boolean;
-  wordsRead: number;
-  wordsTotal: number;
-  fractionRead: number;
-  coverage: string;
-  readText: string;
-}
-
 /** Brain 3 — Scorer output (craft + tradition-alignment scores, arc beats). */
 export interface ScoreResult {
   title?: string | null;
