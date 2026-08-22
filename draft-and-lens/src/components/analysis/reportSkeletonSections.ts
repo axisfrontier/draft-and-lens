@@ -65,6 +65,12 @@ const STORY_SECTIONS: string[] = [
   'Character Consistency',
   'Tradition Alignment',
   'What To Revise',
+  // Added to the story prompt on 2026-08-19 and missed here until the
+  // 2026-08-22 audit, so it streamed in with no placeholder ahead of it. The
+  // two lists have to be read together or they drift silently: this one only
+  // decides what the skeleton reserves space for, so nothing fails when it is
+  // wrong — the section simply arrives unannounced.
+  'Where To Grow Next',
 ];
 
 const TREATMENT_SECTIONS: string[] = [
