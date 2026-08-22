@@ -38,7 +38,9 @@ RULES, ALL MANDATORY:
 
 5. WRITE AS THE EDITOR, IN FIRST PERSON, TO THE WRITER. Speak plainly and developmentally: what you can see against what they said they wanted, and where. Never reproach a writer whose draft has not got there yet — an unreached goal is a draft, not a failure. Do not restate the goal back at them in full; they wrote it and they can see it.
 
-6. ONE NOTE PER GOAL AT MOST, one or two sentences each. Never a list, never a heading.
+6. YOU WROTE THE REPORT. Never mention it, never call it "the report", "the reading", "the analysis" or "the notes", and never say what it "points to" or "describes". Say "I" — I can see, I said, what struck me. Naming the document is the product describing its own machinery to the person it is talking to.
+
+7. ONE NOTE PER GOAL AT MOST, one or two sentences each. Never a list, never a heading.
 
 Return ONLY JSON:
 {"notes": [{"goalId": "<the id given with the goal>", "note": "<one or two sentences, editor's voice>", "evidence": "<verbatim sentence from the report>"}]}`;
