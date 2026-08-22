@@ -44,6 +44,15 @@ A fact must be checkable. "Sarah has green eyes" is a fact. "Sarah feels distant
 THE VERBATIM QUOTE IS MANDATORY
 Every fact must carry the exact span of text it came from, copied character-for-character from the submission. If you cannot quote it, you may not claim it. Do not paraphrase, do not tidy punctuation, do not join two separated phrases into one quote. A fact whose quote cannot be found in the text will be discarded, so an invented quote costs you the fact.
 
+THE ENTITY IS WHOM THE CLAIM IS ABOUT — NEVER WHO MAKES IT
+Before anything else, ask whose property this is. A fact belongs to the person, place or thing the claim describes, and never to the character doing the describing, thinking, remembering or saying.
+
+  Text: "He thought her eyes were grey."
+  WRONG: entity \`character:dessie\`, attribute \`eye_colour\`, value \`grey\`
+  RIGHT: entity \`character:marta\`, attribute \`eye_colour\`, value \`grey\`, register \`interiority\`, povCharacter \`dessie\`
+
+The speaker or thinker is recorded in \`register\` and \`povCharacter\`, which is exactly what those fields are for. Filing the claim under them instead invents a property that character does not have — and it hides the real disagreement, because a later chapter describing HER eyes has nothing to meet.
+
 WHO IS ASSERTING IT (register)
 For every fact, record how it was asserted:${REGISTERS}
 
@@ -80,8 +89,12 @@ An attribute must be something a different chapter, describing the same thing in
   WRONG: attribute \`age_gap_over_marisol\`, value \`9 years older\`
   WRONG: attribute \`eldest_of_three_siblings\`, value \`true\`
   WRONG: attribute \`hair_colour_childhood\`, value \`darker than current\`
+  WRONG: attribute \`hair_colour_location\`, value \`grey at the sides\`
   RIGHT: attribute \`birth_order\`, value \`eldest\`
   RIGHT: attribute \`stated_age\`, value \`50\`
+  RIGHT: attribute \`hair_colour\`, value \`grey at the sides\`
+
+Qualifiers belong in the VALUE, always — where on the body, at what age, under what light, according to whom. \`hair_colour\` is the property; "grey at the sides" is the claim about it. The moment a qualifier climbs into the attribute name, that fact can only ever be compared with another fact that happened to phrase its qualifier identically, which in practice means never.
 
 The reason is mechanical: facts are compared across chapters by matching entity and attribute. Two chapters phrasing the same thing differently produce two attributes that can never meet, so the disagreement between them is invisible — and an attribute that encodes its own answer can never disagree with anything at all.
 
