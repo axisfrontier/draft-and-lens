@@ -1271,3 +1271,21 @@ Today the manuscript must be known BEFORE the run: attachment, fact extraction a
 3. **Grouping** — build the post-reading attach path (real work: a new route, extraction and detection for an already-delivered reading, and a control in the report), or accept auto-grouping only for now and let everything else be grouped later from the book page? The second is much cheaper and leaves a gap: a writer with one book and a second chapter that does not auto-match has no way to file it.
 
 **Nothing here is built. Approve the shape and answer 1–3 and I will build it in one pass.**
+
+### Minimum panel built and verified live — 2026-08-22
+
+`927f7f9`. Nenad's answers: keep "It arrives as I write it."; build the post-reading goal line; **do not** build the retroactive grouping path — grouping stays on the panel where it is, because the cost of moving it outweighs the benefit at this stage.
+
+**A correction worth recording, because the brief assumed otherwise:** goals were NOT already off the panel. Only the scope pills had gone; the goal box itself was still there. Removing it is what the ruling actually asked for, and the optional divider went with it — the bible had left that zone earlier the same day, so the goal box was the only thing left in it.
+
+**Live panel now:** 1 YOUR WORK → 2 WHAT IS IT? (with complete/excerpt beneath) → 3 WHERE DOES IT BELONG? → 4 ANALYSE, then the privacy line, "It arrives as I write it.", and the fragment link. Confirmed on the deployed site.
+
+**Nothing on the panel writes a goal any more, so the analyse route stopped accepting one.** It still READS them: a goal set on the account page or a book's page is held while the reading is written, exactly as before.
+
+**The post-reading line fires only for a writer holding NO live goals.** That condition is what makes it a pointer rather than a nag — telling someone who already has goals that they could set one is noise — and it retires itself the moment they set their first, so no milestone row is needed. It says "for next time" because that is the truth: a goal must exist before a reading to be held during it.
+
+**Verified with a real reading on production.** The line rendered in quiet italic serif between the reading's revision block and the Editorial Lenses section, reading "You can set a goal for next time in your account.", with the link resolving to `/account`.
+
+**Test data removed:** the reading was soft-deleted through the app's own path (so its cascades ran), and the `restatement` pattern row it created was cleared. Account is back to 6 works, no goals, no patterns, `Home` still `bible: null`.
+
+**One durable note about driving this panel from the browser tools:** typing into the paste box with the `type` action does not reach it — three separate attempts landed nothing, on both the old panel and the new one. What works is setting the value through the native `HTMLTextAreaElement` setter and dispatching an `input` event, so React registers the change. Worth using directly next time rather than rediscovering it.
