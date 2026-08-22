@@ -37,7 +37,8 @@ Not duplicated *text* — duplicated *reasoning*. The dangerous kind is a subtle
 ## 3 — Unused exports (3 min)
 
 - [ ] For each `export` in `src/lib/` and `src/ai/`, confirm at least one non-test caller:
-      `for s in $(grep -rhoE "^export (async )?function [a-zA-Z0-9_]+" src/lib src/ai | awk '{print $NF}'); do n=$(grep -rl "\b$s\b" src --include="*.ts" --include="*.tsx" | grep -v "$(grep -rl "export.*$s" src)" | wc -l); [ "$n" -eq 0 ] && echo "UNUSED? $s"; done`
+      `for s in $(grep -rhoE "^export (async )?function [a-zA-Z0-9_]+" src/lib src/ai | awk '{print $NF}' | sort -u); do def=$(grep -rl "export \(async \)\?function $s\b" src | head -1); n=$(grep -rn "\b$s\b" src --include="*.ts" --include="*.tsx" | grep -v "^$def:" | wc -l | tr -d ' '); [ "$n" = "0" ] && echo "UNUSED? $s"; done`
+      (Rewritten 2026-08-22: the previous version excluded whole FILES rather than the defining file's own lines, so it returned 15 candidates for 6 real ones. Check each hit by hand anyway — a function used only by tests is a separate finding, not the same one.)
 - [ ] An export used *only* by tests is either dead, or a sign the test is testing an internal it should not reach.
 
 ## 4 — Stale documentation contradicting behaviour (10 min)
@@ -79,4 +80,4 @@ Append a line every time this checklist is run, whatever it found. The gap betwe
 | Date | Trigger | Outcome |
 |---|---|---|
 | 2026-08-18 | first run, before the detection build | Real defects on its first outing: two dead brain modules never executed, `detachReading`/`listLocks`/`traceMark` dead, corpus filename lagging its content. |
-| 2026-08-22 | feature boundary — large day of shipping (goals, panel rebuild, bible move, frame work) | 9 findings, none fixed on the run. 3 dead-code items from 18 Aug still present; 3 new dead modules incl. `runLens`/`runConversation`, which the routes bypass entirely; skeleton one section behind the prompt; nested CLAUDE.md still names the v2.7 corpus. Dead-brains finding from 17 Aug confirmed RESOLVED. |
+| 2026-08-22 | feature boundary — large day of shipping (goals, panel rebuild, bible move, frame work) | 9 findings, **all 9 actioned same day** in 7 verified commits. 3 dead-code items from 18 Aug finally deleted; 3 more dead modules found and deleted incl. `runLens`/`runConversation`, which the routes bypass entirely; partial-read handling removed as unreachable (Nenad's ruling, cap stays 4,000); skeleton caught up with the prompt; nested CLAUDE.md corrected; IP-guard tautology replaced with a visible skip. Dead-brains finding from 17 Aug confirmed RESOLVED. Live smoke test after the payload change: reading completed, no `coverage` key stored. |

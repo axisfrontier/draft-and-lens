@@ -1361,3 +1361,26 @@ Its §3 grep is too crude — it excludes whole files, so it returned 15 candida
 2. **§5.9 the IP guard tautology** — small, and it restores a real protection.
 3. **§1.2/3/4/5/6 dead code deletion** — mechanical, but §1.5 deserves a decision first: delete the two brain modules, or move the route logic INTO them so the file that looks authoritative becomes authoritative.
 4. **§1.1 the word cap** — the only one that is a product decision rather than a fix, and it is the same decision that has been open since 2026-08-17: raise the cap, or accept that partial-read handling is aspirational and delete it.
+
+### AUDIT FOLLOW-UP — all nine findings actioned — 2026-08-22
+
+Seven commits, each verified on its own. Nenad's two rulings: delete `runLens`/`runConversation` (route logic stays inline), and delete partial-read handling entirely without raising the cap.
+
+| # | Finding | Commit | What was done |
+|---|---|---|---|
+| 8 | Skeleton one section behind the prompt | `d3acbbb` | `Where To Grow Next` added; the two lists diffed and now agree, 14 each |
+| 7 | Nested `CLAUDE.md` naming a corpus that does not exist | `1f1ab0e` | Points at v2.9 with the same note as the root file |
+| 9 | IP guard passing green having checked nothing | `a52d474` | `it.skipIf`; proved both ways by moving `.next/static` aside — 7 passed, 1 **skipped** |
+| 2,3,4 | `trace.ts`, `detachReading`, `listLocks` — flagged 18 Aug, never removed | `6bade3d` | Deleted |
+| 5,6 | `runLens`, `runConversation`, `suggestManuscript` | `995c7eb` | Deleted; their tests re-pointed at `classifyMatch`, the function the route actually calls |
+| 1 | Partial-read handling that could never fire | `eff2ef4` | `FREE_WORD_LIMIT`, `wordLimit`, `computeCoverage`, `CoverageSignal`, the client `Coverage` type, the `coverage` field on the done payload, the directive and the banner — all gone |
+
+**Why the last one needed a live smoke test rather than a green build.** It removed a field from the streamed `done` payload and a prop from `ReportView`, which is the core product path: a mistake there breaks every reading and no test would have caught a runtime shape mismatch.
+
+Ran one on production. **It completed**: telemetry `outcome=completed`, 290 words, every stage present, and the stored `reading_json` keys are now `["bible","market","report","scores","diagnostic"]` — **no `coverage`**, exactly as intended. Readings stored before today still carry the old key, which is what `ReadingPayload`'s new note describes. In the browser the report rendered with its verdict, the lens grid and the goal line, and the console carried no application error.
+
+**Test data removed:** the smoke-test work soft-deleted, its `restatement` pattern row cleared. Goals empty, `Home` still `bible: null`.
+
+**One thing deliberately NOT done.** Four exports are used only inside their own file — `extractAnchors`, `findAnchor`, `readableRatio`, `summarizeChange`. They are noted in the audit as tidy-up candidates, not findings, and dropping an `export` keyword changes nothing for anybody. Left alone rather than padding the count.
+
+**Also updated: the checklist's own §3 grep**, which excluded whole files and produced 15 candidates for 6 real ones. It now counts references outside the defining file only.
