@@ -140,6 +140,7 @@ export function ReportView({
   onReconcileFlag,
   pattern,
   onDismissPattern,
+  goalNotes = [],
 }: {
   report: string;
   diagnostic: Diagnostic | null;
@@ -165,6 +166,10 @@ export function ReportView({
   /** A tendency seen across this writer's works (Gap 2), chosen server-side. */
   pattern?: { tendency: string; text: string; trendNote?: string };
   onDismissPattern?: (tendency: string) => void;
+  /** What this reading says against goals the writer stated (Gap B). Server-
+   *  side both in what it says and whether it says anything: every note here
+   *  quotes a sentence the reading actually wrote. */
+  goalNotes?: ReadonlyArray<{ goalId: string; goal: string; note: string }>;
   onFreshReadingRequest?: () => void;
   /** Set when this reading belongs to a grouped manuscript — adds the sidebar
    *  link through to its continuity ledger. Absent for a standalone piece,
@@ -688,6 +693,45 @@ export function ReportView({
               stated facts about the manuscript, not a reading of it, so they
               belong in both views rather than only the prose one. */}
           <ContinuitySection flags={continuityFlags} onReconcile={onReconcileFlag} />
+
+          {/* Against what you said you wanted (Gap B).
+              FIRST, above the named pattern, because this is the only thing
+              here the writer actually asked for. A pattern is something I
+              volunteer about them; this is an answer. Their own words sit above
+              the note so the note has something to be an answer to — and so
+              they can see exactly what I was holding while I read.
+              No control on it: a goal is set aside where a writer's goals live,
+              not inside one reading of one piece. */}
+          {goalNotes.length > 0 && (
+            <div style={{ margin: '1.5rem 0 0', maxWidth: 660 }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '.55rem',
+                letterSpacing: '.2em', textTransform: 'uppercase',
+                color: 'var(--amber-d)', marginBottom: '.4rem',
+              }}>
+                What you said you wanted
+              </div>
+              {goalNotes.map((g) => (
+                <div key={g.goalId} style={{
+                  paddingLeft: '1.25rem', borderLeft: '2px solid var(--amber-d)',
+                  marginBottom: '.9rem',
+                }}>
+                  <p style={{
+                    margin: 0, fontFamily: 'var(--font-serif)', fontSize: '.88rem',
+                    lineHeight: 1.7, fontStyle: 'italic', color: 'var(--ink-soft)',
+                  }}>
+                    &ldquo;{g.goal}&rdquo;
+                  </p>
+                  <p style={{
+                    margin: '.4rem 0 0', fontFamily: 'var(--font-serif)',
+                    fontSize: '.92rem', lineHeight: 1.75, color: 'var(--ink-mid)',
+                  }}>
+                    {g.note}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* A named pattern (Gap 2) — the largest claim this product makes
               about a person, so the control to reject it sits on the claim

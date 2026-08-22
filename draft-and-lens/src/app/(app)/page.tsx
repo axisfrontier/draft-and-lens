@@ -73,6 +73,7 @@ type StreamEvent =
   // Sent after `done`. Not once-ever: a pattern stays named until the writer
   // says it is not true of them.
   | { type: 'pattern'; tendency: string; text: string; trendNote?: string }
+  | { type: 'goal_progress'; notes: Array<{ goalId: string; goal: string; note: string }> }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -201,7 +202,30 @@ export default function AppHomePage() {
   const [differentiator, setDifferentiator] = useState('');
   const [nudge, setNudge] = useState('');
   const [pattern, setPattern] = useState<{ tendency: string; text: string; trendNote?: string } | null>(null);
+  /** What the writer typed into "what are you working toward?" this time. */
+  const [goalInput, setGoalInput] = useState('');
+  /** Which scope that goal is for. Only offered once a book is chosen. */
+  const [goalScope, setGoalScope] = useState<'manuscript' | 'writer'>('manuscript');
+  /** What this reading says against the goals they already hold (Gap B). */
+  const [goalNotes, setGoalNotes] = useState<Array<{ goalId: string; goal: string; note: string }>>([]);
+  /** Goals already standing, shown back so nobody types the same one twice. */
+  const [heldGoals, setHeldGoals] = useState<Array<{ id: string; goal: string; manuscriptId: string | null }>>([]);
   const [newManuscriptTitle, setNewManuscriptTitle] = useState('');
+
+  // Goals already held, shown under the field. Read-only here: a writer
+  // reminding themselves what they asked for is the point, and changing one
+  // belongs where the rest of their goals live rather than mid-submission.
+  useEffect(() => {
+    if (isSignedIn !== true) return;
+    fetch('/api/goals')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { goals: Array<{ id: string; goal: string; manuscriptId: string | null }> } | null) => {
+        if (d) setHeldGoals(d.goals);
+      })
+      .catch(() => {
+        /* goals are an enhancement; never surface their failure */
+      });
+  }, [isSignedIn]);
 
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
@@ -452,6 +476,7 @@ export default function AppHomePage() {
     setDifferentiator('');
     setNudge('');
     setPattern(null);
+    setGoalNotes([]);
     setStage('Reading your work');
     setEarlyDiagnostic(null);
     setCoverage(null);
@@ -476,6 +501,16 @@ export default function AppHomePage() {
           ...(forceRefresh ? { forceRefresh: true } : {}),
           ...(confirmedOwn ? { confirmedOwn: true } : {}),
           ...(chosenManuscript ? { manuscriptId: chosenManuscript } : {}),
+          // A goal only exists because the writer typed it. Scope follows their
+          // choice, and 'manuscript' is meaningless without a book to attach it
+          // to — the server refuses one that is not theirs rather than
+          // rescoping it to a standing goal.
+          ...(goalInput.trim()
+            ? {
+              goal: goalInput.trim(),
+              goalScope: chosenManuscript && goalScope === 'manuscript' ? 'manuscript' : 'writer',
+            }
+            : {}),
           ...(bibleSkip ? { skipBible: true } : bibleInput.trim() ? { bible: bibleInput.trim() } : {}),
         }),
         signal: ctrl.signal,
@@ -533,6 +568,20 @@ export default function AppHomePage() {
             setBible(evt.bible);
             setRevisionStatus(evt.revision?.status ?? 'new');
             setReadAt(evt.revision?.readAt ?? null);
+            // A goal typed with this submission is now held server-side.
+            // Clearing the box and re-reading the list is what stops the same
+            // sentence being stored again on the next piece.
+            if (goalInput.trim()) {
+              setGoalInput('');
+              fetch('/api/goals')
+                .then((r) => (r.ok ? r.json() : null))
+                .then((d: { goals: Array<{ id: string; goal: string; manuscriptId: string | null }> } | null) => {
+                  if (d) setHeldGoals(d.goals);
+                })
+                .catch(() => {
+                  /* best-effort */
+                });
+            }
           } else if (evt.type === 'grouped') {
             setGroupedManuscriptId(evt.manuscriptId);
             // The undo trace, by contrast, is only surfaced when the grouping
@@ -551,6 +600,8 @@ export default function AppHomePage() {
             setNudge(evt.text);
           } else if (evt.type === 'pattern') {
             setPattern({ tendency: evt.tendency, text: evt.text, trendNote: evt.trendNote });
+          } else if (evt.type === 'goal_progress') {
+            setGoalNotes(evt.notes);
           } else if (evt.type === 'error') setError(evt.message);
         }
       }
@@ -986,6 +1037,95 @@ export default function AppHomePage() {
                       outline: 'none', resize: 'vertical', fontStyle: 'italic',
                     }}
                   />
+                </div>
+              </div>
+
+              {/* What are you working toward? — Mentor Completeness, Gap B.
+                  Sits ALONGSIDE the bible field rather than replacing it: the
+                  bible tells me about the book, this tells me about the writer's
+                  intent for it, and they are not the same thing.
+
+                  ONE OPTIONAL FIELD, no form. A goal is the writer's claim about
+                  themselves, so nothing here shapes it — no vocabulary, no
+                  examples presented as options, no required scope. The scope
+                  control appears only when there is a book to attach a goal to,
+                  because "for this book" is meaningless without one. */}
+              <div style={{ border: '1px solid var(--border-dark)', background: 'var(--black-band)' }}>
+                <div style={{ padding: '.75rem 1rem', borderBottom: '1px solid var(--border-dark)' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                    letterSpacing: '.14em', textTransform: 'uppercase',
+                    color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
+                  }}>What are you working toward?</div>
+                  <div style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '.85rem',
+                    color: 'var(--rule)', fontStyle: 'italic',
+                  }}>Tell me and I&apos;ll hold it while I read. I&apos;ll still read the work on its own terms.</div>
+                </div>
+                <div style={{ padding: '.75rem 1rem' }}>
+                  <textarea
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    rows={2}
+                    maxLength={500}
+                    placeholder="I want this to feel more urgent. I&apos;m trying to stop over-explaining."
+                    style={{
+                      width: '100%', fontFamily: 'var(--font-sans)',
+                      fontSize: '.8rem', lineHeight: 1.7,
+                      padding: '.5rem .85rem', background: 'var(--surface-deep)',
+                      border: '1px solid var(--border-deeper)', color: 'var(--rule)',
+                      outline: 'none', resize: 'vertical', fontStyle: 'italic',
+                    }}
+                  />
+
+                  {/* Scope. Only where a book has been chosen — otherwise there
+                      is one honest answer and no choice to offer. */}
+                  {chosenManuscript && goalInput.trim() !== '' && (
+                    <div style={{ display: 'flex', gap: '.4rem', marginTop: '.5rem', flexWrap: 'wrap' }}>
+                      {([
+                        { value: 'manuscript' as const, label: 'For this book' },
+                        { value: 'writer' as const, label: 'For my writing' },
+                      ]).map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setGoalScope(opt.value)}
+                          disabled={running}
+                          style={{
+                            fontFamily: 'var(--font-mono)', fontSize: '.6rem',
+                            letterSpacing: '.14em', textTransform: 'uppercase',
+                            padding: '.35rem .7rem',
+                            background: goalScope === opt.value ? 'var(--amber)' : 'transparent',
+                            color: goalScope === opt.value ? 'var(--black-band)' : 'var(--paper-dark)',
+                            border: `1px solid ${goalScope === opt.value ? 'var(--amber)' : 'var(--border-deeper)'}`,
+                            cursor: 'pointer', borderRadius: 8,
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Already standing. Shown so nobody types the same goal
+                      twice and nobody wonders whether the last one took. */}
+                  {heldGoals.filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript).length > 0 && (
+                    <div style={{ marginTop: '.7rem' }}>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase',
+                        color: 'var(--paper-dark)', marginBottom: '.3rem',
+                      }}>Already holding</div>
+                      {heldGoals
+                        .filter((g) => g.manuscriptId === null || g.manuscriptId === chosenManuscript)
+                        .map((g) => (
+                          <div key={g.id} style={{
+                            fontFamily: 'var(--font-serif)', fontSize: '.8rem',
+                            lineHeight: 1.6, color: 'var(--rule)', fontStyle: 'italic',
+                          }}>&ldquo;{g.goal}&rdquo;</div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1426,6 +1566,7 @@ export default function AppHomePage() {
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}
           differentiator={differentiator || undefined}
+          goalNotes={goalNotes}
           nudge={nudge || undefined}
           onDismissNudge={() => setNudge('')}
           onReconcileFlag={reconcileFlag}
