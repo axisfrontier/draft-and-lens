@@ -1138,3 +1138,74 @@ Diagnosed after it blocked every live check earlier in the session. **Nothing wa
 `user_milestones` had the same gap and was added with it. **Flagged rather than assumed:** it was not in the brief, it is not content, and reverting it is one line.
 
 **The real fix is `tests/lib/user-data-completeness.test.ts`.** Both claims — nothing left behind, nothing held back — are hand-maintained lists, and both have now been wrong in exactly the same way (`user_milestones` missed the deletion list on 21 Aug, `writer_patterns` missed the export from the start). The guard discovers per-user tables from the source — a `src/lib` module exporting a `*_TABLE` constant — and fails if either function misses one, so the next table breaks a test on the day it is written rather than the day a writer asks for their data. Verified by deletion: removing the new query turns it red.
+
+### ⚠️ RESUME NOTE — 2026-08-22, checkpointed at a usage limit
+
+**Done and committed this stretch:** `91cf6d3` povCharacter (multiplePov fix), `b6c791e` narrator reliability (unreliableNarrator). Both verified against the real model. `ec3e1a8` (panel reorder + bible move) is committed AND DEPLOYED — see the flag below.
+
+**Not started: the submission panel redesign proposal.** Nenad's brief: minimum necessary — (1) paste/upload, (2) format, (3) complete/excerpt, (4) analyse. Goals, grouping and bible all move off the homescreen; fragment inline expansion stays off, the "Just have a passage and a question?" link is sufficient. **Proposal goes in this file first; no building until he approves.**
+
+### ⚠️ THE PANEL MID-STATE IS ALREADY LIVE — Nenad's call needed
+
+He asked me not to deploy it. It had already gone out ~40 minutes earlier (`ec3e1a8`, deployed and confirmed in the browser) before he said so. Recording it because the instruction and the state of production disagree, and he should decide rather than discover it.
+
+**Reverting would move production AWAY from where he wants it.** What is live now is: paste → format → complete/excerpt → grouping → goal → analyse. His target is paste → format → complete/excerpt → analyse. The state before `ec3e1a8` was strictly more cluttered — it had the character bible box, the goal box AND the two scope pills. So the live state is closer to the target than the state a revert would restore.
+
+**My recommendation: leave it, and let the redesign replace it.** If he wants production frozen at the older shape instead, `git revert ec3e1a8` is clean — but it also reverts the character-bible move he approved in the same breath, since both are in that commit.
+
+### Character bible — code built, SQL for Nenad to run
+
+`ec3e1a8`. Two columns on `manuscripts`, read by the analyse route from the book a piece is filed under, written from the book's own page beside its goals. **Until the SQL is run, `getManuscriptBible` returns null and every reading behaves exactly as it did before the commit** — nothing breaks, the box on the book page simply will not save.
+
+Full file with reasoning: `draft-and-lens/supabase/migrations/manuscript_bible.sql`. **Run in Supabase → SQL Editor:**
+
+```sql
+alter table public.manuscripts
+  add column if not exists bible text,
+  add column if not exists bible_skip boolean not null default false;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'manuscripts_bible_length_chk'
+  ) then
+    alter table public.manuscripts
+      add constraint manuscripts_bible_length_chk
+      check (bible is null or length(bible) <= 20000);
+  end if;
+end $$;
+```
+
+Verify after applying — two rows expected:
+
+```sql
+select column_name, data_type, column_default
+  from information_schema.columns
+ where table_schema = 'public'
+   and table_name = 'manuscripts'
+   and column_name in ('bible', 'bible_skip');
+```
+
+**The accepted cost, recorded so nobody rediscovers it as a bug:** a standalone piece has nowhere to paste a bible, because there is no book to hold one. Brain 5 still builds one from the text; the writer simply cannot hand one over.
+
+### multiplePov — root cause was one missing paragraph of prompt
+
+`povCharacter` had sat in the extractor prompt as a single `null` inside the example JSON with no sentence anywhere defining it. The model copied the example: **9 of 9 facts on the live ledger had a null POV**, so `deriveMultiplePov` could never return true and the cross-viewpoint gate had never fired since it was written.
+
+Now defined — the consciousness the prose is inside; first person and limited/close third only; null for omniscient, dialogue, documents and anything unclear — and the example shows a filled value beside the null one, because the example is what taught "always null".
+
+**Verified against the real model.** A two-viewpoint chapter: 4 of 5 facts carried a POV, two distinct, `deriveMultiplePov` → true. Straight omniscient: 5 facts, all null → null. No false positives on the case that would produce them.
+
+**Two unrelated extraction defects observed while testing, NOT fixed, worth a look later:** the extractor recorded "He thought her eyes were grey" as `character:dessie eye_colour=grey` — interiority about ANOTHER character attributed to the thinker; and it produced the attribute `hair_colour_location`, which folds a location into the attribute name against the prompt's own "the attribute names the property" rule. Both predate this change.
+
+### unreliableNarrator — built, one-way by design
+
+`b6c791e`. The structural reader answers one more question rather than a new brain being added. 'unreliable' → true; **everything else → null, never false**, because a wrong true costs precision while a wrong false promotes narration to the book's own voice — the §5.2 failure the gate exists to prevent.
+
+Stored beside `nonLinear` in the same jsonb column, sticky-true, no migration needed.
+
+**Verified against the real structural reader, three cases:** a first-person narrator the text visibly undercuts returned "unreliable" with its own evidence → true; limited third, biased but trustworthy → "unclear" → null; omniscient → "unclear" → null. The likeliest false positive did not happen.
+
+### nonLinear — no action, confirmed not a bug
+
+The structural map builds on every submission (12 real runs, 30 to 260 words, `structuralReader` in every stage list). `deriveFrame` reads real output correctly: a linear piece returned "linear — single unbroken scene…" → false; a two-flashback piece returned "non-linear — …two embedded temporal jumps…" → true. It is NULL on live data only because frame evidence is recorded solely when detection runs, which needs a submission filed under a book that contributes new facts — and exactly one real run has ever reached detection.
