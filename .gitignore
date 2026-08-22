@@ -54,3 +54,12 @@ scripts/.extracted/
 # Campaign exploration — image work, not codebase. Deleted 20 Aug 2026.
 /Ads/
 
+
+# Large working assets — kept locally, not in the repo (2026-08-22).
+# Reference material and marketing artwork rather than anything the build
+# reads: Inspiration/ is 1.2M and "Ad concepts/" 380K, and neither is imported
+# by a single line of code. The lens portraits the app actually serves live in
+# draft-and-lens/public/lenses/ and stay tracked.
+Ad concepts/
+Inspiration/
+draftandlens.png
