@@ -79,3 +79,4 @@ Append a line every time this checklist is run, whatever it found. The gap betwe
 | Date | Trigger | Outcome |
 |---|---|---|
 | 2026-08-18 | first run, before the detection build | Real defects on its first outing: two dead brain modules never executed, `detachReading`/`listLocks`/`traceMark` dead, corpus filename lagging its content. |
+| 2026-08-22 | feature boundary — large day of shipping (goals, panel rebuild, bible move, frame work) | 9 findings, none fixed on the run. 3 dead-code items from 18 Aug still present; 3 new dead modules incl. `runLens`/`runConversation`, which the routes bypass entirely; skeleton one section behind the prompt; nested CLAUDE.md still names the v2.7 corpus. Dead-brains finding from 17 Aug confirmed RESOLVED. |

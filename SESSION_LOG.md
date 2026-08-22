@@ -1305,3 +1305,59 @@ The rule now LEADS the register section rather than sitting after it, because th
 **Verified against the real model on the exact passage that produced both.** The belief now files as `character:marta | eye_colour = grey | register=interiority | pov=dessie`, and the hair fact as `character:dessie | hair_colour = grey at the sides`.
 
 **Worth noticing what that unlocks:** Marta's eye colour is now claimed twice on the same entity and attribute — green in narration, grey in Dessie's head. That is the first time those two claims have been able to disagree at all. They should NOT surface as a contradiction, because `interiority` is not the book asserting anything (§5.2) — a character being wrong about someone's eyes is ordinary fiction. It is a good live test of the register gate once a real two-POV chapter goes through.
+
+### AUDIT RUN — 2026-08-22. Findings only, nothing fixed.
+
+**On the trigger:** the log's last run is 2026-08-18, four days ago, so this is NOT overdue on the clock — the standing rule is 2–3 weeks. The other trigger is what justifies it: a great deal shipped today (goals, trajectory, the panel rebuild, the bible move, two extractor fixes, the frame work), and a feature boundary is exactly when stale assumptions get inherited.
+
+**Resolved since the last run, worth recording:** the 2026-08-17 dead-brains finding is gone. `structuralReader`, `narratorVerify` and `narratorCorrect` appear in the stage list of every one of the last 12 real runs, at word counts from 30 to 260. The 5,000-word gate was removed and the brains now execute.
+
+## §1 Dead code
+
+**1. `FREE_WORD_LIMIT = 10_000` is unreachable, and three things downstream of it are dead.** The route rejects anything over `TESTER_WORD_CAP = 4000` before the pipeline starts, so `computeCoverage(text, 10_000)` can never truncate. Therefore `coverage.truncated` is permanently false, and with it: `buildPartialReadDirective` (`src/prompts/fragments/partial-read.ts`) never reaches the analyst, and `PartialReadBanner` never renders. This is the same shape as the dead-brains finding of 2026-08-17 — two constants that are each sensible alone and contradictory together.
+
+**2. `src/lib/trace.ts` is dead in full.** One export, `traceMark`, zero callers anywhere; its env switch `DL_TRACE_ENABLED` is referenced only inside the file it lives in. **Flagged 2026-08-18 and still present.**
+
+**3. `detachReading` (`lib/manuscripts.ts`) is dead** — `/api/ledger/detach` uses `detachWork`. **Flagged 2026-08-18, still present.**
+
+**4. `listLocks` (`lib/continuity.ts`) is dead.** **Flagged 2026-08-18, still present.**
+
+**5. NEW — two brain modules are dead, and this is the dangerous kind.** `runLens` (`ai/brains/lens.ts`) and `runConversation` (`ai/brains/conversation.ts`) have no callers: `/api/lens` and `/api/converse` each build their own Anthropic call inline. So the file that *looks* like the lens implementation is not the lens implementation. Anyone fixing lens behaviour would reasonably edit the brain module and see nothing change.
+
+**6. NEW — `suggestManuscript` (`lib/manuscript-match.ts`) is dead** — `/api/ledger/suggest` composes `classifyMatch` + `buildCandidates` itself. Same shape as 5.
+
+## §2 Duplicated logic
+
+- **`return !error` swept: clean.** 12 sites, 11 correctly check rows changed. The twelfth (`readings.ts:413`) returns a bare `!error`, and that one is right: it is the final delete in `deleteAllUserData`, where zero rows matched is a legitimate success for a writer who had nothing stored.
+- **`window.close()`: clean.** One call, inside `leave-page.ts`, with the documented fallback chain.
+- **The real duplication is §1.5 and §1.6** — not duplicated text, duplicated reasoning, with the unused copy looking authoritative.
+
+## §3 Unused exports
+
+- **Genuinely dead** (no caller in `src`, none in tests): `traceMark`, `detachReading`, `listLocks`, `runLens`, `runConversation`, `suggestManuscript`.
+- **Exported but only used inside their own file** — tidy-up candidates, no risk: `extractAnchors`, `findAnchor`, `readableRatio`, `summarizeChange`.
+- **Exported for tests by design, and documented as such**: `mergeFrameEvidence`, `selectGoalsForReading`, `validateGoalNotes`, `entityOverlap`, `isMissingTable`. Correct as they are.
+
+## §4 Stale documentation
+
+**7. `draft-and-lens/CLAUDE.md` still names `DraftAndLens_LearnedCorpus_v2.7.md`, which does not exist.** The root `CLAUDE.md` was corrected to `v2.9` on 2026-08-17; the nested copy was missed. **This is last audit's finding, surviving in the other file** — which is itself the lesson: the fix was applied where the defect was found rather than everywhere it lived.
+
+**8. NEW — the streaming skeleton is one section behind the prompt.** `reportSkeletonSections.ts` lists **13** story sections; `src/prompts/report/story-structure.ts` defines **14**. `WHERE TO GROW NEXT` was added to the prompt on 2026-08-19 and never to the skeleton, so it arrives during streaming with no placeholder ahead of it. `CLAUDE.md` is correct ("Story mode defines 14 sections"); the code is what drifted.
+
+**Verified correct, no action:** the sidebar constant-link count — Overview 3 + Dashboard 2 + Action 3 + Reference 5 = **13**, exactly as `CLAUDE.md` states, with the ledger and Continuity links conditional on top. Two status claims spot-checked (§5.5 dismissal control, differentiator milestone) both hold.
+
+## §5 Test hygiene
+
+- **No long-failing tests.** 237 pass, 23 files. The two long-red `client-ip-guard` tests recorded in August are gone.
+- **9. One tautology, and it is on the guard that matters most.** `tests/prompts/client-ip-guard.test.ts:156` runs `expect(true).toBe(true)` when `.next/static` does not exist. So the test protecting the non-negotiable IP boundary reports green having checked nothing. It should skip visibly rather than pass silently.
+
+## The checklist itself
+
+Its §3 grep is too crude — it excludes whole files, so it returned 15 candidates of which 6 were real and 9 were noise. Worth tightening to "references outside the defining file, excluding tests" before the next run.
+
+## Recommended order if these are actioned
+
+1. **§4.8 skeleton section** and **§4.7 corpus filename** — minutes each, zero risk.
+2. **§5.9 the IP guard tautology** — small, and it restores a real protection.
+3. **§1.2/3/4/5/6 dead code deletion** — mechanical, but §1.5 deserves a decision first: delete the two brain modules, or move the route logic INTO them so the file that looks authoritative becomes authoritative.
+4. **§1.1 the word cap** — the only one that is a product decision rather than a fix, and it is the same decision that has been open since 2026-08-17: raise the cap, or accept that partial-read handling is aspirational and delete it.
