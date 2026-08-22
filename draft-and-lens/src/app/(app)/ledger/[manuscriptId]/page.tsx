@@ -14,6 +14,7 @@
  *
  * Client-only; imports nothing from src/prompts or src/ai (IP boundary).
  */
+import { GoalList } from '@/components/goals/GoalList';
 import { closeOrGoBack } from '@/lib/leave-page';
 import { useAuth } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
@@ -231,6 +232,18 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
         </button>
       </div>
       <h1 className="mt-4 font-serif text-2xl">What this book has established</h1>
+
+      {/* This book's goals (Gap B). At manuscript level rather than in the
+          account, per the spec: a goal for one book belongs where the writer is
+          looking at the book. Standing goals about their writing in general
+          live in the account area instead. */}
+      {isSignedIn === true && (
+        <GoalList
+          manuscriptId={params.manuscriptId}
+          heading="What you're working toward here"
+          blurb="Set for this book only. I hold it while I read anything filed under it — it doesn't change the standard the writing answers to, but I'll tell you what I can see against it."
+        />
+      )}
 
       {isSignedIn !== true && (
         <p className="mt-8 text-sm text-ink-soft">Sign in (top right) to see this ledger.</p>

@@ -6,6 +6,7 @@
  * Client-only; talks to the server through /api/works[...] — imports nothing
  * from src/prompts or src/ai.
  */
+import { GoalList } from '@/components/goals/GoalList';
 import { closeOrGoBack } from '@/lib/leave-page';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
@@ -249,6 +250,16 @@ export default function AccountPage() {
             </li>
           ))}
         </ul>
+      )}
+
+      {/* Standing goals (Gap B). The account is the writer-level surface, so
+          the writer-level goals live here; a goal set for one book lives in
+          that book's ledger, where the writer is looking at the book. */}
+      {isSignedIn === true && (
+        <GoalList
+          heading="What you're working toward"
+          blurb="Anything here I hold while I read, whatever you send me. It doesn't change how I read the work — the tradition still decides that — but I'll tell you what I can see against it."
+        />
       )}
 
       {/* Danger zone — permanent account deletion */}
