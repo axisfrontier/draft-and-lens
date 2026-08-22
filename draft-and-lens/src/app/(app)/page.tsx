@@ -7,6 +7,7 @@ import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
 import FragmentPanel, { type FragmentHandoff } from '@/components/fragment/FragmentPanel';
 import { TermTooltip } from '@/components/glossary/TermTooltip';
+import { LENS_NAMES } from '@/components/lenses/lens-directory';
 import type {
   ContinuityFlag,
   Coverage,
@@ -33,13 +34,6 @@ const TYPES: ReadonlyArray<{ value: Mode; label: string }> = [
   { value: 'treatment', label: 'Treatment' },
   { value: 'story', label: 'Story' },
   { value: 'play', label: 'Stage Play' },
-];
-
-const LENSES = [
-  'Hemingway', 'Carver', 'Chekhov', "O'Connor", 'Nabokov', 'Bukowski',
-  'Spielberg', 'Villeneuve', 'Coppola', 'Tarantino', 'Welles', 'Wilder',
-  'Sorkin', 'Pinter', 'Goldman', 'Wachowskis', 'Ridley Scott',
-  'Coen Brothers', 'Jeunet', 'Wenders', 'Feige', 'Bruckheimer',
 ];
 
 type StreamEvent =
@@ -1040,7 +1034,7 @@ export default function AppHomePage() {
                 </div>
               </div>
 
-              {/* What are you working toward? — Mentor Completeness, Gap B.
+              {/* What do you want from this piece? — Mentor Completeness, Gap B.
                   Sits ALONGSIDE the bible field rather than replacing it: the
                   bible tells me about the book, this tells me about the writer's
                   intent for it, and they are not the same thing.
@@ -1056,11 +1050,11 @@ export default function AppHomePage() {
                     fontFamily: 'var(--font-mono)', fontSize: '.68rem',
                     letterSpacing: '.14em', textTransform: 'uppercase',
                     color: 'var(--amber-l)', fontWeight: 500, marginBottom: '.2rem',
-                  }}>What are you working toward?</div>
+                  }}>What do you want from this piece?</div>
                   <div style={{
                     fontFamily: 'var(--font-sans)', fontSize: '.85rem',
                     color: 'var(--rule)', fontStyle: 'italic',
-                  }}>Tell me and I&apos;ll hold it while I read. I&apos;ll still read the work on its own terms.</div>
+                  }}>Tell me and I&apos;ll hold it while I read. It won&apos;t change what I say about the work — only add to it.</div>
                 </div>
                 <div style={{ padding: '.75rem 1rem' }}>
                   <textarea
@@ -1357,7 +1351,7 @@ export default function AppHomePage() {
               display: 'flex', flexWrap: 'wrap', gap: '.4rem',
               justifyContent: 'center', maxWidth: 820, margin: '0 auto',
             }}>
-              {LENSES.map((name) => (
+              {LENS_NAMES.map((name) => (
                 <span key={name} style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.66rem',
                   letterSpacing: '.08em', color: 'var(--rule)',
