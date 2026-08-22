@@ -101,7 +101,11 @@ async function extractViaServer(file: File, format: UploadFormat): Promise<strin
 export default function AppHomePage() {
   const { isSignedIn } = useAuth();
   const [mode, setMode] = useState<Mode | null>(null);
-  const [submissionType, setSubmissionType] = useState<'complete' | 'excerpt' | null>(null);
+  // Defaults to 'complete', which is both the ordinary case and what the server
+  // already assumes when the field is absent. It started as null, and the cost
+  // was a dead ANALYSE button on every first visit: nothing on screen said the
+  // reading was waiting on this pill, so the button simply did not respond.
+  const [submissionType, setSubmissionType] = useState<'complete' | 'excerpt' | null>('complete');
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
@@ -1273,6 +1277,21 @@ export default function AppHomePage() {
                   Analyse
                 </button>
               </div>
+
+              {/* Why the button is not doing anything. The format cannot be
+                  defaulted — the server never infers it (§15), and a story read
+                  as a script is a wrong reading rather than a rough one — so
+                  this is the one choice that genuinely blocks a reading. Saying
+                  so beats a control that looks alive and does nothing. */}
+              {!canAnalyse && !running && wordCount > 0 && !overCap && mode === null && (
+                <div style={{
+                  fontFamily: 'var(--font-sans)', fontSize: '.78rem',
+                  color: 'var(--paper-dark)', fontStyle: 'italic',
+                  marginTop: '.5rem', textAlign: 'center',
+                }}>
+                  Tell me what this is first — I read a script and a story differently.
+                </div>
+              )}
 
               <p style={{
                 fontFamily: 'var(--font-mono)', fontSize: '.68rem',
