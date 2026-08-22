@@ -17,6 +17,12 @@ export const MODELS = {
   lens: 'claude-sonnet-4-6',
   conversation: 'claude-sonnet-4-6',
   patternExtractor: 'claude-sonnet-4-6',
+  // Goal progress restates what the report already found, with a verbatim
+  // quote check behind it — the extractor's shape, so the extractor's tier. It
+  // forms no judgement of the prose, so a weaker model fails by finding
+  // nothing to say, which is the answer this brain is meant to give most of
+  // the time anyway.
+  goalProgress: 'claude-sonnet-4-6',
   // Extraction is structured, mechanical work with a hard verbatim-quote
   // check behind it, so the cheap tier is the right fit: a weaker extractor
   // fails by returning fewer facts, not worse ones.
@@ -146,6 +152,10 @@ export const TOKEN_LIMITS = {
   // that because truncation in a JSON brain is total loss, not partial — the
   // lesson of the 2026-08-20 ceiling audit.
   patternExtractor: 1200,
+  // At most two notes of one or two sentences, each with a quoted sentence
+  // beside it. Sized well above that: truncation in a JSON brain is total
+  // loss, not partial output (the 2026-08-20 ceiling audit).
+  goalProgress: 1200,
   // A chapter can legitimately yield 20-30 facts, each carrying a verbatim
   // quote — the quotes dominate the budget. Sized above structuralReader
   // (2500) for that reason; truncation here silently loses facts.

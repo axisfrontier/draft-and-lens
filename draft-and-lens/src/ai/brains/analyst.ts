@@ -8,6 +8,7 @@ import {
   buildSystemPrompt,
   prependNarratorVerdicts,
 } from '../../prompts/analyst';
+import { buildGoalDirective } from '../../prompts/fragments/goals';
 import { buildPartialReadDirective } from '../../prompts/fragments/partial-read';
 import { buildRevisionDirective } from '../../prompts/fragments/revision';
 import type {
@@ -44,6 +45,9 @@ export interface AnalystInput {
   priorRevisionNotes?: string | null;
   /** Excerpt vs complete piece — a fragment is read on different terms (§Excerpt Mode). */
   submissionType?: 'complete' | 'excerpt';
+  /** What the writer says they are trying to do, in their own words (Gap B).
+   *  Held alongside the tradition, never as a rubric — see buildGoalDirective. */
+  goals?: readonly string[];
 }
 
 export async function runAnalyst(
@@ -64,6 +68,7 @@ export async function runAnalyst(
     revisionNote,
     priorRevisionNotes,
     submissionType,
+    goals,
   } = input;
 
   // System: cache the constant mode+genre base; append the per-work diagnostic
@@ -93,6 +98,13 @@ export async function runAnalyst(
       buildPartialReadDirective(coverage.wordsRead, coverage.wordsTotal) + userPrompt;
   }
   userPrompt = prependNarratorVerdicts(userPrompt, diagnostic);
+  // What the writer said they were trying to do (Gap B) — above the report
+  // request, below the revision context. A goal is context the reading holds
+  // while it works; a revision is what the whole reading is a response to, so
+  // it stays first.
+  if (goals && goals.length > 0) {
+    userPrompt = buildGoalDirective(goals) + userPrompt;
+  }
   // Revision context goes to the very front so the analyst frames the whole
   // reading as a response to the revision (CHANGE 3).
   if (revisionNote) {

@@ -52,6 +52,8 @@ export interface PipelineInput {
   priorRevisionNotes?: string | null;
   /** Excerpt vs complete piece — a fragment is read on different terms (§Excerpt Mode). */
   submissionType?: 'complete' | 'excerpt';
+  /** Writer-set goals in their own words (Gap B). Reaches Brain 2 only. */
+  goals?: readonly string[];
 }
 
 export interface PipelineCallbacks {
@@ -191,6 +193,7 @@ async function runPipelineBody(
         revisionNote: input.revisionNote,
         priorRevisionNotes: input.priorRevisionNotes,
         submissionType: input.submissionType,
+        goals: input.goals,
       },
       cb.onAnalystText,
       cb.signal

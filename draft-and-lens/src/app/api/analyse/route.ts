@@ -10,6 +10,7 @@ import { checkProvenance } from '../../../ai/provenance-check';
 import { DIFFERENTIATOR_COPY, qualifiesForDifferentiator } from '../../../lib/differentiator';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '../../../lib/limits';
 import { extractPatterns } from '../../../ai/brains/pattern-extractor';
+import { runGoalProgress } from '../../../ai/brains/goal-progress';
 import { selectNudge } from '../../../lib/nudges';
 import { findPublicationApparatus } from '../../../lib/provenance';
 import {
@@ -21,6 +22,7 @@ import {
   traditionTreatsAsFailure,
 } from '../../../lib/writer-patterns';
 import { claimMilestone } from '../../../lib/user-milestones';
+import { createGoal, listGoalsForReading, normaliseGoal } from '../../../lib/writer-goals';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
 import { listFlagsForReading } from '../../../lib/continuity-flags';
@@ -55,6 +57,8 @@ import type { AnalysisMode } from '../../../prompts/types';
  *   { type: 'text',  delta }          live Brain 2 text deltas (anchors intact)
  *   { type: 'done',  report, diagnostic, coverage, scores, market, bible }
  *   { type: 'continuity', flags }   §6a detection results, after `done`
+ *   { type: 'goal_progress', notes } what the reading says against the writer's
+ *                                    own stated goals (Gap B), after `done`
  *   { type: 'error', message }
  * The final `report` is authoritative — it includes the post-stream narrator
  * correction, which the streamed deltas predate.
@@ -318,6 +322,26 @@ export async function POST(req: NextRequest): Promise<Response> {
           manuscriptId !== null &&
           !(await isWorkAttached(userId, manuscriptId, decision.workId));
 
+        // ── Writer-set goals (Gap B) ──────────────────────────────────────
+        // Recorded BEFORE the cached-reading short-circuit below, because a
+        // goal is the writer's statement about their own work and it stands
+        // whether or not this particular submission produces a fresh reading.
+        // Scope is the writer's own choice, and 'manuscript' is honoured only
+        // where they actually filed this piece in a book — createGoal refuses
+        // a manuscript that is not theirs rather than rescoping it.
+        const typedGoal = normaliseGoal(body.goal);
+        if (typedGoal) {
+          await createGoal({
+            userId,
+            manuscriptId: body.goalScope === 'manuscript' ? manuscriptId : null,
+            goal: typedGoal,
+          });
+        }
+        // Everything live that applies to this reading: standing goals, plus
+        // this book's. Best-effort like every other stored context — a failure
+        // here costs the goal register, never the reading.
+        const goals = await listGoalsForReading(userId, manuscriptId);
+
         if (decision.kind === 'unchanged' && !groupingIsUnfiled) {
           send({ type: 'done', ...decision.reading, revision: { status: 'unchanged', readAt: decision.readAt } });
           const now = Date.now();
@@ -369,6 +393,10 @@ export async function POST(req: NextRequest): Promise<Response> {
             wordLimit: FREE_WORD_LIMIT,
             revisionNote,
             priorRevisionNotes,
+            // Held alongside the tradition, never as a rubric — the tradition
+            // is locked by Brain 1 and decides the standard (P1). See
+            // buildGoalDirective.
+            goals: goals.map((g) => g.goal),
           },
           {
             onStage: (stage, title) => {
@@ -485,6 +513,30 @@ export async function POST(req: NextRequest): Promise<Response> {
             // actually named, which needs three works behind it.
             ...(trendNote ? { trendNote } : {}),
           });
+        }
+
+        // ── Goal progress (Gap B) ─────────────────────────────────────────
+        // NOT an aside, and deliberately outside their hierarchy. The method
+        // line, a named pattern and a nudge are things I volunteer, which is
+        // why at most one of them may appear. This is an answer to something
+        // the writer asked for, and a reading that quietly declines to mention
+        // the goal they set is the exact failure Gap B exists to fix.
+        //
+        // Reads the finished REPORT, never the manuscript. The reading has
+        // already judged the work under its confirmed tradition; judging it
+        // again against a standard the writer set for themselves is precisely
+        // what this feature may not do. All this brain does is turn what the
+        // reading already found to face what they said they wanted, and it
+        // must quote the reading to say anything at all.
+        //
+        // Post-delivery, own cost scope, best-effort — like extraction and
+        // patterns, its latency is invisible and its failure costs nothing.
+        if (goals.length > 0) {
+          const { result: goalNotes, entries: goalEntries } = await withCostTracking(
+            async () => runGoalProgress({ report: result.report, goals })
+          );
+          collectedEntries = [...collectedEntries, ...goalEntries];
+          if (goalNotes.length > 0) send({ type: 'goal_progress', notes: goalNotes });
         }
 
         // Wall clock stops when the user has everything, not after the
