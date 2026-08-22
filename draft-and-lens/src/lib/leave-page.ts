@@ -40,7 +40,7 @@ export function closeOrGoBack(): void {
       // which case we are still here a moment later; fall through to the app
       // rather than leave the control looking broken.
       setTimeout(() => {
-        if (!window.closed && window.location.pathname.match(/^\/(ledger|glossary|account|about|how-i-read|feedback|privacy|terms|acceptable-use)/)) {
+        if (!window.closed && window.location.pathname.match(/^\/(ledger|glossary|account|about|how-i-read|how-i-remember|feedback|privacy|terms|acceptable-use)/)) {
           window.location.href = '/';
         }
       }, 400);
