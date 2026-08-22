@@ -171,26 +171,6 @@ export async function listLedger(
   }
 }
 
-/** Just the locks — the "what must this book hold to" summary (§6b). */
-export async function listLocks(userId: string, manuscriptId: string): Promise<LedgerFact[]> {
-  if (!isSupabaseConfigured()) return [];
-  try {
-    const supabase = getServiceClient();
-    if (!(await ownsManuscript(supabase, userId, manuscriptId))) return [];
-    const { data, error } = await supabase
-      .from(FACTS_TABLE)
-      .select(SELECT_COLUMNS)
-      .eq('manuscript_id', manuscriptId)
-      .eq('user_id', userId)
-      .not('lock_kind', 'is', null)
-      .is('deleted_at', null)
-      .order('entity', { ascending: true });
-    if (error || !data) return [];
-    return (data as unknown as FactRow[]).map(toFact);
-  } catch {
-    return [];
-  }
-}
 
 /**
  * Promote an existing ledger entry to a lock — the one-click path in §5.7.

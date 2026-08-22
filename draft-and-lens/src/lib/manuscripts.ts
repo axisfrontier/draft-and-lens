@@ -532,23 +532,6 @@ export async function isWorkAttached(
   }
 }
 
-/** Detach a reading from its manuscript — the undo for a wrong grouping (§2). */
-export async function detachReading(userId: string, readingId: string): Promise<boolean> {
-  if (!isSupabaseConfigured()) return false;
-  try {
-    const supabase = getServiceClient();
-    // Same zero-row caveat as attachReading — see the note there.
-    const { data, error } = await supabase
-      .from(READINGS_TABLE)
-      .update({ manuscript_id: null, sequence_index: null })
-      .eq('id', readingId)
-      .eq('user_id', userId)
-      .select('id');
-    return !error && Array.isArray(data) && data.length > 0;
-  } catch {
-    return false;
-  }
-}
 
 /** A book's character bible, and whether the writer asked for none. */
 export interface ManuscriptBible {
