@@ -74,6 +74,29 @@ const KEEP_SENDING: Nudge = {
 };
 
 /**
+ * Gap C's quiet line — the honest limit of what one reading can do.
+ *
+ * PLACEHOLDER COPY, quoted verbatim from the Mentor Completeness spec and
+ * unapproved like every writer-facing string before Nenad reads it.
+ *
+ * WHERE THE SPEC WAS INTERPRETED RATHER THAN FOLLOWED LITERALLY, flagged here
+ * rather than done quietly. Gap C asks for this "after a first reading". A
+ * first reading already has a nudge — the approved revision-memory line — and
+ * two quiet asides in one reading is the exact clutter the one-per-reading
+ * rule exists to prevent. Displacing an approved line for an unapproved one
+ * would also be my call to make, and it is not.
+ *
+ * So it fires on the SECOND reading, which is after a first reading and is the
+ * only slot in the sequence not already spoken for: 0 is revision memory, 2 is
+ * the compounding line. The claim is truer there too — the writer has now seen
+ * two readings and can feel what a single one does and does not know.
+ */
+const MENTOR_HORIZON: Nudge = {
+  milestone: 'nudge_mentor_horizon',
+  text: "The more you send me, the more I'll have to say about where you're going rather than where you are.",
+};
+
+/**
  * The one nudge this reading earns, or nothing.
  *
  * Pure and total, so the whole policy is testable without a database and
@@ -92,6 +115,11 @@ export function selectNudge(ctx: NudgeContext): Nudge | null {
   // A first reading: the memory this product runs on does not exist yet, and
   // the writer has no reason to know it would if they came back.
   if (ctx.priorSubmissions === 0) return REVISION_MEMORY;
+
+  // The second reading: the first time the writer has anything to compare a
+  // reading against, and the moment the difference between what one reading
+  // knows and what several do is something they can feel rather than be told.
+  if (ctx.priorSubmissions === 1) return MENTOR_HORIZON;
 
   // The third submission — the point at which coming back has visibly become a
   // habit, and worth saying that it compounds. priorSubmissions is counted

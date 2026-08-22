@@ -53,11 +53,25 @@ describe('selectNudge', () => {
 
   it('offers the compounding line on the third submission only', () => {
     // priorSubmissions is counted BEFORE this reading is stored, so two prior
-    // means this is the third. Second and fourth get nothing — the line marks
-    // the moment coming back became a habit, not every visit after it.
+    // means this is the third. Fourth gets nothing — the line marks the moment
+    // coming back became a habit, not every visit after it.
     expect(selectNudge({ ...base, priorSubmissions: 2 })?.milestone).toBe('nudge_keep_sending');
-    expect(selectNudge({ ...base, priorSubmissions: 1 })).toBeNull();
     expect(selectNudge({ ...base, priorSubmissions: 3 })).toBeNull();
+  });
+
+  it('offers the mentor-horizon line on the second reading only', () => {
+    // Gap C's line, in the only slot not already spoken for: 0 is revision
+    // memory, 2 is the compounding line. One aside per reading holds.
+    expect(selectNudge({ ...base, priorSubmissions: 1 })?.milestone).toBe('nudge_mentor_horizon');
+    expect(selectNudge({ ...base, priorSubmissions: 0 })?.milestone).toBe('nudge_revision_memory');
+  });
+
+  it('lets a real ledger event outrank the mentor-horizon line', () => {
+    // Same rule as everywhere else here: what actually happened beats what
+    // could happen if the writer comes back.
+    expect(
+      selectNudge({ ...base, priorSubmissions: 1, factsExtracted: 2 })?.milestone
+    ).toBe('nudge_ledger_tracking');
   });
 
   it('returns at most one nudge, always', () => {

@@ -35,7 +35,8 @@ export type Milestone =
   /** Contextual nudges — one row each, so a nudge cannot reappear. See nudges.ts. */
   | 'nudge_ledger_tracking'
   | 'nudge_revision_memory'
-  | 'nudge_keep_sending';
+  | 'nudge_keep_sending'
+  | 'nudge_mentor_horizon';
 
 /**
  * Claim a milestone for this writer.
