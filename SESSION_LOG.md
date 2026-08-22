@@ -1209,3 +1209,15 @@ Stored beside `nonLinear` in the same jsonb column, sticky-true, no migration ne
 ### nonLinear — no action, confirmed not a bug
 
 The structural map builds on every submission (12 real runs, 30 to 260 words, `structuralReader` in every stage list). `deriveFrame` reads real output correctly: a linear piece returned "linear — single unbroken scene…" → false; a two-flashback piece returned "non-linear — …two embedded temporal jumps…" → true. It is NULL on live data only because frame evidence is recorded solely when detection runs, which needs a submission filed under a book that contributes new facts — and exactly one real run has ever reached detection.
+
+### Character bible — migration applied, feature verified end to end — 2026-08-22
+
+Nenad ran `manuscript_bible.sql`; both columns confirmed present from here. (The first paste failed with `42601: syntax error at or near "Step"` — my prose had been copied in with the SQL. Nothing was applied, the script rolled back whole, and the table was untouched. Worth remembering when handing over SQL: give one fenced block and nothing else.)
+
+**Verified against the live table** (store layer): write, read back, skip toggled independently of the text, and a different user refused on both read and write. Test value restored to exactly what was there before.
+
+**Verified in the browser** on the deployed site: the box renders on the book page under CHARACTER BIBLE with SAVE and "don't keep one for this book"; typing and saving showed SAVED; a full page reload brought the text back, so the round trip through `/api/ledger/[manuscriptId]` works. Test text then cleared — `Home` is back to `bible: null, bible_skip: false`.
+
+**The homescreen no longer carries it.** Live panel order now reads: 1 YOUR WORK → 2 WHAT IS IT? (with complete/excerpt beneath) → 3 WHERE DOES IT BELONG? → OPTIONAL → what do you want from this piece? → 4 ANALYSE.
+
+**Still outstanding from this stretch:** the panel redesign proposal (Nenad's minimum-necessary brief), and `91cf6d3` + `b6c791e` are pushed but NOT deployed — no hook has been fired since the instruction to stop deploying.
