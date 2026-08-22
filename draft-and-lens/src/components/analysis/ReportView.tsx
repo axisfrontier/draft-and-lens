@@ -6,6 +6,8 @@ import { useState, type Dispatch, type SetStateAction } from 'react';
 import { hasAnchors } from '@/lib/anchor';
 import { countWords } from '@/lib/limits';
 
+import { LENS_GROUPS } from '../lenses/lens-directory';
+
 import { AnchoredView } from './AnchoredView';
 import { BiblePanel } from './BiblePanel';
 import { ContinuitySection } from './ContinuitySection';
@@ -31,7 +33,6 @@ function expandCollapsible(id: string): void {
   if (el instanceof HTMLDetailsElement) el.open = true;
 }
 
-interface LensEntry { name: string; id: string | null }
 
 type ConvMsg = { role: 'user' | 'assistant'; content: string };
 
@@ -79,41 +80,6 @@ async function streamConversationReply(
   }
 }
 
-const LENS_GROUPS: ReadonlyArray<{ label: string; entries: LensEntry[] }> = [
-  { label: 'Literary Fiction', entries: [
-    { name: 'Hemingway', id: 'hemingway' }, { name: 'Carver', id: 'carver' },
-    { name: "O'Connor", id: 'oconnor' }, { name: 'Bukowski', id: 'bukowski' },
-    { name: 'Nabokov', id: 'nabokov' }, { name: 'Chekhov', id: 'chekhov' },
-    { name: 'Morrison', id: 'morrison' }, { name: 'Ferrante', id: 'ferrante' },
-  ]},
-  { label: 'Crime, Thriller & Suspense', entries: [
-    { name: 'Chandler', id: 'chandler' }, { name: 'Leonard', id: 'leonard' },
-    { name: 'Highsmith', id: 'highsmith' }, { name: 'Christie', id: 'christie' },
-    { name: 'Puzo', id: 'puzo' },
-  ]},
-  { label: 'Horror & Speculative', entries: [
-    { name: 'King', id: 'king' }, { name: 'Le Guin', id: 'leguin' },
-  ]},
-  { label: 'Art Cinema', entries: [
-    { name: 'Welles', id: 'welles' }, { name: 'Wenders', id: 'wenders' },
-    { name: 'Jeunet', id: 'jeunet' }, { name: 'Miyazaki', id: 'miyazaki' },
-    { name: 'Coppola', id: 'coppola' }, { name: 'Villeneuve', id: 'villeneuve' },
-    { name: 'Kaufman', id: 'kaufman' }, { name: 'Wachowskis', id: 'wachowski' },
-    { name: 'Coen Brothers', id: 'coens' },
-  ]},
-  { label: 'Popular Cinema', entries: [
-    { name: 'Spielberg', id: 'spielberg' }, { name: 'Tarantino', id: 'tarantino' },
-    { name: 'Ridley Scott', id: 'scott' }, { name: 'Bruckheimer', id: 'bruckheimer' },
-    { name: 'Feige', id: 'feige' }, { name: 'Lucas', id: 'lucas' },
-  ]},
-  { label: 'Screenplay & Television', entries: [
-    { name: 'Sorkin', id: 'sorkin' }, { name: 'Roth', id: 'roth' },
-    { name: 'Fey', id: 'fey' }, { name: 'Simon', id: 'simon' },
-  ]},
-  { label: 'Young Adult', entries: [
-    { name: 'Blume', id: 'blume' },
-  ]},
-];
 
 function formatReadAt(iso?: string): string {
   if (!iso) return 'an earlier date';
