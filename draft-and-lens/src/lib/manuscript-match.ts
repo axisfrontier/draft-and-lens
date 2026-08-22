@@ -210,25 +210,6 @@ export function sharedEntities(a: ReadonlySet<string>, b: ReadonlySet<string>): 
   return shared.sort();
 }
 
-/**
- * Propose the manuscript this text most likely belongs to, or null.
- *
- * Null is the common and correct answer for a first upload, a standalone
- * piece, or anything the module cannot vouch for. The caller surfaces a
- * suggestion as a single lightweight confirm/adjust step (ruling 2) — never a
- * silent attachment, so a wrong proposal is always visible and one click from
- * being corrected.
- *
- * Ties break toward the higher score, then toward the candidate with more
- * shared entities; genuinely equal candidates resolve by input order, which
- * the caller should keep stable (most recent first reads best to a writer).
- */
-export function suggestManuscript(
-  text: string,
-  candidates: readonly ManuscriptCandidate[]
-): ManuscriptSuggestion | null {
-  return rankCandidates(extractEntities(text), candidates)[0] ?? null;
-}
 
 /** Every candidate clearing the propose floor, best first. Shared by the
  *  suggestion and the confidence banding so they can never disagree. */

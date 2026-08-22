@@ -9,7 +9,6 @@ import {
   extractEntities,
   sharedEntities,
   classifyMatch,
-  suggestManuscript,
   type ManuscriptCandidate,
 } from '../../src/lib/manuscript-match';
 
@@ -122,19 +121,31 @@ describe('sharedEntities', () => {
   });
 });
 
-describe('suggestManuscript', () => {
+/**
+ * These tested `suggestManuscript`, a one-line wrapper with no caller in the
+ * product — the 2026-08-22 audit found it dead and it was deleted. The
+ * behaviour it covered is real and worth keeping, so the tests now go through
+ * `classifyMatch`, which is what `/api/ledger/suggest` actually calls.
+ *
+ * `suggest()` below reproduces exactly what the wrapper did: the top-ranked
+ * candidate, or null. The assertions are unchanged.
+ */
+describe('suggesting a manuscript (through classifyMatch, as the route does)', () => {
   const salthouse: ManuscriptCandidate = {
     id: 'ms-1',
     title: 'The Salt House',
     entities: new Set(['sarah', 'marcus', 'dell', 'katherine']),
   };
 
+  const suggest = (text: string, candidates: readonly ManuscriptCandidate[]) =>
+    classifyMatch(text, candidates, null).suggestion;
+
   it('returns null when there are no candidates — the first upload', () => {
-    expect(suggestManuscript('Sarah met Marcus by the door.', [])).toBeNull();
+    expect(suggest('Sarah met Marcus by the door.', [])).toBeNull();
   });
 
   it('suggests the manuscript when several names line up', () => {
-    const s = suggestManuscript(
+    const s = suggest(
       'The room was empty. Then Sarah arrived, and Marcus followed her in.',
       [salthouse]
     );
@@ -145,7 +156,7 @@ describe('suggestManuscript', () => {
 
   it('NEVER suggests on a single shared name — the §2 risk-A failure', () => {
     // Two unrelated novels both containing a Sarah must not be merged.
-    const other = suggestManuscript(
+    const other = suggest(
       'The wind rose. Then Sarah closed the shutters against it.',
       [salthouse]
     );
@@ -153,7 +164,7 @@ describe('suggestManuscript', () => {
   });
 
   it('returns null when nothing is shared', () => {
-    const s = suggestManuscript(
+    const s = suggest(
       'The engine died. Then Priya swore, and Okonkwo laughed at her.',
       [salthouse]
     );
@@ -173,7 +184,7 @@ describe('suggestManuscript', () => {
       title: 'Strong Match',
       entities: new Set(['sarah', 'marcus', 'dell']),
     };
-    const s = suggestManuscript(
+    const s = suggest(
       'She waited. Then Sarah spoke, Marcus answered, and Dell said nothing.',
       [weak, strong]
     );
@@ -182,7 +193,7 @@ describe('suggestManuscript', () => {
   });
 
   it('returns null for text with no extractable entities', () => {
-    expect(suggestManuscript('the door opened and nobody came', [salthouse])).toBeNull();
+    expect(suggest('the door opened and nobody came', [salthouse])).toBeNull();
   });
 
   it('exposes its thresholds as tunable constants rather than magic numbers', () => {
