@@ -1541,3 +1541,66 @@ commissioned — see the copy audit in this session.
 
 Still awaiting approval: placement inside step 2, the READ IT / PUSH HARDER
 pills, and the first helper sentence.
+
+
+## RESUME NOTE — 2026-08-23, second usage-limit pause
+
+### Items 1 and 2 of the six-item brief are DONE and deployed
+
+Item 1 needed no work: the how-it-works paragraph fix was already live at
+`6eee6c0` and verified. (The brief said "two how-it-works fixes just approved";
+only one had been approved. The heading was folded into item 2 as a "hold"
+instance. The other thing raised — the dropped "I won't invent progress"
+promise — is NOT a hold fix and is still unruled. See below.)
+
+Item 2, every writer-facing "hold" rewritten, one commit per page:
+- `0309644` how-it-works x5 (147 read against / 178 answer to / 196 working /
+  220 remember / 256 heading remember)
+- `dab1de9` ledger index + detail (must keep to; rules and states now *apply*;
+  "answer to" matching how-it-works)
+- `7ee18dc` about:23 (do not answer to the same rules)
+- `315c5fe` goals errors x4 sites (keep / I still have it)
+- `a9a388b` FragmentPanel:267 (working)
+
+Deployed as `a9a388b`. **NOT yet verified live** — deploy fired at the pause.
+First job on resume: load /how-it-works, /ledger, /about and confirm.
+
+Two "hold" instances deliberately left, both out of scope:
+- `src/app/(app)/page.tsx:425` — a code comment, not copy.
+- `src/app/api/converse/route.ts:36` — "How is the writing itself holding up?"
+  is a prompt instruction, and the brief said writer-facing only. It now
+  disagrees with the UI copy that offers it, which reads "working". Worth a
+  ruling.
+
+### PICK UP HERE — items 3, 4, 5, 6 not started
+
+**3. Interrogate mode.** All decisions are recorded above in this file: opt-in,
+resets every submission, ambition-fit always, best-in-class suppressed on
+excerpts, helper line "I'll bear in mind what you told me you were trying to do."
+The brief requires the UI placement and pill copy be PROPOSED IN THIS FILE
+BEFORE BUILDING, and not deployed without the proposal recorded. The earlier
+proposal (step 2 placement, READ IT / PUSH HARDER pills, first helper sentence)
+is in this session's transcript but was never written here — write it here first.
+
+**4. The ~45 placeholder strings** — full inventory exists in the transcript but
+NOT in this file. Must be listed here grouped by feature. The groups are:
+35 lens self-recognition lines; 3 trend notes; 1 mentor-horizon nudge; 2 fragment
+prompts; 1 fragment short-input refusal; ~8 FragmentPanel strings. Plus a second
+category with no approval record either way: /how-it-works both tabs, account
+page, ledger view, goal copy, continuity flags.
+
+**5. Differentiator copy** — already confirmed exact and pinned by a test
+(`65d6a73`). Re-running the suite is sufficient; no drift is possible without
+`tests/lib/differentiator.test.ts` failing.
+
+**6. Standing evaluation rule** — not yet run over any of today's work.
+
+### Still unruled by Nenad
+- The dropped promise on /how-it-works: the old goals paragraph said "I won't
+  invent progress to have something encouraging to say — if a draft gives me
+  nothing real to say about what you wanted, I say nothing about it." His
+  replacement text dropped it. Behaviour is unchanged (the rule still lives in
+  `goal-progress.ts`) but the page no longer promises it.
+- "onward" vs "onwards" in the two ledger lock explainers.
+- "spelled" vs "spelt" in the same explainer.
+- Prompt-level "holding up" in converse/route.ts (above).
