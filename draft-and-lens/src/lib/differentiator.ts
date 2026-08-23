@@ -31,7 +31,17 @@ import 'server-only';
  */
 
 /**
- * APPROVED COPY — Nenad, 2026-08-21. Do not edit without him.
+ * FINAL COPY. Approved by Nenad 2026-08-21, re-confirmed word-for-word and
+ * marked final 2026-08-23. Not a draft, not a placeholder, not open.
+ *
+ * DO NOT EDIT — not for tone, not for length, not while touching something
+ * nearby. It is pinned character-for-character by a test in
+ * `tests/lib/differentiator.test.ts`, which will fail on any change including
+ * a swapped dash or apostrophe. If that test fails, the fix is to restore this
+ * string, not to update the test. Changing it needs Nenad, and then both.
+ *
+ * The line fires ONCE PER ACCOUNT for the life of that account, so there is no
+ * next reading to get it right — which is why it is pinned rather than trusted.
  *
  * Does what §6 asks and no more: names the method once, in the editor's own
  * voice, in the first person, with no comparison and no competitor. It claims

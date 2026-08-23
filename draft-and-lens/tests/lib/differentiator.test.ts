@@ -51,6 +51,24 @@ describe('qualifiesForDifferentiator', () => {
  * never happen is a later edit quietly turning a reading into an advert.
  */
 describe('approved copy', () => {
+  /**
+   * THE EXACT STRING, PINNED. Marked final 2026-08-23.
+   *
+   * The properties below (length, no comparison) all passed while the wording
+   * itself could still drift — a reworded line satisfies every one of them. The
+   * line fires once per account for the life of that account, so a drifted
+   * version is not recoverable by the next reading getting it right.
+   *
+   * If this fails, restore the string in `src/lib/differentiator.ts`. Do not
+   * update this expectation to match a change; changing the copy needs Nenad,
+   * and then both move together.
+   */
+  it('is exactly the final approved wording', () => {
+    expect(DIFFERENTIATOR_COPY).toBe(
+      "I read this differently from the first time — against what you sent before, not on its own. That's what I mean by a reading."
+    );
+  });
+
   it('exists and is a single short passage, not a marketing block', () => {
     expect(DIFFERENTIATOR_COPY.length).toBeGreaterThan(40);
     expect(DIFFERENTIATOR_COPY.length).toBeLessThan(400);
