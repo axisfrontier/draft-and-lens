@@ -927,7 +927,11 @@ export default function AppHomePage() {
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.64rem',
                   letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: hasWork ? 'var(--paper-dark)' : 'var(--border-dark)',
+                  // Same two colours as `stepLabel`, so this sub-label tracks
+                  // the step headings instead of drifting darker than them.
+                  // It briefly used --border-dark when inert, which is ~1.2:1
+                  // on the band — not dim, invisible.
+                  color: hasWork ? 'var(--paper)' : 'var(--paper-dark)',
                   marginBottom: '.5rem',
                 }}>Complete piece or excerpt?</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.4rem' }}>
