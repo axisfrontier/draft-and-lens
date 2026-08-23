@@ -6,6 +6,7 @@ import {
   deriveTrend,
   isNameable,
   isTendency,
+  traditionTreatsAsFailure,
 } from '../../src/lib/writer-patterns';
 
 /**
@@ -138,6 +139,50 @@ describe('deriveTrend', () => {
     // data. The notes are sentences, not measurements.
     for (const wids of [['w2', 'w3', 'w4'], ['w0', 'w1', 'w2'], ['w0', 'w3']]) {
       expect(deriveTrend(wids, W(5)).note).not.toMatch(/\d/);
+    }
+  });
+});
+
+/**
+ * The tradition gate on `withheld_payoff` (P22/P3).
+ *
+ * These exist because the gate shipped without them and a real false positive
+ * followed: a comic office piece was read as "Corporate satirical literary
+ * fiction", the `literary fiction` substring matched, and the tendency was
+ * recorded against a satire — a tradition that withholds resolution the way
+ * crime and noir do, as its instrument.
+ */
+describe('withheld_payoff is gated on the tradition', () => {
+  it('records for the traditions P22 actually names', () => {
+    for (const tradition of [
+      'Contemporary literary realism',
+      'contemporary autofiction',
+      'Domestic realism',
+    ]) {
+      expect(traditionTreatsAsFailure('withheld_payoff', tradition), tradition).toBe(true);
+    }
+  });
+
+  it('never records for satire, however the tradition is spelled', () => {
+    for (const tradition of [
+      'Corporate satirical literary fiction',
+      'Satire',
+      'satirical realism',
+      'A satirically inflected domestic realism',
+    ]) {
+      expect(traditionTreatsAsFailure('withheld_payoff', tradition), tradition).toBe(false);
+    }
+  });
+
+  it('fails closed for traditions where withholding is the instrument', () => {
+    for (const tradition of ['hardboiled noir', 'crime', 'cosmic horror', 'thriller']) {
+      expect(traditionTreatsAsFailure('withheld_payoff', tradition), tradition).toBe(false);
+    }
+  });
+
+  it('leaves every other tendency ungated', () => {
+    for (const tendency of TENDENCIES.filter((t) => t !== 'withheld_payoff')) {
+      expect(traditionTreatsAsFailure(tendency, 'Corporate satirical literary fiction')).toBe(true);
     }
   });
 });

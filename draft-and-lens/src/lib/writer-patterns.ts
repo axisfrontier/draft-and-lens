@@ -92,6 +92,18 @@ export const TRADITION_BOUND: ReadonlySet<Tendency> = new Set([
 export function traditionTreatsAsFailure(tendency: Tendency, tradition: string): boolean {
   if (tendency !== 'withheld_payoff') return true;
   const t = tradition.toLowerCase();
+  // SATIRE IS EXCLUDED FIRST, and the order is the whole fix. Nenad's ruling,
+  // 2026-08-23, from a real false positive: a comic office piece came back as
+  // "Corporate satirical literary fiction", the substring `literary fiction`
+  // matched below, and `withheld_payoff` was recorded against a satire. Satire
+  // withholds resolution the way crime and noir do — as its instrument, not as
+  // a broken contract — so faulting it is the exact error P3 exists to prevent,
+  // committed across the writer's whole body of work rather than in one note.
+  //
+  // Tested first because the inclusion test cannot be trusted to lose: a
+  // tradition string routinely names both its mode and its shelf, and every
+  // satire filed under literary fiction says both.
+  if (/satir/.test(t)) return false;
   const namedByP22 = /literary realism|autofiction|literary fiction|domestic realism/.test(t);
   return namedByP22;
 }
