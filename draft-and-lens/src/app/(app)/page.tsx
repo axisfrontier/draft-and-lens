@@ -1126,12 +1126,6 @@ export default function AppHomePage() {
                 Your work is yours. We never train AI on it — it&apos;s sent only to generate your reading.
               </p>
 
-              <p style={{
-                fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                letterSpacing: '.08em', color: 'var(--paper-dark)',
-                textAlign: 'center', fontStyle: 'italic',
-              }}>It arrives as I write it.</p>
-
               {provenanceHold && (
                 <div style={{
                   marginTop: '1rem', padding: '.9rem 1.1rem',
