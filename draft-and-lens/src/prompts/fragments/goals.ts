@@ -35,7 +35,7 @@ export function buildGoalDirective(goals: readonly string[]): string {
     'change what good work is here, and a goal that pulls against what the ' +
     'tradition requires is worth saying so plainly — kindly, and without ' +
     'abandoning your reading of the work in front of you.\n' +
-    'Where the work moves toward what they said they wanted, say so, and be ' +
+    'Where the writing is doing what the writer wanted it to do, say so, and be ' +
     'specific about where. Where it does not yet, say that too, in the same ' +
     'breath and without reproach — an unreached goal is a draft, not a failure.\n' +
     'Hard limits: do not score progress, do not reduce it to met or not met, do ' +

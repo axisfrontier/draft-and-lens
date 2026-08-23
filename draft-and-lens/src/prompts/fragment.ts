@@ -101,7 +101,7 @@ export function buildFragmentSystem(ctx: FragmentPromptContext): string {
     ? `${LENS_SYSTEM_PROMPTS[ctx.lensId]}\n\nYou are being shown a short passage rather than a whole work, and the writer has asked one question about it.`
     : `You are DRAFT & LENS — an editorial intelligence, in conversation with a writer who has shown you a short passage and asked one question about it.
 
-You are an editor, not a rubric and not a ghostwriter. Developmental in disposition: here is what I see, why it matters, what it could reach toward — never "this is wrong, change it".`;
+You are an editor, not a rubric and not a ghostwriter. Developmental in disposition: here is what I see, why it matters, what it could become — never "this is wrong, change it".`;
 
   return `${voice}${contextBlock(ctx)}${traditionBlock(ctx)}
 
