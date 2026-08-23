@@ -1514,3 +1514,23 @@ use the URL-ticket form, not setActive.
 The debounced grouping effect does not re-fire if text and mode already settled
 before the session became valid. Nudge the textarea to re-trigger it, or a
 manuscript pill will look missing when it is not.
+
+
+## APPROVED COPY — Interrogate mode helper line (2026-08-23)
+
+Interrogate / push-harder mode is NOT built. This records Nenad's ruling on its
+copy so it is not lost between sessions.
+
+The goals-aware second sentence of the helper line, when Mentor goals exist:
+
+    "I'll bear in mind what you told me you were trying to do."
+
+REJECTED, do not use: "I'll hold it against what you said you're working on."
+In British English "hold something against someone" reads as resentment, which
+is the opposite of the intent. Same reason the wider "hold against" sweep was
+commissioned — see the copy audit in this session.
+
+The rest of the Interrogate-mode proposal (placement inside step 2, the pills
+READ IT / PUSH HARDER, the first helper sentence) is still awaiting approval,
+along with two open rulings: whether the toggle resets per submission, and
+whether best-in-class is suppressed on excerpts.
