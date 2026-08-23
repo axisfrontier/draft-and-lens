@@ -1407,7 +1407,13 @@ Asked to re-enable it. **It was re-enabled on 2026-08-21 in `43bbc57`** ("the th
 
 `Lens voices_images/Lucas.jpg` is left modified and uncommitted, per Nenad — a replaced source portrait that the build never reads.
 
-## RESUME NOTE — 2026-08-23, session paused at usage limit
+## RESUME NOTE — 2026-08-23 (SUPERSEDED below; kept for the gotchas only)
+
+**Everything this note said was outstanding is now DONE.** The test account is
+deleted and Nenad's session is restored. Read the CLOSING NOTE at the end of the
+file instead; only the "gotchas" list below is still worth reading.
+
+
 
 ### Shipped and verified live today (all on main, all deployed)
 - `aadb3a4` steps 2 and 3 inert until step 1 has work in it
@@ -1466,3 +1472,45 @@ CLERK_SECRET_KEY restores it without handling any password.
   while the pill reads ON ITS OWN. Match case-insensitively.
 - getComputedStyle during the pills' 150ms transition, or on a node React has
   replaced, gives misleading values. Screenshot to confirm.
+
+
+## CLOSING NOTE — 2026-08-23, all work complete
+
+### Shipped and verified live
+- `aadb3a4` steps 2 and 3 inert until step 1 has work
+- `2b7870e` removed "It arrives as I write it."
+- `850a228` step 3 grouping choices always inline (no card, no radios, no disclosure)
+- `8adc748` auto-grouping trace reworded to confirm rather than confess
+- `78e144b` "Complete piece or excerpt?" contrast — verified: inert #c8c0a8, active
+  #f5f1e8, an exact match for the step headings
+- `af51623` satire never records `withheld_payoff` (+ first tests for that gate)
+- `c7b4047` manuscript titles keep their case in the grouping pills ("Home")
+
+### The third nudge — VISUALLY CONFIRMED, nothing outstanding
+Rendered on screen on production after a real third submission through the UI:
+"The more you send me, the more I'll notice across your work." — italic, amber
+rule, DISMISS control, below the goal prompt. All three milestone rows were
+present (`nudge_revision_memory`, `nudge_mentor_horizon`, `nudge_keep_sending`).
+
+### Test accounts — BOTH FULLY DELETED, verified
+`dl-nudge3-test@` and `dl-nudge3-visual@`: all seven per-user Supabase tables at
+0 rows, Clerk GET 404, email search 0 matches for both.
+
+### Nenad's own session — displaced and restored, verified durable
+Restoring via `Clerk.setActive` in-page LOOKED fine but did not survive a reload
+(API calls came back 401) because the session cookie never wrote durably. What
+actually worked: navigate to `https://www.draftandlens.com/?__clerk_ticket=<token>`
+and let Clerk run the full handshake. Verified by a clean reload with no ticket:
+/api/works and /api/ledger/suggest both 200. If a future session ever needs this,
+use the URL-ticket form, not setActive.
+
+### Still unruled by Nenad
+- Letter-spacing on title pills eased .22em → .08em alongside the case change.
+  His ruling named case only; flagged in `c7b4047` and revertible on its own.
+- The satire gate fix is covered by unit tests and is deployed, but was never
+  exercised by a live satire submission — that would cost another full reading.
+
+### Gotcha worth keeping
+The debounced grouping effect does not re-fire if text and mode already settled
+before the session became valid. Nudge the textarea to re-trigger it, or a
+manuscript pill will look missing when it is not.
