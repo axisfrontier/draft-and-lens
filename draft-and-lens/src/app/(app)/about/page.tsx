@@ -20,7 +20,7 @@ export default function AboutPage() {
         It reads your work on its own terms
       </h2>
       <p style={{ fontFamily: 'var(--font-sans)', fontSize: '.95rem', lineHeight: 1.85, color: 'var(--ink-mid)', marginBottom: '1.25rem' }}>
-        Before it says a single word about your work, Draft &amp; Lens establishes what kind of work it is — the tradition it belongs to and the standards that tradition actually answers to. A spare, oblique realist story and a heightened, mythic one are not held to the same rules, because they are not trying to do the same thing. A note that would be right for one is wrong for the other. This is the difference between feedback that fits your draft and feedback that could be pasted onto anyone&apos;s.
+        Before it says a single word about your work, Draft &amp; Lens establishes what kind of work it is — the tradition it belongs to and the standards that tradition actually answers to. A spare, oblique realist story and a heightened, mythic one do not answer to the same rules, because they are not trying to do the same thing. A note that would be right for one is wrong for the other. This is the difference between feedback that fits your draft and feedback that could be pasted onto anyone&apos;s.
       </p>
 
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', margin: '2rem 0 .75rem' }}>
