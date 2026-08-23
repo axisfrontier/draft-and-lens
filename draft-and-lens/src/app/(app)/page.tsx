@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { ReportSkeleton } from '@/components/analysis/ReportSkeleton';
 import { ReportView } from '@/components/analysis/ReportView';
 import FragmentPanel, { type FragmentHandoff } from '@/components/fragment/FragmentPanel';
-import { TermTooltip } from '@/components/glossary/TermTooltip';
 import { LENS_NAMES } from '@/components/lenses/lens-directory';
 import type {
   ContinuityFlag,
@@ -185,11 +184,9 @@ export default function AppHomePage() {
   const [groupedManuscriptId, setGroupedManuscriptId] = useState<string | null>(null);
   const [continuityFlags, setContinuityFlags] = useState<ContinuityFlag[]>([]);
   const [chosenManuscript, setChosenManuscript] = useState<string | null>(null);
-  const [groupingOpen, setGroupingOpen] = useState(false);
-  /** True once the grouping question has been put to the writer for this
-   *  submission. Keeps the panel on screen even if a later classification would
-   *  hide it — see the note where it is set. */
-  const [panelShown, setPanelShown] = useState(false);
+  /** The "+ New book" pill is showing its title field. Not a disclosure for the
+   *  choices themselves — those are always inline (Nenad's ruling 2026-08-23). */
+  const [newBookOpen, setNewBookOpen] = useState(false);
   const [fragmentHandoff, setFragmentHandoff] = useState<FragmentHandoff | null>(null);
   /** The lens-voice gate asked whether this work is the writer's own. */
   const [provenanceHold, setProvenanceHold] = useState('');
@@ -204,10 +201,6 @@ export default function AppHomePage() {
 
   const effectiveText = text.trim() || uploadedFileText;
   const wordCount = countWords(effectiveText);
-  // A cleared box means a new submission — the previous answer no longer applies.
-  useEffect(() => {
-    if (countWords(text.trim() || uploadedFileText) === 0) setPanelShown(false);
-  }, [text, uploadedFileText]);
   const overCap = wordCount > TESTER_WORD_CAP;
   /**
    * Steps 2 and 3 stay inert until step 1 has something in it.
@@ -219,6 +212,16 @@ export default function AppHomePage() {
    * both together, which is the same term `canAnalyse` already gates on.
    */
   const hasWork = wordCount > 0;
+  /**
+   * Step 3's choices are live once step 2 is answered.
+   *
+   * They are always VISIBLE from `hasWork` — that is the point of showing them
+   * inline — but they cannot be acted on until a format exists, and that is not
+   * decoration. `createManuscriptAndSelect` files a new book under `format: mode`,
+   * so a null mode would create one with no format; and the suggestion request
+   * itself refuses to run without a mode, for the reason given at its own gate.
+   */
+  const groupingReady = hasWork && mode !== null;
   const canAnalyse =
     isSignedIn === true &&
     mode !== null &&
@@ -248,15 +251,17 @@ export default function AppHomePage() {
         .then((d) => {
           if (!d) return;
           setGrouping(d);
-          // Sticky: once the panel has been shown for this submission, a later
-          // classification may not take it away. Re-answering is the writer's
-          // to do; silently upgrading to `auto` behind a question they have
-          // already seen is exactly the failure §2 warns about.
-          if (d.band !== 'auto') setPanelShown(true);
-          // `auto` and `confirm` both pre-select the proposal; the difference
-          // is whether the writer is asked about it (see the panel's own gate).
+          // `auto` and `confirm` both pre-select the proposal. They no longer
+          // differ in whether the writer SEES it: since 2026-08-23 the choices
+          // are always inline, so an `auto` match arrives as a pill already
+          // selected rather than as a grouping applied out of sight. The band
+          // still decides whether the writer is interrupted — nothing asks —
+          // but it no longer decides whether they can look.
+          //
           // The bar for `auto` is deliberately high — see AUTO_MIN_* — because
-          // a wrong silent grouping is far worse than a missed one.
+          // a wrong silent grouping is far worse than a missed one. That bar is
+          // unchanged; what changed is that a wrong one is now visible and one
+          // click from corrected, before the reading rather than after it.
           if (d.suggestion && chosenManuscript === null) {
             setChosenManuscript(d.suggestion.manuscriptId);
           }
@@ -304,8 +309,11 @@ export default function AppHomePage() {
       const d = (await res.json()) as { manuscriptId: string };
       setChosenManuscript(d.manuscriptId);
       setGrouping((g) => ({
-        // Stays 'confirm': the writer has made an explicit choice, so this must
-        // never silently flip to 'auto' and hide the control they just used.
+        // Stays 'confirm'. It no longer decides whether the control is on
+        // screen — the choices are always inline — but it still records that
+        // this grouping was the writer's own explicit act rather than a match
+        // the server proposed, which is what keeps the auto-grouping trace and
+        // its undo away from a book they just named themselves.
         band: 'confirm',
         suggestion: g?.suggestion ?? null,
         manuscripts: [
@@ -314,7 +322,9 @@ export default function AppHomePage() {
         ],
       }));
       setNewManuscriptTitle('');
-      setGroupingOpen(false);
+      // The new book is now the selected pill, so the title field has done its
+      // job and closes behind it.
+      setNewBookOpen(false);
     } catch {
       /* best-effort */
     }
@@ -960,122 +970,121 @@ export default function AppHomePage() {
                 <span style={stepLabel(hasWork)}>Where does it belong?</span>
               </div>
 
-              {/* Step 3 — where does it belong? Grouping was the last thing
-                  on the panel, below the optional divider, though it is not
-                  optional in the way a goal is: it is a fact about the work,
-                  and it decides whether a ledger gets anything at all. It is a
-                  numbered step now, in the order Nenad approved.
+              {/* Step 3 body — the grouping choices, always inline.
+                  Nenad's ruling, 2026-08-23, replacing a cream card that held
+                  a second copy of the step's own question, a click-to-reveal,
+                  and radio inputs borrowed from no other part of the panel.
 
-                  Continuity grouping — §2 option C. One line, one control:
-                  ruling 2 was explicit that this must be a single lightweight
-                  confirm/adjust, not a form. Only appears once there is
-                  something to group against. */}
-              {/* Hidden entirely when the match is strong enough to act on
-                  (band 'auto') — that is the point of the banding: no prompt on
-                  every upload. Shown for 'confirm' (a match that could be
-                  coincidence) and for 'none' (nothing proposed), because the
-                  latter is the only route to creating a first manuscript.
-                  An earlier version also hid it on 'none', which made the whole
-                  feature unreachable. */}
-              {grouping !== null && (grouping.band !== 'auto' || panelShown) && (
-                <div
-                  style={{
-                    marginTop: '.75rem', padding: '.6rem .8rem',
-                    background: 'var(--cream)', borderLeft: '3px solid var(--amber)',
-                    fontSize: '.82rem', color: 'var(--ink-mid)',
-                  }}
-                >
-                  <div style={{ fontWeight: 500, color: 'var(--ink)' }}>
-                    Is this part of a larger work?
-                  </div>
-                  <div style={{ fontSize: '.76rem', color: 'var(--ink-soft)', marginTop: '.15rem' }}>
-                    Chapters read as one book build a{' '}
-                    <TermTooltip
-                      term="continuity ledger"
-                      gloss="A record of what your book has established — names, descriptions, ages and relationships — carried across every chapter, so later chapters can be read against earlier ones."
-                    />
-                    . A single piece needs none of that.
+                  THREE THINGS THIS FIXES, and the third is the behavioural one:
+                    • no container — the choices sit on the panel like every
+                      other control rather than in a light card pasted onto a
+                      dark surface;
+                    • no radios — they are the same pills as step 2, from the
+                      same `pill()` helper, so the two steps cannot drift apart;
+                    • no hiding — the block used to render nothing at all when
+                      the server was confident enough to group silently (band
+                      'auto'). The high bar for `auto` is unchanged and nothing
+                      interrupts the writer, but the grouping it chose is now
+                      visible as a selected pill instead of happening out of
+                      sight and being explained afterwards.
+
+                  Visible from `hasWork` so the body and its badge agree; live
+                  from `groupingReady`, because a format must exist first. */}
+              {hasWork && (
+                <div style={{ marginTop: '.7rem' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '.78rem',
+                    color: 'var(--paper-dark)', lineHeight: 1.6,
+                    marginBottom: '.6rem',
+                  }}>
+                    Chapters read as one book build a continuity ledger — a record of
+                    what the book has established, carried across every chapter. A single
+                    piece needs none of that.
                   </div>
 
-                  {!groupingOpen ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', marginTop: '.5rem' }}>
-                      <span>
-                        {chosenManuscript && chosenTitle ? (
-                          <>
-                            Yes — part of <strong>{chosenTitle}</strong>
-                            {grouping.suggestion?.manuscriptId === chosenManuscript &&
-                              grouping.suggestion.sharedEntities.length > 0 && (
-                                <span style={{ color: 'var(--ink-soft)' }}>
-                                  {' '}(both mention {grouping.suggestion.sharedEntities.slice(0, 3).join(', ')})
-                                </span>
-                              )}
-                          </>
-                        ) : (
-                          <>
-                            No — read it on its own
-                          </>
-                        )}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setGroupingOpen(true)}
-                        style={{
-                          background: 'transparent', border: 'none', padding: 0,
-                          color: 'var(--amber-d)', cursor: 'pointer',
-                          fontFamily: 'var(--font-mono)', fontSize: '.68rem',
-                          letterSpacing: '.1em', textTransform: 'uppercase',
-                        }}
-                      >
-                        {chosenManuscript ? 'Change' : 'Add to a book'}
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginTop: '.5rem' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                        <input
-                          type="radio"
-                          checked={chosenManuscript === null}
-                          onChange={() => { setChosenManuscript(null); setGroupingOpen(false); }}
-                        />
-                        No — read it on its own
-                      </label>
-                      {grouping.manuscripts.map((ms) => (
-                        <label key={ms.manuscriptId} style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                          <input
-                            type="radio"
-                            checked={chosenManuscript === ms.manuscriptId}
-                            onChange={() => { setChosenManuscript(ms.manuscriptId); setGroupingOpen(false); }}
-                          />
-                          Yes — part of {ms.title || 'an untitled book'}
-                          <span style={{ color: 'var(--ink-soft)' }}>
-                            ({ms.chapters} so far)
-                          </span>
-                        </label>
-                      ))}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginTop: '.2rem' }}>
-                        <span style={{ color: 'var(--ink-soft)' }}>Yes — start a new book:</span>
-                        <input
-                          placeholder="Give it a title…"
-                          value={newManuscriptTitle}
-                          onChange={(e) => setNewManuscriptTitle(e.target.value)}
-                          style={{
-                            fontSize: '.8rem', padding: '.25rem .4rem',
-                            border: '1px solid var(--border-dark)', background: 'var(--paper)',
-                          }}
-                        />
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', alignItems: 'flex-start' }}>
+                    {/* Standalone stays first and stays the default: nothing is
+                        grouped unless something says so, per §2's risk table. */}
+                    <button
+                      type="button"
+                      aria-pressed={chosenManuscript === null && !newBookOpen}
+                      disabled={!groupingReady}
+                      onClick={() => { setChosenManuscript(null); setNewBookOpen(false); }}
+                      style={{ ...pill(chosenManuscript === null && !newBookOpen, groupingReady), padding: '.65rem .9rem' }}
+                    >
+                      On its own
+                    </button>
+
+                    {(grouping?.manuscripts ?? []).map((ms) => (
+                      <div key={ms.manuscriptId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <button
                           type="button"
-                          disabled={newManuscriptTitle.trim() === ''}
-                          onClick={createManuscriptAndSelect}
-                          style={{
-                            fontSize: '.7rem', padding: '.25rem .5rem', cursor: 'pointer',
-                            border: '1px solid var(--border-dark)', background: 'var(--paper)',
-                            opacity: newManuscriptTitle.trim() === '' ? 0.4 : 1,
-                          }}
+                          aria-pressed={chosenManuscript === ms.manuscriptId && !newBookOpen}
+                          disabled={!groupingReady}
+                          onClick={() => { setChosenManuscript(ms.manuscriptId); setNewBookOpen(false); }}
+                          style={{ ...pill(chosenManuscript === ms.manuscriptId && !newBookOpen, groupingReady), padding: '.65rem .9rem' }}
                         >
-                          Create
+                          {ms.title || 'Untitled book'}
                         </button>
+                        <span style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '.58rem',
+                          letterSpacing: '.08em', color: 'var(--paper-dark)',
+                          marginTop: '.3rem',
+                        }}>
+                          {ms.chapters} so far
+                        </span>
                       </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      aria-pressed={newBookOpen}
+                      disabled={!groupingReady}
+                      onClick={() => setNewBookOpen((v) => !v)}
+                      style={{ ...pill(newBookOpen, groupingReady), padding: '.65rem .9rem' }}
+                    >
+                      + New book
+                    </button>
+                  </div>
+
+                  {/* Why this one was proposed. Only where the selection IS the
+                      server's suggestion — otherwise it would be evidence for a
+                      choice the writer made on their own. */}
+                  {chosenManuscript !== null &&
+                    !newBookOpen &&
+                    grouping?.suggestion?.manuscriptId === chosenManuscript &&
+                    grouping.suggestion.sharedEntities.length > 0 && (
+                      <div style={{
+                        fontFamily: 'var(--font-sans)', fontSize: '.75rem',
+                        color: 'var(--paper-dark)', fontStyle: 'italic',
+                        marginTop: '.5rem',
+                      }}>
+                        Both mention {grouping.suggestion.sharedEntities.slice(0, 3).join(', ')}.
+                      </div>
+                    )}
+
+                  {newBookOpen && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginTop: '.5rem' }}>
+                      <input
+                        placeholder="Give it a title…"
+                        value={newManuscriptTitle}
+                        onChange={(e) => setNewManuscriptTitle(e.target.value)}
+                        style={{
+                          flex: '1 1 12rem', fontFamily: 'var(--font-sans)',
+                          fontSize: '.82rem', padding: '.6rem .8rem',
+                          background: 'var(--surface-input)', color: 'var(--paper-dark)',
+                          border: '1px solid var(--amber-d)', borderRadius: 10,
+                          outline: 'none',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={newManuscriptTitle.trim() === ''}
+                        onClick={createManuscriptAndSelect}
+                        style={{ ...pill(false, newManuscriptTitle.trim() !== ''), padding: '.65rem .9rem' }}
+                      >
+                        Create
+                      </button>
                     </div>
                   )}
                 </div>
