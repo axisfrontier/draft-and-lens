@@ -258,7 +258,7 @@ export default function AccountPage() {
       {isSignedIn === true && (
         <GoalList
           heading="What you're working toward"
-          blurb="Anything here I hold while I read, whatever you send me. It doesn't change how I read the work — the tradition still decides that — but I'll tell you what I can see against it."
+          blurb="Anything here I'll bear in mind as I read, whatever you send me. It doesn't change how I read the work — the tradition still decides that — but I'll tell you what I can see against it."
         />
       )}
 
