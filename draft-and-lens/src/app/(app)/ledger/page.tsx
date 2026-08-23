@@ -56,7 +56,7 @@ export default function LedgerIndexPage() {
       <h1 className="mt-2 font-serif text-2xl">What your book has established</h1>
       <p className="mt-1 max-w-2xl text-sm text-ink-soft">
         Names, descriptions, ages and relationships, accumulated as each chapter is read — a
-        character sheet nobody had to maintain. Lock anything the book must hold to.
+        character sheet nobody had to maintain. Lock anything the book must keep to.
       </p>
 
       {isSignedIn !== true && (

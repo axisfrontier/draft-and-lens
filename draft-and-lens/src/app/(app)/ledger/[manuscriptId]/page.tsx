@@ -383,7 +383,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
       {locks.length > 0 && (
         <section className="mt-6 max-w-2xl">
           <div className="font-mono text-xs uppercase tracking-widest text-amber-d">
-            Locked — what this book must hold to
+            Locked — what this book must keep to
           </div>
           <ul className="mt-2">
             {locks.map((f) => (
@@ -450,10 +450,10 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
             </button>
           ) : (
             <div className="rounded p-3" style={{ background: 'var(--cream)' }}>
-              <div className="text-sm text-ink">Something this book must hold to</div>
+              <div className="text-sm text-ink">Something this book must keep to</div>
               <div className="mt-1 text-xs text-ink-soft">
-                A <strong>rule</strong> holds everywhere — “magic always costs blood”, “Katherine is
-                never spelled Kathryn”. A <strong>state</strong> holds from a chapter onward.
+                A <strong>rule</strong> applies everywhere — “magic always costs blood”, “Katherine is
+                never spelled Kathryn”. A <strong>state</strong> applies from a chapter onward.
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -542,7 +542,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
           <p>I haven’t started tracking anything here yet.</p>
           <p className="mt-2">
             I collect facts as I read complete chapters. I take nothing from an excerpt — a draft
-            mid-revision isn’t something to hold the rest of the book to.
+            mid-revision isn’t something the rest of the book should answer to.
           </p>
         </div>
       )}
@@ -626,8 +626,8 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
                       style={{ background: 'var(--cream)' }}
                     >
                       <div className="text-ink-soft">
-                        A <strong>rule</strong> holds everywhere in the book. A <strong>state</strong>{' '}
-                        holds from a chapter onward.
+                        A <strong>rule</strong> applies everywhere in the book. A <strong>state</strong>{' '}
+                        applies from a chapter onward.
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <button
