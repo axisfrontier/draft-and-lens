@@ -637,6 +637,22 @@ export default function AppHomePage() {
     transition: 'all .15s',
   });
 
+  /**
+   * A manuscript-title pill — the one thing in this panel that is not shouted.
+   * Nenad's ruling, 2026-08-23: "Home", not "HOME". Every other pill is a UI
+   * label the product wrote; a book's title is a proper noun the writer chose,
+   * and uppercasing it is the panel talking over them.
+   *
+   * The tracking eases with the case, and that part is a judgement call rather
+   * than the ruling: .22em is tuned for uppercase mono labels and reads as
+   * H o m e on mixed case. Flagged rather than assumed.
+   */
+  const titlePill = (selected: boolean, enabled: boolean): CSSProperties => ({
+    ...pill(selected, enabled),
+    textTransform: 'none',
+    letterSpacing: '.08em',
+  });
+
   /** A step heading dims with its step, so the label and its badge agree. */
   const stepLabel = (active: boolean): CSSProperties => ({
     fontFamily: 'var(--font-mono)', fontSize: '.72rem',
@@ -1026,7 +1042,7 @@ export default function AppHomePage() {
                           aria-pressed={chosenManuscript === ms.manuscriptId && !newBookOpen}
                           disabled={!groupingReady}
                           onClick={() => { setChosenManuscript(ms.manuscriptId); setNewBookOpen(false); }}
-                          style={{ ...pill(chosenManuscript === ms.manuscriptId && !newBookOpen, groupingReady), padding: '.65rem .9rem' }}
+                          style={{ ...titlePill(chosenManuscript === ms.manuscriptId && !newBookOpen, groupingReady), padding: '.65rem .9rem' }}
                         >
                           {ms.title || 'Untitled book'}
                         </button>
