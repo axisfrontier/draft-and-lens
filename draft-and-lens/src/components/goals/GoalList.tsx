@@ -65,7 +65,7 @@ export function GoalList({
     }).catch(() => null);
     setBusy(false);
     if (!res?.ok) {
-      setError("I couldn't hold on to that one. Try me again.");
+      setError("I couldn't keep that one. Try me again.");
       return;
     }
     setDraft('');
@@ -99,7 +99,7 @@ export function GoalList({
     const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' }).catch(() => null);
     setBusy(false);
     if (!res?.ok) {
-      setError("I couldn't put that one aside. I'm still holding it.");
+      setError("I couldn't put that one aside. I still have it.");
       return;
     }
     load();

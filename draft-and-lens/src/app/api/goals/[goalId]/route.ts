@@ -55,7 +55,7 @@ export async function DELETE(
   const ok = await dismissGoal(userId, params.goalId);
   if (!ok) {
     return NextResponse.json(
-      { error: "I couldn't put that one aside. I'm still holding it." },
+      { error: "I couldn't put that one aside. I still have it." },
       { status: 400 }
     );
   }

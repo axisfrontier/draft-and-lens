@@ -49,7 +49,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const created = await createGoal({ userId, manuscriptId, goal });
   if (!created) {
     return NextResponse.json(
-      { error: "I couldn't hold on to that one. Try me again." },
+      { error: "I couldn't keep that one. Try me again." },
       { status: 400 }
     );
   }
