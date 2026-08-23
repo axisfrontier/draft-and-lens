@@ -264,7 +264,7 @@ export default function FragmentPanel({
           </p>
 
           <button type="button" style={optionStyle(true)} onClick={() => void send('craft')}>
-            Just tell me how the writing itself is holding up.
+            Just tell me how the writing itself is working.
           </button>
 
           <button
