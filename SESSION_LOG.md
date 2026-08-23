@@ -1406,3 +1406,63 @@ Asked to re-enable it. **It was re-enabled on 2026-08-21 in `43bbc57`** ("the th
 `8fe25c7` ignores `Ad concepts/` (380K), `Inspiration/` (1.2M) and `draftandlens.png`, following `/Ads/` on 20 August for the same reason: reference material and marketing artwork that no line of code imports. The portraits the app serves stay tracked in `draft-and-lens/public/lenses/`.
 
 `Lens voices_images/Lucas.jpg` is left modified and uncommitted, per Nenad — a replaced source portrait that the build never reads.
+
+## RESUME NOTE — 2026-08-23, session paused at usage limit
+
+### Shipped and verified live today (all on main, all deployed)
+- `aadb3a4` steps 2 and 3 inert until step 1 has work in it
+- `2b7870e` removed "It arrives as I write it." from the submission panel
+- `850a228` step 3's grouping choices always inline (no card, no radios, no disclosure)
+- `8adc748` auto-grouping trace reworded: "I read this as part of X - how it was set when you sent it."
+- `78e144b` "Complete piece or excerpt?" sub-label contrast - **deploy fired, NOT yet verified live**
+
+### PICK UP HERE — 1. verify 78e144b live
+Load draftandlens.com, confirm "COMPLETE PIECE OR EXCERPT?" now matches the
+other section labels (--paper when a format is pickable, --paper-dark when not).
+
+### PICK UP HERE — 2. the nudge visual check is HALF DONE
+Nenad approved: sign in as the test account in his normal window, screenshot the
+nudge, then restore his session. **His session was never actually displaced** -
+the in-page Clerk ticket sign-in returned HTTP 400 and did not take effect. He is
+still signed in as himself. Do not assume otherwise; check before acting.
+
+**A LIVE TEST ACCOUNT IS SITTING ON PRODUCTION AND MUST BE DELETED.**
+  user_3IJxc0xpraTccmE8bqLkC5Ug0HN  /  dl-nudge3-visual@draftandlens.com
+It holds 2 readings and 2 milestones (nudge_revision_memory, nudge_mentor_horizon)
+and writer_patterns restatement confirmed_count 1. It was left primed
+deliberately: only the THIRD submission remains, so resuming costs one reading
+rather than three. If the visual check is abandoned, delete it anyway.
+
+State is exactly right for the third nudge: priorSubmissions will be 2, no
+pattern is nameable (restatement needs 2 distinct works), nothing is grouped, no
+revision - so `nudge_keep_sending` will fire.
+
+To finish: sign the browser in as that user, paste the corporate-satire piece,
+mode "story", click ANALYSE, wait ~3.5 min, screenshot the nudge line
+"The more you send me, the more I'll notice across your work."
+Then DELETE /api/account as that user, and confirm Supabase rows are 0 and the
+Clerk user 404s.
+
+Restore instructions for Nenad's own session (only if it does get displaced) are
+in the session scratchpad file RESTORE_OWNER_SESSION.md; his Clerk user id is
+user_3HpInqchAM6HI5nrIDI4yWADneK. A sign-in ticket minted from his own
+CLERK_SECRET_KEY restores it without handling any password.
+
+### Two open items he has NOT ruled on
+- `withheld_payoff` tradition gate substring-matches "literary fiction" inside
+  "Corporate satirical literary fiction", so it recorded against a comic satire.
+  `traditionTreatsAsFailure`, src/lib/writer-patterns.ts. Corpus-semantics call.
+- Pills uppercase book titles (HOME, not Home) via the shared `pill()` helper.
+
+### Gotchas that cost time today - do not relearn them
+- The Vercel deploy does NOT reuse the local chunk hash, so polling
+  `_next/static/.../page-<localhash>.js` for a 200 never succeeds. Verify a deploy
+  by loading the page and checking behaviour instead.
+- `pkill -f "next start"` does not kill the local server; the process is named
+  `next-server`. Kill by PID from `lsof -ti:3000` or the new server silently
+  fails to bind and you test a stale build.
+- The production BETA_GATE_PASSWORD does NOT match the one in local .env.local.
+- `innerText` returns CSS-uppercased text, so `includes('On its own')` is false
+  while the pill reads ON ITS OWN. Match case-insensitively.
+- getComputedStyle during the pills' 150ms transition, or on a node React has
+  replaced, gives misleading values. Screenshot to confirm.
