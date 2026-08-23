@@ -144,7 +144,7 @@ function HowItWorks(): React.ReactElement {
             tradition it belongs to and the standards that tradition actually answers to. That decision
             shapes everything after it. Flat, affectless narration is a failure in one tradition and the
             whole instrument in another; withheld interiority is evasion here and precision there. I
-            settle that first, and then I hold your work to its own standard rather than to a general
+            settle that first, and then I read your work against its own standard rather than a general
             one. The same paragraph, read as minimalism and read as gothic, gets two different readings
             from me, and both of them are honest.
           </p>
@@ -175,7 +175,7 @@ function HowItWorks(): React.ReactElement {
             relationships, whatever the book has established as fact. Each new chapter is read against
             it. If chapter nine gives someone green eyes and chapter two gave them brown, I raise it,
             and I tell you which chapters they were so you can go and look. I only do this for complete
-            chapters: a draft mid-revision isn&apos;t something to hold the rest of a book to. And when
+            chapters: a draft mid-revision isn&apos;t something the rest of a book should answer to. And when
             I&apos;m not certain — when a discrepancy might be a flashback, or deliberate — I say so,
             and I name the innocent explanation before the awkward one.
           </p>
@@ -193,7 +193,7 @@ function HowItWorks(): React.ReactElement {
 
           <h2 style={h2}>If you only have a paragraph and a question</h2>
           <p style={p}>
-            Send it and ask. I&apos;ll tell you how the writing itself is holding up — rhythm, verb
+            Send it and ask. I&apos;ll tell you how the writing itself is working — rhythm, verb
             load, where a sentence goes slack — in a few paragraphs, in seconds, rather than putting a
             full reading around eighty words. There are things I won&apos;t do at that size, and
             I&apos;ll tell you rather than fake them: I can&apos;t identify a tradition from a
@@ -217,7 +217,7 @@ function HowItWorks(): React.ReactElement {
           <p style={p}>
             One reading can tell you what a piece is doing. It can&apos;t tell you what you do — that
             only shows up across work, over time, and it&apos;s the part of an editor&apos;s attention
-            that takes years to earn from a person. Everything below is what I hold on to between
+            that takes years to earn from a person. Everything below is what I remember between
             readings, and none of it happens unless you come back.
           </p>
 
@@ -254,7 +254,7 @@ function HowItWorks(): React.ReactElement {
             be false precision on something that isn&apos;t a number.
           </p>
 
-          <h2 style={h2}>I hold what you told me you were trying to do</h2>
+          <h2 style={h2}>I remember what you told me you were trying to do</h2>
           <p style={p}>
             Tell me what you want — for a book, or for your writing in general — and I&apos;ll keep it
             in mind. Every reading thereafter is measured against it and the tradition it&apos;s written
