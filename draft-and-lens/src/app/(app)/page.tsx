@@ -1358,11 +1358,23 @@ export default function AppHomePage() {
         </div>
       )}
 
-      {/* Trace of a silent auto-grouping (§2). Non-blocking by design: nothing
-          to dismiss, nothing gated behind it — but a grouping the writer never
-          learns about cannot be corrected, and a wrong one goes on to poison
-          every later flag. The undo detaches the whole chapter; the same
-          correction stays available in the ledger view afterwards. */}
+      {/* Trace of an auto-grouping (§2). Non-blocking by design: nothing to
+          dismiss, nothing gated behind it.
+
+          WHAT THIS LINE IS FOR CHANGED ON 2026-08-23, and the copy changed with
+          it. It used to be a disclosure — the grouping had been applied out of
+          sight, and a grouping the writer never learns about cannot be
+          corrected. Since step 3's choices went inline, an `auto` match is
+          shown as a selected pill BEFORE the reading is sent, so the writer had
+          it in front of them and could have changed it. Telling them afterwards
+          that something happened without them is no longer true.
+
+          So it now confirms rather than confesses: it names what the reading
+          was read as, and keeps the correction one click away. That still earns
+          its place — a wrong grouping goes on to poison every later flag, and
+          the moment the reading lands is when the writer can first tell. The
+          undo detaches the whole chapter; the same correction stays available
+          in the ledger view afterwards. */}
       {report !== '' && autoGrouped && (
         <div
           style={{
@@ -1373,7 +1385,8 @@ export default function AppHomePage() {
           }}
         >
           <span>
-            Added to <strong>{autoGrouped.title}</strong>.{' '}
+            I read this as part of <strong>{autoGrouped.title}</strong> — how it was
+            set when you sent it.{' '}
             <a href="/ledger" style={{ color: 'var(--amber-d)' }}>
               See what it has established
             </a>
