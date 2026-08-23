@@ -1530,7 +1530,14 @@ In British English "hold something against someone" reads as resentment, which
 is the opposite of the intent. Same reason the wider "hold against" sweep was
 commissioned — see the copy audit in this session.
 
-The rest of the Interrogate-mode proposal (placement inside step 2, the pills
-READ IT / PUSH HARDER, the first helper sentence) is still awaiting approval,
-along with two open rulings: whether the toggle resets per submission, and
-whether best-in-class is suppressed on excerpts.
+### The two open rulings — DECIDED 2026-08-23
+
+1. **The toggle resets on every submission. It never persists.** A sticky
+   toggle becomes a default by habit, and the mode may never be the default.
+2. **On an excerpt the mode still runs, with best-in-class suppressed.** The
+   ambition-fit half still runs; the best-in-class half does not, because it is
+   a whole-work standard and an excerpt judged against a finished book is a
+   false comparison.
+
+Still awaiting approval: placement inside step 2, the READ IT / PUSH HARDER
+pills, and the first helper sentence.

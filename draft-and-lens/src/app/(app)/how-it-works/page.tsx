@@ -256,12 +256,11 @@ function HowItWorks(): React.ReactElement {
 
           <h2 style={h2}>I hold what you told me you were trying to do</h2>
           <p style={p}>
-            Tell me what you want — for a book, or for your writing in general — and I keep it. Every
-            reading after that is held against it as well as against the tradition: you said you wanted
-            this to feel more urgent, and here is what I can see of that, and where. I won&apos;t score
-            it, I won&apos;t tell you it&apos;s met or unmet, and I won&apos;t invent progress to have
-            something encouraging to say — if a draft gives me nothing real to say about what you
-            wanted, I say nothing about it. Your goal never replaces the standard your work answers to;
+            Tell me what you want — for a book, or for your writing in general — and I&apos;ll keep it
+            in mind. Every reading thereafter is measured against it and the tradition it&apos;s written
+            in: for example, you said you wanted this to feel more urgent, and here is how much of that
+            is coming through and where. I won&apos;t reduce it to a score or a verdict — I&apos;ll tell
+            you what I can see, specifically, and where. Your goal never replaces the standard your work answers to;
             the tradition still decides that. But if what you want pulls against what the tradition
             needs, that&apos;s worth knowing, and I&apos;ll tell you.
           </p>
