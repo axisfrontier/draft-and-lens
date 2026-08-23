@@ -209,6 +209,16 @@ export default function AppHomePage() {
     if (countWords(text.trim() || uploadedFileText) === 0) setPanelShown(false);
   }, [text, uploadedFileText]);
   const overCap = wordCount > TESTER_WORD_CAP;
+  /**
+   * Steps 2 and 3 stay inert until step 1 has something in it.
+   *
+   * The numbered steps promise an order, and an active format pill sitting
+   * above an empty box breaks that promise — it invites an answer to "what is
+   * it?" before there is an "it". Gated on `wordCount` rather than on `text`
+   * so an uploaded file counts exactly as a paste does; `effectiveText` folds
+   * both together, which is the same term `canAnalyse` already gates on.
+   */
+  const hasWork = wordCount > 0;
   const canAnalyse =
     isSignedIn === true &&
     mode !== null &&
@@ -595,6 +605,35 @@ export default function AppHomePage() {
     flexShrink: 0,
   });
 
+  /**
+   * A step-2 choice pill, in one place because there are two groups of them
+   * (format, and complete-vs-excerpt) and their disabled state must not drift.
+   *
+   * When the step is inert the selection is not painted amber. That matters
+   * for `submissionType`, which defaults to 'complete': without this, one pill
+   * sits filled and answered above an empty box, which is the loudest part of
+   * the step looking live before it is.
+   */
+  const pill = (selected: boolean, enabled: boolean): CSSProperties => ({
+    fontFamily: 'var(--font-mono)', fontSize: '.65rem',
+    letterSpacing: '.22em', textTransform: 'uppercase',
+    padding: '.65rem .3rem',
+    background: selected && enabled ? 'var(--amber)' : 'transparent',
+    color: selected && enabled ? 'var(--black-band)'
+      : enabled ? 'var(--paper)' : 'var(--paper-dark)',
+    border: `1px solid ${selected && enabled ? 'var(--amber)' : enabled ? 'var(--amber-l)' : 'var(--border-dark)'}`,
+    cursor: enabled ? 'pointer' : 'not-allowed',
+    borderRadius: 10,
+    transition: 'all .15s',
+  });
+
+  /** A step heading dims with its step, so the label and its badge agree. */
+  const stepLabel = (active: boolean): CSSProperties => ({
+    fontFamily: 'var(--font-mono)', fontSize: '.72rem',
+    letterSpacing: '.14em', textTransform: 'uppercase',
+    color: active ? 'var(--paper)' : 'var(--paper-dark)', fontWeight: 500,
+  });
+
   const showUpload = report === '' && !running;
 
   return (
@@ -722,11 +761,7 @@ export default function AppHomePage() {
               {/* Step 1 — Add your work */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.2rem' }}>
                 <span style={badge(1)}>1</span>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.72rem',
-                  letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: 'var(--paper)', fontWeight: 500,
-                }}>Your work</span>
+                <span style={stepLabel(true)}>Your work</span>
               </div>
 
               {/* Drop zone */}
@@ -857,12 +892,8 @@ export default function AppHomePage() {
               {/* Step 2 — type */}
               <div style={{ borderRadius: 14, padding: '.9rem 1rem .5rem', margin: '0 -1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.7rem' }}>
-                  <span style={badge(2)}>2</span>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '.72rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase',
-                    color: 'var(--paper)', fontWeight: 500,
-                  }}>What is it?</span>
+                  <span style={badge(2, hasWork)}>2</span>
+                  <span style={stepLabel(hasWork)}>What is it?</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.4rem' }}>
                   {TYPES.map((t) => (
@@ -870,17 +901,8 @@ export default function AppHomePage() {
                       key={t.value}
                       type="button"
                       onClick={() => setMode(t.value)}
-                      disabled={running}
-                      style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.65rem',
-                        letterSpacing: '.22em', textTransform: 'uppercase',
-                        padding: '.65rem .3rem',
-                        background: mode === t.value ? 'var(--amber)' : 'transparent',
-                        color: mode === t.value ? 'var(--black-band)' : 'var(--paper)',
-                        border: `1px solid ${mode === t.value ? 'var(--amber)' : 'var(--amber-l)'}`,
-                        cursor: 'pointer', borderRadius: 10,
-                        transition: 'all .15s',
-                      }}
+                      disabled={running || !hasWork}
+                      style={pill(mode === t.value, hasWork)}
                     >
                       {t.label}
                     </button>
@@ -895,7 +917,8 @@ export default function AppHomePage() {
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: '.64rem',
                   letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: 'var(--paper-dark)', marginBottom: '.5rem',
+                  color: hasWork ? 'var(--paper-dark)' : 'var(--border-dark)',
+                  marginBottom: '.5rem',
                 }}>Complete piece or excerpt?</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.4rem' }}>
                   {(
@@ -908,17 +931,8 @@ export default function AppHomePage() {
                       key={t.value}
                       type="button"
                       onClick={() => setSubmissionType(t.value)}
-                      disabled={running}
-                      style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '.65rem',
-                        letterSpacing: '.22em', textTransform: 'uppercase',
-                        padding: '.65rem .3rem',
-                        background: submissionType === t.value ? 'var(--amber)' : 'transparent',
-                        color: submissionType === t.value ? 'var(--black-band)' : 'var(--paper)',
-                        border: `1px solid ${submissionType === t.value ? 'var(--amber)' : 'var(--amber-l)'}`,
-                        cursor: 'pointer', borderRadius: 10,
-                        transition: 'all .15s',
-                      }}
+                      disabled={running || !hasWork}
+                      style={pill(submissionType === t.value, hasWork)}
                     >
                       {t.label}
                     </button>
@@ -942,12 +956,8 @@ export default function AppHomePage() {
 
               {/* Step 3 — where does it belong? */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', margin: '.6rem 0 -.2rem' }}>
-                <span style={badge(3)}>3</span>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.72rem',
-                  letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: 'var(--paper)', fontWeight: 500,
-                }}>Where does it belong?</span>
+                <span style={badge(3, hasWork)}>3</span>
+                <span style={stepLabel(hasWork)}>Where does it belong?</span>
               </div>
 
               {/* Step 3 — where does it belong? Grouping was the last thing
