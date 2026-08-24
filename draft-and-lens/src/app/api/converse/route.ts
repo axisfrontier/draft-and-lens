@@ -33,7 +33,7 @@ function isLensId(id: unknown): id is LensId {
  * copy can be rewritten without touching what the model is actually asked.
  */
 const ASK_AS_QUESTION: Record<Exclude<FragmentAsk, 'free'>, string> = {
-  craft: 'How is the writing itself holding up? Line-level craft only.',
+  craft: 'How is the writing itself working? Line-level craft only.',
   fit: 'Does this sit consistently with what you have already read of my work?',
   tradition: 'Does this read as authentic to the tradition I am working in?',
 };
