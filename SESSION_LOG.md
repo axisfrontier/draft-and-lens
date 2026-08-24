@@ -2208,3 +2208,124 @@ while `disabled` was already false, including COMPLETE PIECE, which is selected
 by default. The screenshot showed the truth: everything correct. This is the
 gotcha already recorded from 2026-08-23 — **screenshot to confirm pill state,
 never computed style.** It has now cost time twice.
+
+
+## REVIEW — the 35 lens self-recognition lines (2026-08-24)
+
+Read line by line against three things: does it sound like that voice, does it
+lean on worn language, and is it warm and editorial. Each was also checked
+against the file's own three-part rule — claim the work, decline to read it,
+return the writer to their own — and against the lens's descriptor in `meta.ts`.
+
+**These are live on production now**, so this is a review of copy already
+reaching writers, not of a draft.
+
+**Verdict: 29 of 35 read well and I have left them alone. Six are flagged
+below. But the most important finding is structural and affects the whole set,
+so it comes first.**
+
+---
+
+### THE STRUCTURAL FINDING — half the set ends on the same five words
+
+**17 of 35 lines close with the exact phrase "Show me yours."**
+
+    Show me yours          17
+    Bring me yours          6
+    …see yours              3
+    Let me see yours        2
+    everything else         1 each
+
+And 20 of 35 open with a variant of "This is mine" / "That's mine".
+
+Individually every one of these is fine. Together they are a template, and the
+template is visible precisely where it must not be: a writer who tries three or
+four lenses in a session — which is the intended behaviour, the grid invites
+it — meets the same sentence three or four times from three or four supposedly
+distinct minds. The product's whole claim about the lenses is that they are
+"each one a distinct way of seeing, not a tone setting on the same engine"
+(`/about`). Seventeen identical sign-offs quietly contradicts that claim in the
+one moment the writer is most likely to be comparing voices side by side.
+
+**The lines that escape the template are the best ones in the set** and show
+what the fix looks like — Wenders' "Show me where yours goes", Welles'
+"Flattering. Now show me yours", Leonard's "I'll tell you if it moves",
+Christie's "I do enjoy not knowing", Fey's "I've apologised for it".
+
+**Recommendation:** vary the closing formula across the set so no phrasing
+appears more than three or four times, taking each variant from that voice's
+own preoccupation rather than from a list. This is a bigger rewrite than the
+six flags below and it is Nenad's call whether it is worth it — the individual
+lines are not wrong, the aggregate is.
+
+---
+
+### FLAGGED — six lines, strongest first
+
+**1. `roth` (Eric Roth) — "This is mine. I have lived in it long enough. Let
+me see yours."**
+The weakest in the set. His descriptor is "The thing that cannot be said ·
+Missed connections · Last image first" and the line touches none of it. "I have
+lived in it long enough" would sit unchanged under a dozen other names. Every
+other line in the set is unmistakably its own voice; this one is a placeholder
+wearing a name. **Rewrite.**
+
+**2. `king` — "This is mine — I'd know it anywhere, warts and all. Now show me
+yours."**
+"Warts and all" is exactly the kind of worn idiom the reading itself teaches
+writers to cut. King's voice is plain-spoken, so an idiom is defensible in
+principle, but this one is threadbare and the product loses standing using it.
+**Replace the idiom, keep the line.**
+
+**3. `chekhov` — "…Bring me something of yours — that is the more interesting
+proposition."**
+"Proposition" is businesslike where Chekhov is warm. The formality of the
+translated register is right; that particular noun is not — it belongs to a
+negotiation, not to a doctor who liked people. **Change one word.**
+
+**4. `miyazaki` — "This is my own. I would rather see what you have made."**
+Nothing wrong with it and nothing of him in it. His descriptor is "Every frame
+a choice · The world breathes · Ma"; the line has no image and no weather.
+Tied with Morrison as the shortest in the set, but Morrison's brevity earns
+itself ("I would rather hear you" — *hear*, not read, which is the communal
+voice exactly). This one is just short. **Consider a rewrite.**
+
+**5. `carver` — "That's mine. I cut it to the bone years ago."**
+Weak flag. "Cut to the bone" is true to what happened to those stories, but it
+is also the single most predictable phrase available about Carver, and the
+first thing any writer would expect. Accurate, unsurprising. **Leave unless
+the set is being reworked anyway.**
+
+**6. `lucas` — "This is mine. The shape of it is already settled."**
+Weak flag. Gestures at mythological structure without landing on it; reads a
+little abstract beside its neighbours. **Leave unless reworking.**
+
+---
+
+### LEFT ALONE — the 29 that work, and the eight that are genuinely excellent
+
+Working, no notes: hemingway, oconnor, bukowski, coppola, spielberg, coens,
+villeneuve, scott, jeunet, tarantino, wachowski, sorkin, puzo, bruckheimer,
+feige, chandler, highsmith, leguin, morrison, ferrante, blume.
+
+Genuinely excellent, and worth protecting in any rewrite of the set:
+
+- **nabokov** — "I shall attend to it properly." The hauteur is perfect.
+- **welles** — "Flattering." One word doing all the characterisation.
+- **kaufman** — "…that one I haven't already failed at." Recursive
+  self-laceration; the only line that is funny and sad at once.
+- **simon** — "I know which institution eats him." Brutal, and exactly the
+  thesis of his work.
+- **fey** — "I'd know that joke anywhere; I've apologised for it."
+- **christie** — "I do enjoy not knowing."
+- **wenders** — "I know this road. I made it. Show me where yours goes."
+- **chandler** — "I'd know the smell of it in the dark."
+
+**Tarantino's line is the longest in the set at 26 words and that is correct** —
+the length performs the voice. It should not be trimmed for consistency.
+
+### One thing outside this review's scope, noticed while doing it
+
+`roth` resolves to **Eric Roth**, the screenwriter. A writer who picks "Roth"
+from a grid of novelists and screenwriters may well expect Philip Roth. Not a
+copy question and not mine to decide — flagging it for the lens directory.
