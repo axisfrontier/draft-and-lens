@@ -361,7 +361,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
       {isSignedIn === true && (
         <GoalList
           manuscriptId={params.manuscriptId}
-          heading="What you're working toward here"
+          heading="What you're working towards here"
           blurb="Set for this book only. I'll bear it in mind when reading anything filed under it — it doesn't change the standard the writing answers to, but I'll tell you what I can see against it."
         />
       )}

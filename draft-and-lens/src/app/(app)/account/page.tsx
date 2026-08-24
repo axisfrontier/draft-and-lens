@@ -257,7 +257,7 @@ export default function AccountPage() {
           that book's ledger, where the writer is looking at the book. */}
       {isSignedIn === true && (
         <GoalList
-          heading="What you're working toward"
+          heading="What you're working towards"
           blurb="Anything here I'll bear in mind as I read, whatever you send me. It doesn't change how I read the work — the tradition still decides that — but I'll tell you what I can see against it."
         />
       )}
