@@ -453,7 +453,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
               <div className="text-sm text-ink">Something this book must keep to</div>
               <div className="mt-1 text-xs text-ink-soft">
                 A <strong>rule</strong> applies everywhere — “magic always costs blood”, “Katherine is
-                never spelled Kathryn”. A <strong>state</strong> applies from a chapter onward.
+                never spelled Kathryn”. A <strong>state</strong> applies from a chapter onwards.
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -627,7 +627,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
                     >
                       <div className="text-ink-soft">
                         A <strong>rule</strong> applies everywhere in the book. A <strong>state</strong>{' '}
-                        applies from a chapter onward.
+                        applies from a chapter onwards.
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <button
