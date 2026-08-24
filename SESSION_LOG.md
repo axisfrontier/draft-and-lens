@@ -1743,9 +1743,14 @@ it has to make the consent informed by saying what actually changes.
 **Proposed, excerpt** — because best-in-class is suppressed there and the line
 must not promise it:
 
-> I'll question the ambition itself, not just how far you got with it. On an
-> excerpt I'll leave the comparison alone — that's a whole-work standard, and
-> an excerpt measured against a finished book isn't a fair reading.
+> I'll question the ambition itself, not just how far you got with it. What I
+> won't do on an excerpt is set it beside the strongest work in the tradition —
+> that's a whole-work standard, and a passage judged against a finished book
+> isn't a fair reading.
+
+(First draft of this line said "I'll leave the comparison alone" before the
+comparison had been introduced — it withdrew something the writer had not yet
+been told existed. Caught in the evaluation pass below.)
 
 Then, appended when the writer has live Mentor goals, the already-approved
 sentence: **"I'll bear in mind what you told me you were trying to do."**
@@ -1924,3 +1929,80 @@ own prose already, so this is a confirmation pass rather than a drafting one.
   placeholder are stale.
 - **The Interrogate goals sentence** — "I'll bear in mind what you told me you
   were trying to do", 2026-08-23, above.
+
+
+## STANDING EVALUATION RULE — run over 2026-08-24's work
+
+Run before marking anything done, per `DL_ONLY_ReadFirst.md`. Scope: the four
+copy commits and the two documentation entries above.
+
+### 1. Is this the best it can be?
+
+**The copy changes, yes.** All four are single-word or single-sentence
+corrections with a stated reason, and each was checked against the thing it
+claims to agree with rather than assumed: `converse` against the FragmentPanel
+option that sends it, the restored promise against `goals.ts` and
+`goal-progress.ts`, the ledger radios against the explainer directly above
+them.
+
+**One thing was not best-it-can-be and was fixed in the pass:** the excerpt
+form of the proposed Interrogate helper line withdrew a comparison it had never
+introduced. Rewritten above.
+
+### 2. Is anything missing?
+
+**Yes — one real finding, and it needs a ruling.**
+
+The `craft` ask was corrected because its prompt wording disagreed with the UI
+option that sends it. **The other two asks disagree in exactly the same way and
+were not touched**, because the ruling named `craft` only:
+
+| Ask | What the writer clicks | What the model is asked |
+|---|---|---|
+| `craft` | "how the writing itself **is working**" | "How is the writing itself **working**?" ✅ fixed |
+| `fit` | "Does this **fit with** what you've read of my work so far?" | "Does this **sit consistently with** what you have already read of my work?" |
+| `tradition` | "does this **sound** authentic to it?" | "Does this **read as** authentic to the tradition I am working in?" |
+
+This is genuinely Nenad's call and not a lookup, because the file's own comment
+argues the opposite: the two layers are kept apart *on purpose* so UI copy can
+be rewritten without touching prompt surface. The `craft` fix was commissioned
+as a hold-sweep leftover, not as a ruling on that principle.
+
+**The question: was `craft` a one-off, or should all three asks use the
+writer's own verb?** Fixing all three is ~10 minutes. Not done unilaterally.
+
+Two smaller gaps, both already noted above and neither blocking:
+- "spelled" vs "spelt" in the ledger lock explainer, still unruled.
+- Where an interrogated reading announces itself in the report — named as open
+  in section D of the proposal, and a prerequisite for the mode being usable.
+
+### 3. Is anything excessive?
+
+**No.** The restored promise takes the goals paragraph to six sentences, in
+range for that page (its neighbours run four to six), and it sits directly
+after "I won't reduce it to a score or a verdict" — two restraints together,
+which is where it reads most naturally.
+
+The inventory entry is long, but length is the point of an inventory; it exists
+so the next session does not re-derive 54 strings from source.
+
+### 4. Does it hold up against the product's own standard?
+
+- **A reading, not a rewrite** — untouched by any change today.
+- **Editor voice** — all four strings are first person, developmental, and none
+  describes the machinery. "Applies everywhere / Applies from chapter" are
+  control labels rather than editor speech, the same class as the stage labels
+  CLAUDE.md exempts.
+- **Tradition-first** — the restored sentence explicitly preserves it: "Your
+  goal never replaces the standard your work answers to."
+- **No fabrication** — the restored promise was verified true of the code
+  before the page was allowed to make it again. That is the rule working in the
+  right direction: the page now matches the product rather than the product
+  being bent to match the page.
+
+### Verification state
+
+`tsc` clean, `npm test` 239/239 across 23 files, `npm run build` ✓ Compiled
+successfully, IP bundle grep over `.next/static` returns exit 1 (no leak).
+`differentiator.test.ts` passes, which is the whole of brief item 5 — the
+method line cannot drift without that suite failing.
