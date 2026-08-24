@@ -57,7 +57,25 @@ Don't reorder without Nenad's explicit instruction.
 - *Lens-voice upload edge case.* Built. `src/ai/lens-authorship.ts`, the provenance gate (`provenanceHold`, `page.tsx`), and all 35 `LENS_SELF_RECOGNITION` lines are in production. The build-order paragraph directly above this queue already recorded it as Mentor Completeness stage 1; the queue entry had simply never been struck. **Its 35 self-recognition lines are unapproved copy that is already live** — that part is still open, and it is a copy approval, not a build item. Inventory in `SESSION_LOG.md`.
 - *Cross-submission pattern recognition (Depth spec, Part 1 Gap 2).* Built. The `writer_patterns` migration is applied and the table is live, `PATTERN_COPY` was approved 2026-08-21, and the callout renders in `ReportView`. `writer_patterns` is also in `exportUserData` now, contrary to an older `SESSION_LOG` note.
 
-**Interrogate mode is NOT in this queue and is not next by default.** Its UI proposal is written up in `SESSION_LOG.md` awaiting approval, and §21c best-in-class research — a hard prerequisite in Architecture v6 — has not started.
+## Two live states a session must know before touching either (2026-08-24)
+
+### 1. Interrogate mode — UI complete and live, analysis gated. DO NOT FLIP THE FLAG.
+
+The UI is built, deployed and verified on production: the "How should I read it?" sub-label row inside step 2, READ IT / PUSH HARDER, READ IT pre-selected. It is approved copy in an approved placement.
+
+**The analytical content is NOT built and must not appear to be.** Two of the four approved strings — the helper line under the pills, and "This is a Push harder reading." at the top of the report — are gated behind `INTERROGATE_ANALYSIS_LIVE` in `src/lib/interrogate.ts`, currently `false`.
+
+**Do not flip that flag.** Not to make the UI look finished, not to demo it, not because the strings are already written. It stays `false` until **§21c best-in-class research is done AND the analyst genuinely runs the interrogated read**. Flipping it early puts the product in breach of its own Architecture v6 law — *Mentoring and interrogation are never faked*: a reading that was not interrogated must never tell a writer that it was. A test in `tests/lib/interrogate.test.ts` fails if the flag is flipped, deliberately, so that whoever flips it has to read why it was shut.
+
+**Interrogate is still NOT in the active queue and is not next by default.** §21c has not started.
+
+### 2. Lens self-recognition lines — rewrites proposed, NOT approved, NOT deployed
+
+All 35 lines are live and unapproved. A review on 2026-08-24 found the problem is structural rather than per-line: **17 of the 35 close on the identical phrase "Show me yours."**, so a writer trying several lenses in one session meets the same sign-off from several supposedly distinct minds — which contradicts the claim `/about` makes for them.
+
+**21 rewrites are proposed in `SESSION_LOG.md`** (the 17, plus four flagged lines whose closing was the problem). Acknowledgement halves untouched; only the closings change.
+
+**Nothing has been changed in the codebase. Nenad approves before any of it is written or deployed.**
 
 ## Periodic audit — it has a clock now (2026-08-21)
 
