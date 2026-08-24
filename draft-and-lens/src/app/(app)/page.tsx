@@ -16,6 +16,15 @@ import type {
 } from '@/components/analysis/types';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '@/lib/limits';
 import {
+  INTERROGATE_ANALYSIS_LIVE,
+  READING_DEPTH_DEFAULT,
+  READING_DEPTH_PILLS,
+  READING_DEPTH_SUBLABEL,
+  interrogateHelperLine,
+  interrogateReportLine,
+  type ReadingDepth,
+} from '@/lib/interrogate';
+import {
   MAX_UPLOAD_BYTES,
   UPLOAD_ACCEPT,
   UPLOAD_FORMAT_HINT,
@@ -104,6 +113,21 @@ export default function AppHomePage() {
   // was a dead ANALYSE button on every first visit: nothing on screen said the
   // reading was waiting on this pill, so the button simply did not respond.
   const [submissionType, setSubmissionType] = useState<'complete' | 'excerpt' | null>('complete');
+  /**
+   * How the writer asked to be read (Architecture §21b).
+   *
+   * NEVER STICKY, and that is ruling 1 of 2026-08-23 rather than an accident:
+   * a toggle that survives a submission becomes a default by habit, and this
+   * mode may never be the default. It is reset the moment a reading starts,
+   * below — not on arrival back at the panel, which would leave it set for as
+   * long as a report is on screen.
+   */
+  const [depth, setDepth] = useState<ReadingDepth>(READING_DEPTH_DEFAULT);
+  /** What THIS reading was asked for — snapshotted at submission, so resetting
+   *  the control cannot retroactively change what the report says it is. */
+  const [submittedDepth, setSubmittedDepth] = useState<ReadingDepth>(READING_DEPTH_DEFAULT);
+  /** Whether the writer has live goals, for the helper's second sentence. */
+  const [hasGoals, setHasGoals] = useState(false);
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
@@ -464,6 +488,11 @@ export default function AppHomePage() {
     }
 
     setRunning(true);
+    // Ruling 1 (2026-08-23): the toggle resets on every submission and never
+    // persists. Snapshot first — the report line must describe what THIS
+    // reading was asked for, not what the control happens to say afterwards.
+    setSubmittedDepth(depth);
+    setDepth(READING_DEPTH_DEFAULT);
     setError('');
     setStreamed('');
     setReport('');
@@ -659,6 +688,27 @@ export default function AppHomePage() {
     letterSpacing: '.14em', textTransform: 'uppercase',
     color: active ? 'var(--paper)' : 'var(--paper-dark)', fontWeight: 500,
   });
+
+  /**
+   * Does this writer have live goals? Only the helper's second sentence needs
+   * it, and that sentence is gated, so the request is gated too: zero cost
+   * today, and correct the moment INTERROGATE_ANALYSIS_LIVE is flipped rather
+   * than a latent wrong-helper bug waiting on the flip.
+   */
+  useEffect(() => {
+    if (!INTERROGATE_ANALYSIS_LIVE || isSignedIn !== true) return;
+    let live = true;
+    fetch('/api/goals')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { goals?: unknown[] } | null) => {
+        if (live && d?.goals) setHasGoals(d.goals.length > 0);
+      })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [isSignedIn]);
+
+  /** Null in the ordinary case, so the panel stays quiet unless asked. */
+  const helperLine = interrogateHelperLine(depth, submissionType, hasGoals);
 
   const showUpload = report === '' && !running;
 
@@ -968,6 +1018,49 @@ export default function AppHomePage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* How should I read it? — Interrogate mode's control (§21b).
+                  A SUB-LABEL ROW, NOT A NUMBERED STEP, and that is the whole
+                  argument for where it sits: §21b requires opt-in and "never
+                  the unprompted default", and a step 4 would give it equal
+                  standing with "what is it?" — turning an invitation into a
+                  question the writer has to answer. It sits directly under
+                  "Complete piece or excerpt?" because the two interact: on an
+                  excerpt this mode runs with best-in-class suppressed, and
+                  adjacency is what makes that legible.
+
+                  The analysis behind it is NOT wired — see lib/interrogate.ts
+                  for why the helper line stays silent until it is. */}
+              <div style={{ borderRadius: 14, padding: '.15rem 1rem .5rem', margin: '0 -1rem' }}>
+                <div style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
+                  letterSpacing: '.14em', textTransform: 'uppercase',
+                  color: hasWork ? 'var(--paper)' : 'var(--paper-dark)',
+                  marginBottom: '.5rem',
+                }}>{READING_DEPTH_SUBLABEL}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.4rem' }}>
+                  {READING_DEPTH_PILLS.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      onClick={() => setDepth(d.value)}
+                      disabled={running || !hasWork}
+                      style={pill(depth === d.value, hasWork)}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+                {helperLine && (
+                  <p style={{
+                    fontFamily: 'var(--font-serif)', fontSize: '.78rem',
+                    lineHeight: 1.7, fontStyle: 'italic',
+                    color: 'var(--rule)', margin: '.5rem 0 0', maxWidth: 520,
+                  }}>
+                    {helperLine}
+                  </p>
+                )}
               </div>
 
               {/* Upload error */}
@@ -1439,6 +1532,7 @@ export default function AppHomePage() {
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}
           differentiator={differentiator || undefined}
+          interrogateLine={interrogateReportLine(submittedDepth) ?? undefined}
           goalNotes={goalNotes}
           goalPrompt={goalPrompt}
           nudge={nudge || undefined}
