@@ -1604,3 +1604,323 @@ page, ledger view, goal copy, continuity flags.
 - "onward" vs "onwards" in the two ledger lock explainers.
 - "spelled" vs "spelt" in the same explainer.
 - Prompt-level "holding up" in converse/route.ts (above).
+
+
+## SESSION 2026-08-24 — items 1–4 of the six-item brief, done
+
+### 1. The hold sweep, verified live — and one miss
+
+Loaded on production and read in full: `/how-it-works` (both tabs), `/about`,
+`/ledger`. Zero instances of hold / holds / holding / held in the rendered copy
+of any of them. The sweep landed.
+
+**But the sweep missed two strings on `/ledger/[manuscriptId]`,** which is a
+different route from `/ledger` and was not on the verify list. The two lock
+radio buttons still read "Holds everywhere" and "Holds from chapter" — sitting
+directly beneath the explainer `dab1de9` had already rewritten to "a rule
+*applies* everywhere… a state *applies* from a chapter". The card explained the
+choice in one verb and labelled it in another. Fixed at `57e5936` using the
+sweep's own replacement.
+
+**The remaining `hold`s in the codebase are all out of scope and should stay:**
+- prompt files (`analyst.ts`, `fragment.ts`, `tradition-depth.ts`, the lens
+  corpus, the report structures) — server-side IP, no writer reads them;
+- the glossary, where "a consistent register holds the reader" and "the
+  through-line that holds a story together" are the craft meaning of the word,
+  not the resentment sense the sweep was commissioned to remove;
+- developer-facing 400s in `api/ledger/[manuscriptId]/route.ts` — CLAUDE.md
+  exception 2;
+- code comments.
+
+### 2. `converse/route.ts` craft ask — `adb7e8a`
+
+"How is the writing itself holding up?" → "How is the writing itself working?"
+Now matches the FragmentPanel option that sends it ("Just tell me how the
+writing itself is working"). Nenad's ruling, 2026-08-24, resolving the item the
+previous session flagged as needing one.
+
+### 3. onward → onwards — `0ae8d27`
+
+Both writer-facing sites, `/ledger/[manuscriptId]` lines 456 and 630. Nenad's
+ruling, 2026-08-24.
+
+Three `onward`s remain in code comments (`api/ledger/[manuscriptId]/route.ts`,
+`lib/state-locks.ts`, `lib/continuity.ts`). Not writer-facing, left alone.
+
+**Still unruled: "spelled" vs "spelt"** in the same explainer — "Katherine is
+never spelled Kathryn". The brief did not cover it.
+
+### 4. The dropped promise, restored — `86ce39e`
+
+Added as the fourth sentence of the `/how-it-works` goals paragraph, Nenad's
+exact wording:
+
+> If a reading gives me nothing real to say about what you wanted, I'll say
+> nothing about it.
+
+Verified before writing it that the promise is still true of the code:
+`prompts/fragments/goals.ts:43–45` instructs "if this draft gives you nothing
+real to say about one of them, SAY NOTHING ABOUT IT", and `goal-progress.ts`
+independently drops any note whose evidence is not a real substring of the
+report. The page had stopped promising a restraint the product still practises.
+
+
+## PROPOSAL — Interrogate mode UI (2026-08-24) — AWAITING NENAD, NOT BUILT
+
+This is the proposal the brief required to be written down before any code.
+**Nothing here is built and nothing is deployed.** It covers the three things
+`APPROVED COPY — Interrogate mode helper line (2026-08-23)` left open:
+placement, pill copy, and the first helper sentence.
+
+Everything already decided stands unchanged and is not re-opened here: opt-in
+only (Architecture §21b), the toggle resets on every submission, ambition-fit
+always runs, best-in-class is suppressed on an excerpt, and the goals-aware
+second sentence is "I'll bear in mind what you told me you were trying to do."
+
+### A. Placement — a sub-label row inside step 2
+
+The submission panel is three numbered steps: **1 Your work** (paste/upload),
+**2 What is it?** (four type pills, then the sub-label "Complete piece or
+excerpt?" with two more pills), **3 Where does it belong?** (grouping pills,
+inline since `850a228`). `src/app/(app)/page.tsx`, lines ~790 / ~922 / ~990.
+
+**Proposed: a third row inside step 2, directly beneath "Complete piece or
+excerpt?", built exactly like it** — a mono sub-label one rank below the step
+headings, then a two-pill grid. Sub-label: **HOW SHOULD I READ IT?**
+
+Why there, in order of weight:
+
+1. **It must not be a numbered step.** §21b is explicit that Interrogate is
+   opt-in and never the unprompted default. A step 4 gives it equal standing
+   with "what is it?" and turns an invitation into a question the writer has to
+   answer. The sub-label rank is the visual grammar of "optional" that this
+   panel already has.
+2. **It is the same class of question as complete/excerpt.** That control is
+   also half about the work and half about how to read it — an excerpt already
+   suppresses whole-work judgements. Interrogate has exactly that character.
+3. **The two controls interact, so they should be adjacent.** The 2026-08-23
+   ruling is that on an excerpt the mode runs with best-in-class suppressed.
+   Putting the two rows together means the writer can see both choices at once
+   and the suppression is legible rather than mysterious.
+4. **Not next to ANALYSE.** A last-second setting above the submit button gets
+   clicked by reflex, and there is no room there for a helper line — and the
+   helper line is what makes the consent informed.
+
+Same enable/disable rule as the rest of step 2: inert until `hasWork`, using
+the `pill()` helper and the `--paper` / `--paper-dark` pair the sub-label above
+it already uses.
+
+### B. Pill copy — READ IT / PUSH HARDER, as proposed
+
+    HOW SHOULD I READ IT?
+    [ Read it ]   [ Push harder ]
+
+**"Read it" is pre-selected.** That is the default reading and it must look
+chosen, not blank — `submissionType` already sets the precedent by defaulting
+to `complete`. A writer who ignores this row gets exactly what they get today.
+
+"Push harder" is the writer's own phrase for what they are asking for, which
+keeps it an instruction to the editor rather than a product feature name. It
+also matches the internal name in Architecture §21b, so the code and the
+control agree.
+
+**Reset:** clear alongside the other per-submission state at
+`page.tsx:~470`, where `setProvenanceHold('')` and the rest already reset —
+that is what makes ruling 1 (never persists) fall out of the existing shape
+rather than needing its own mechanism.
+
+### C. The helper line — first sentence
+
+Appears **only when "Push harder" is selected**; "Read it" shows nothing, so
+the panel stays quiet in the default case. Editor's voice, developmental, and
+it has to make the consent informed by saying what actually changes.
+
+**Proposed, complete piece:**
+
+> I'll question the ambition itself, not just how far you got with it, and show
+> you what the strongest work in this tradition reaches for.
+
+**Proposed, excerpt** — because best-in-class is suppressed there and the line
+must not promise it:
+
+> I'll question the ambition itself, not just how far you got with it. On an
+> excerpt I'll leave the comparison alone — that's a whole-work standard, and
+> an excerpt measured against a finished book isn't a fair reading.
+
+Then, appended when the writer has live Mentor goals, the already-approved
+sentence: **"I'll bear in mind what you told me you were trying to do."**
+
+Two alternates for the first sentence if the above is too long:
+- "I'll ask whether the thing you're attempting was worth attempting, and show
+  you the standard the strongest work in this tradition reaches."
+- "I'll take the question the reading normally leaves alone — whether the
+  ambition was the right one — and show you what this tradition can do."
+
+### D. Not proposed here, and still open
+
+- **Where the opt-in shows up in the report.** The reading has to be visibly
+  the interrogated one, or the writer cannot tell the mode did anything.
+- **§21c best-in-class research is a hard prerequisite** and is not done. The
+  architecture is explicit that Interrogate done badly "curdles into
+  external-rubric imposition — the very thing Draft & Lens exists to avoid".
+  The UI can be approved before that research; the mode cannot ship without it.
+
+
+## INVENTORY — every unapproved writer-facing string (2026-08-24)
+
+Counted from source on 2026-08-24, not from the previous session's estimate.
+**The real total is 54, not ~45** — the FragmentPanel group is 12 strings, not
+the ~8 the resume note guessed. Two things previously listed as unapproved have
+since been approved and are recorded at the bottom so they are not re-litigated.
+
+Category A is copy the code itself marks `PLACEHOLDER`. Category B is copy with
+no approval record either way — never marked placeholder, never signed off.
+
+---
+
+### CATEGORY A — marked PLACEHOLDER in the source (54 strings)
+
+#### A1. Lens self-recognition — 35 lines
+`src/prompts/lenses/self-recognition.ts` — one per lens, `LENS_SELF_RECOGNITION`.
+
+What a lens says when handed its own author's published prose. Each does the
+same three things in that voice's register: claims the work, declines to read
+it, asks for the writer's own. Deliberately short.
+
+    hemingway    This one is mine. It was true when I wrote it. Show me yours.
+    carver       That's mine. I cut it to the bone years ago. I'd rather see yours.
+    chekhov      You have handed me my own pages. Bring me something of yours — that is the more interesting proposition.
+    oconnor      This is my own, and I know precisely where the violence lands. Show me yours instead.
+    bukowski     This one's mine. I know what it cost me. Go on — give me something you wrote.
+    nabokov      I recognise the sentence; I made it, and rather carefully. Bring me one of yours and I shall attend to it properly.
+    coppola      This is mine. I have argued with it for years. Let me see yours.
+    wenders      I know this road. I made it. Show me where yours goes.
+    spielberg    This one's mine — I know every beat before it lands. I'd much rather see what you've made.
+    coens        That's ours. We know how it ends, and it isn't well. Bring us yours.
+    villeneuve   This is mine. I already know its silences. Show me yours.
+    scott        I built this world. Show me yours — that's the one I haven't seen.
+    welles       You have handed me my own work. Flattering. Now show me yours.
+    jeunet       This is mine — I remember every small object in it. Bring me yours.
+    tarantino    That's mine. I wrote every word of it and I could talk about it all day, which is exactly why you should show me yours instead.
+    wachowski    This is ours. We already know what it's asking. Show us yours.
+    sorkin       That's mine. I know what everyone says next and I know why. Let's look at yours.
+    puzo         This is mine. I know what it cost the family. Show me what you've written.
+    roth         This is mine. I have lived in it long enough. Let me see yours.
+    bruckheimer  That's mine — I know what it opened to. Show me yours.
+    feige        That one's ours. I know exactly where it fits. Show me yours.
+    lucas        This is mine. The shape of it is already settled. Show me yours instead.
+    king         This is mine — I'd know it anywhere, warts and all. Now show me yours.
+    fey          That's mine. I'd know that joke anywhere; I've apologised for it. Show me yours.
+    miyazaki     This is my own. I would rather see what you have made.
+    kaufman      This is mine, which is a strange thing to be handed by someone else. Show me yours instead — that one I haven't already failed at.
+    simon        That's mine. I know which institution eats him. Show me yours.
+    chandler     This is mine. I'd know the smell of it in the dark. Bring me yours.
+    leonard      That's mine. Show me yours — I'll tell you if it moves.
+    highsmith    This is mine. I know exactly what he does next, and I don't forgive him for it. Show me yours.
+    leguin       These are my own words. Bring me yours; that is the better book to be reading.
+    christie     This is mine, and I know who did it. Show me yours — I do enjoy not knowing.
+    morrison     This is my own. I would rather hear you.
+    ferrante     This is mine. Show me yours — I want to hear how you say it.
+    blume        This one's mine. I'd much rather read yours — tell me what you're working on.
+
+**Coverage is complete and enforced.** `LENS_SELF_RECOGNITION` is typed
+`Record<LensId, string>`, and `LENS_IDS` in `prompts/lenses/types.ts` has
+exactly 35 entries — so `tsc` fails if a lens is ever added without a line.
+
+**Correction to a doc, not to this list:** `DL_ONLY_ReadFirst.md` says "the 36
+lens voices". The code has 35, in `LENS_IDS`, `prompts.ts` and `meta.ts` alike.
+The 36 is stale. Not amended here because that file is Nenad's.
+
+#### A2. Trajectory trend notes — 3 lines
+`src/lib/writer-patterns.ts`, `TREND_NOTES` (line ~373). Sits italic beneath a
+named pattern in the report.
+
+    improving   It hasn't turned up in your last couple of pieces, though — whatever you're doing about it is working.
+    stable      It hasn't shifted much: it is turning up about as often as it was.
+    worsening   It has been in each of your recent pieces — more consistently than it used to be.
+
+#### A3. Mentor-horizon nudge — 1 line
+`src/lib/nudges.ts`, `MENTOR_HORIZON` (line ~94). Quoted verbatim from the
+Mentor Completeness spec; fires on the second reading.
+
+    The more you send me, the more I'll have to say about where you're going rather than where you are.
+
+#### A4. Fragment prompt copy, server-side — 2 strings
+`src/prompts/fragment.ts` lines 29 and 33.
+
+    FRAGMENT_REDIRECT_COPY
+      That one needs the whole piece in front of me — reading it properly means
+      reading the chapter with this in place, not guessing from the passage.
+      Paste me the chapter with it in and I'll read it properly.
+
+    FRAGMENT_ASK_TRADITION_COPY
+      Tell me what tradition you're working in and I'll answer that properly.
+      I won't guess it from a passage this size — getting that wrong would bend
+      everything else I said.
+
+#### A5. Fragment short-input refusal — 1 string
+`src/app/api/analyse/route.ts` line ~163. The 400 a writer sees under
+`FULL_READING_MIN_WORDS`, and the door into fragment mode.
+
+    That's shorter than I can give a full reading to — a reading needs enough on
+    the page to have something to be true about. Ask me about it directly
+    instead and I'll tell you what I see.
+
+#### A6. FragmentPanel UI — 12 strings
+`src/components/fragment/FragmentPanel.tsx`. More than the ~8 previously
+estimated.
+
+     189  Just have a passage and a question?           (the entry link)
+     243  Paste the passage…                            (textarea placeholder)
+     263  Tell me what you'd like me to do with this.
+     267  Just tell me how the writing itself is working.
+     276  Does this fit with what you've read of my work so far?
+     282  Once I've read something of yours.            (why "fit" is disabled)
+     289  I'm writing something in [ ] — does this sound authentic to it?
+     294  which tradition?                              (inline placeholder)
+     322  Or ask me something else…                     (free-ask placeholder)
+     339  Reading it…
+     363  Start again with the full piece / Ask about another passage
+     382  Nothing here is saved — this exchange disappears when you close it.
+
+Plus the error string, repeated at lines 134, 164 and 171 — one string, three
+call sites, counted once within the twelve:
+
+    Something went wrong — try me again.
+
+**Voice note:** lines 267 / 276 / 289 are CLAUDE.md's deliberate exception 3 —
+written in the WRITER's first person because the writer is choosing them.
+Approve them as writer-voice; do not convert them to the editor's voice.
+
+---
+
+### CATEGORY B — no approval record either way
+
+Never marked placeholder, never signed off. Larger than A and mostly Nenad's
+own prose already, so this is a confirmation pass rather than a drafting one.
+
+- `/how-it-works`, both tabs — `src/app/(app)/how-it-works/page.tsx`. Heavily
+  worked over 2026-08-21/23/24 and much of it is his own wording, but there is
+  no line in this log saying "approved as it stands".
+- The account page — `src/app/(app)/account/`.
+- The ledger, index and detail — `/ledger` and `/ledger/[manuscriptId]`,
+  including the lock explainers this session touched.
+- Writer-goal copy — `src/lib/writer-goals.ts` and the goal surfaces in
+  `page.tsx` / `ReportView.tsx`. (The goal *notes* themselves are model-written
+  per reading, so there is no fixed string to approve.)
+- Continuity flag copy — `src/lib/continuity-flags.ts` and the flag UI.
+
+---
+
+### ALREADY APPROVED — do not re-open
+
+- **`PATTERN_COPY`, all seven lines** — Nenad, 2026-08-21. Marked in
+  `writer-patterns.ts:312`. Earlier log entries at lines 1021 and 1095 calling
+  these unapproved are stale and defer to the code.
+- **The two shipped nudges** (`nudge_revision_memory`, `nudge_keep_sending`)
+  — Nenad, 2026-08-21, `nudges.ts:51/57/64`.
+- **The differentiator method line** — final and pinned exactly by
+  `tests/lib/differentiator.test.ts` at `65d6a73`. Earlier entries calling it
+  placeholder are stale.
+- **The Interrogate goals sentence** — "I'll bear in mind what you told me you
+  were trying to do", 2026-08-23, above.
