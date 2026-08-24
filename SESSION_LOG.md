@@ -2053,3 +2053,84 @@ Same class as the onward/onwards decision, both on `/ledger/[manuscriptId]`:
    reads "it only stops it counting towards what this book has established".
    `6e32d15` swept "toward" out of the reading's inherited phrasings; this
    heading was not in that sweep's scope.
+
+
+## 2026-08-24, second deploy — the two British-English fixes
+
+`9f358c9` spelt, `b02414d` towards, `50dfd2c` audit-date correction. Build ✓,
+239/239, IP grep exit 1, pushed, hook fired (`sPaN93zDS69xZCUZkBhe`).
+
+**Verified live on production** via `javascript_tool` reading `innerText`:
+- lock card: "Katherine is never **spelt** Kathryn" · "applies from a chapter
+  onwards" · radios "Applies everywhere" / "Applies from chapter";
+- `/ledger/[id]`: "WHAT YOU'RE WORKING **TOWARDS** HERE", zero `toward` without
+  the s on the page;
+- `/account`: "WHAT YOU'RE WORKING **TOWARDS**", zero `toward`, zero `hold`.
+
+**The heading existed twice.** `GoalList` renders in two places — per-book in
+the ledger and writer-level in the account area — and the ruling named only the
+one Nenad had seen. Both changed, because fixing one would have swapped a
+within-page inconsistency for a between-page one.
+
+Out of scope and correctly left: `spelled` in a `detection-gates.ts` comment
+and in the Katherine/Kathryn example in `prompts/detection.ts` (prompt surface);
+`toward` in comments, `moderation.ts`, and the lens/report prompts.
+
+---
+
+## STATE OF PLAY before Interrogate and the UI exploration
+
+Checked against source and the live site rather than carried forward from
+notes. **Three of the items the governing docs list as outstanding are
+already done.**
+
+### Stale in `DL_ONLY_ReadFirst.md` — its "Active queue" is two items out of date
+
+1. **"Lens-voice upload edge case — ACTIVE, approach to be agreed before
+   code"** — this is BUILT and live. `src/ai/lens-authorship.ts`, the
+   provenance gate (`provenanceHold`, `page.tsx:509–515`), and all 35
+   `LENS_SELF_RECOGNITION` lines are in production. The same file's build-order
+   paragraph above the queue already says so ("lens self-recognition … stage
+   1"). The queue entry contradicts it.
+2. **"Cross-submission pattern recognition — needs a `writer_patterns`
+   migration Nenad applies by hand"** — also shipped. The table is live (the
+   2026-08-23 test account carried a `writer_patterns` row), `PATTERN_COPY` was
+   approved 2026-08-21, and the callout renders in `ReportView`.
+3. **Only queue item 3 — the Noel-driven UI exploration — is genuinely not
+   started.**
+
+**Not amended, because that file is Nenad's.** Offered rather than edited.
+
+### Also closed, contrary to an older note here
+
+`writer_patterns` **is** in `exportUserData` now (`lib/readings.ts`, alongside
+`user_milestones`). The 2026-08-22 entry calling it absent is stale.
+
+### Genuinely outstanding before Interrogate is built
+
+1. **The UI proposal above needs approval** — placement, pills, helper line.
+2. **§21c best-in-class research is a hard prerequisite and is not started.**
+   Architecture v6: define best-in-class *per tradition* from a craft-and-
+   success angle, never a generic rubric. Its own stated risk is that
+   Interrogate "curdles into external-rubric imposition — the very thing Draft
+   & Lens exists to avoid". The UI can be approved before this; the mode cannot
+   ship without it.
+3. **How an interrogated reading announces itself in the report** — undesigned.
+   Without it the writer cannot tell the opt-in did anything.
+4. **`AUDIT_CHECKLIST.md`, trigger 1** — Interrogate is a major new feature, so
+   the checklist is due before it. Judgement call for Nenad: the last run was
+   2026-08-22 and only copy has landed since, so a full re-run may be
+   unnecessary. Recording the decision either way is not optional.
+
+### Outstanding but not blocking either piece of work
+
+- **The 54 placeholder strings** in the inventory above. Worth knowing that the
+  35 lens self-recognition lines are **already live in production**, so
+  unapproved copy is reaching writers today. Nothing else in category A is.
+- **The signed-in half of Mentor stages 3 and 4** has still never been walked
+  in a browser. `/account` was loaded signed-in today and its goal panel
+  renders, which is a fragment of stage 3 — not the check.
+- **Title-pill letter-spacing** eased .22em → .08em alongside the case change
+  (`c7b4047`); his ruling named case only.
+- **The satire gate fix** is unit-tested and deployed but never exercised by a
+  live satire submission.
