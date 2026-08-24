@@ -81,3 +81,24 @@ Append a line every time this checklist is run, whatever it found. The gap betwe
 |---|---|---|
 | 2026-08-18 | first run, before the detection build | Real defects on its first outing: two dead brain modules never executed, `detachReading`/`listLocks`/`traceMark` dead, corpus filename lagging its content. |
 | 2026-08-22 | feature boundary — large day of shipping (goals, panel rebuild, bible move, frame work) | 9 findings, **all 9 actioned same day** in 7 verified commits. 3 dead-code items from 18 Aug finally deleted; 3 more dead modules found and deleted incl. `runLens`/`runConversation`, which the routes bypass entirely; partial-read handling removed as unreachable (Nenad's ruling, cap stays 4,000); skeleton caught up with the prompt; nested CLAUDE.md corrected; IP-guard tautology replaced with a visible skip. Dead-brains finding from 17 Aug confirmed RESOLVED. Live smoke test after the payload change: reading completed, no `coverage` key stored. |
+
+### Deferrals — decisions NOT to run, and why
+
+These are deliberately kept out of the table above. **A deferral is not a run
+and does not reset the clock**: the three-week trigger still counts from the
+last dated row in the run log, never from a line here. Recording them anyway,
+because a trigger that fires and is waved through without a record is
+indistinguishable from a trigger nobody noticed.
+
+- **2026-08-24 — trigger 1 (before a major new feature: Interrogate mode) —
+  DEFERRED by Nenad.** Everything that has landed since the 2026-08-22 run is
+  writer-facing copy: `adb7e8a`, `0ae8d27`, `86ce39e`, `57e5936`, `0d1a112`,
+  `9f358c9`, `b02414d` — seven commits, all single words or single sentences,
+  no logic, no new modules, no schema. `tsc` clean and 239/239 tests green
+  throughout, and the IP bundle grep returned exit 1 on each build. There is no
+  new surface for the checklist to find drift in.
+  **Standing on this deferral:** it covers this feature boundary only. When
+  Interrogate is actually built — and especially once §21c best-in-class
+  research lands and brings real code with it — trigger 1 fires again and is
+  not covered by this line. Next clock check is due 2026-09-12 (three weeks
+  from 2026-08-22) regardless.
