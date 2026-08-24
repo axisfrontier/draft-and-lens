@@ -2006,3 +2006,50 @@ so the next session does not re-derive 54 strings from source.
 successfully, IP bundle grep over `.next/static` returns exit 1 (no leak).
 `differentiator.test.ts` passes, which is the whole of brief item 5 — the
 method line cannot drift without that suite failing.
+
+
+## DEPLOYED AND VERIFIED LIVE — 2026-08-24
+
+Eight commits, `6a94d86..ab10312` plus `0d1a112`. `tsc` clean, 239/239 tests,
+`✓ Compiled successfully`, IP bundle grep over `.next/static` exit 1. Pushed,
+deploy hook fired (job `NaIOdSplL1B8sXOifvpz`), verified on production.
+
+    adb7e8a  copy(converse)     craft ask: holding up → working
+    0ae8d27  copy(ledger)       onward → onwards, both explainers
+    86ce39e  copy(how-it-works) the dropped promise restored
+    57e5936  copy(ledger)       the two lock radios the sweep missed
+    27ee41d  docs               day's record, Interrogate proposal, inventory
+    58e7e77  docs               standing evaluation rule
+    0d1a112  copy(converse)     fit and tradition asks aligned too
+    ab10312  assets             compressed Lucas portrait
+
+### What was checked on the live site, and how
+
+`/how-it-works` both tabs, `/about`, `/ledger`, `/ledger/[id]` — all read in
+full through the Chrome extension.
+
+- **The restored promise is on the page**, in the goals paragraph, fourth
+  sentence, exactly as ruled.
+- **The lock card reads "A state applies from a chapter onwards"** and its two
+  radios now read **"Applies everywhere" / "Applies from chapter"**.
+- **Zero `hold` / `holds` / `holding` / `held`** in the rendered text of any of
+  the four pages. Zero `onward` without the s.
+
+**Gotcha, for the next session: `curl` cannot verify a deploy on this site.**
+The beta gate returns 307 to every unauthenticated request, so a poll loop
+waiting on page content never terminates. Verify through the extension, which
+carries the session. And **`Page.captureScreenshot` timed out repeatedly** on
+the ledger detail route while React was settling — `javascript_tool` reading
+`innerText` was reliable where screenshots and `find` were not.
+
+### Two new copy inconsistencies found while verifying — both unruled
+
+Same class as the onward/onwards decision, both on `/ledger/[manuscriptId]`:
+
+1. **"spelled" vs "spelt"** — "Katherine is never spelled Kathryn", in the lock
+   explainer. Carried over from the previous session's list, still open.
+2. **"toward" vs "towards", on the same page, four paragraphs apart** — the
+   goal heading reads "WHAT YOU'RE WORKING TOWARD HERE" while the chapter note
+   reads "it only stops it counting towards what this book has established".
+   `6e32d15` swept "toward" out of the reading's inherited phrasings; this
+   heading was not in that sweep's scope.
