@@ -494,7 +494,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
                     checked={draft.lockKind === 'rule'}
                     onChange={() => setDraft({ ...draft, lockKind: 'rule' })}
                   />
-                  Holds everywhere
+                  Applies everywhere
                 </label>
                 <label className="flex items-center gap-1">
                   <input
@@ -502,7 +502,7 @@ export default function LedgerDetailPage({ params }: { params: { manuscriptId: s
                     checked={draft.lockKind === 'state'}
                     onChange={() => setDraft({ ...draft, lockKind: 'state' })}
                   />
-                  Holds from chapter
+                  Applies from chapter
                 </label>
                 {draft.lockKind === 'state' && (
                   <input
