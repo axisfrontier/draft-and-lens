@@ -2386,3 +2386,129 @@ Nenad and recorded in `AUDIT_CHECKLIST.md` as a deferral, not a run. Next clock
 check due **2026-09-12**.
 
 ### No blockers. Nothing is half-finished in the working tree.
+
+
+## PROPOSAL — lens closing lines, 21 rewrites (2026-08-24) — AWAITING NENAD
+
+**NOTHING HAS BEEN CHANGED IN THE CODEBASE. All 35 lines are live exactly as
+they were.** This is the proposal only, per instruction.
+
+Scope: the 17 lines built on "Show me yours", plus the four flagged lines whose
+closing was the problem (`carver`, `chekhov`, `miyazaki`, `roth`). 21 in total.
+`king` and `lucas` were flagged and are already inside the 17.
+
+**Only the closing changes.** The acknowledgement — what the lens says about
+the work being its own — is untouched in every one of the 21, as instructed.
+The two places where that rule collides with a flag are called out separately
+at the bottom rather than resolved quietly.
+
+### The test each rewrite had to pass
+
+Not "is it different" but **would this sentence be impossible in any other
+lens's mouth**. Each closing is taken from that voice's own preoccupation in
+`meta.ts`, and each still does the third job the file requires: return the
+writer to their own work.
+
+I also checked the rewrites against *each other*. The first draft solved the
+"Show me yours" template by producing a "Bring me yours" template — ten of
+them. That is the same failure with a new phrase, so the set was rebalanced:
+no opening formula now appears more than four times, and every tail is unique.
+
+---
+
+### THE 17
+
+| lens | proposed line (closing in bold) |
+|---|---|
+| **hemingway** | This one is mine. It was true when I wrote it. **Give me a true one of yours.** |
+| **oconnor** | This is my own, and I know precisely where the violence lands. **Bring me yours — I don't yet know where it lands.** |
+| **villeneuve** | This is mine. I already know its silences. **Let me hear yours.** |
+| **scott** | I built this world. **Take me into yours — that's the one I haven't seen.** |
+| **welles** | You have handed me my own work. Flattering. **Now yours — and I shall decide how much of it to believe.** |
+| **tarantino** | That's mine. I wrote every word of it and I could talk about it all day, **which is exactly why you should hand me yours and let me talk about that instead.** |
+| **bruckheimer** | That's mine — I know what it opened to. **Give me your first ten minutes.** |
+| **feige** | That one's ours. I know exactly where it fits. **Yours now — I don't know yet what it sets up.** |
+| **lucas** | This is mine. The shape of it is already settled. **Send me yours, while its shape can still move.** |
+| **king** | This is mine — I'd know it anywhere, warts and all. **Now yours — who's in it?** |
+| **fey** | That's mine. I'd know that joke anywhere; I've apologised for it. **Now yours — I haven't had to apologise for that one yet.** |
+| **kaufman** | This is mine, which is a strange thing to be handed by someone else. **Give me yours instead — that one I haven't already failed at.** |
+| **simon** | That's mine. I know which institution eats him. **Yours now — tell me what it's up against.** |
+| **leonard** | That's mine. **Put yours down in front of me — I'll tell you if it moves.** |
+| **highsmith** | This is mine. I know exactly what he does next, and I don't forgive him for it. **Find me someone new to not forgive.** |
+| **christie** | This is mine, and I know who did it. **Yours next — I do enjoy not knowing.** |
+| **ferrante** | This is mine. **Now yours — I want to hear how you say it.** |
+
+**Why each closing belongs to that voice and no other:**
+
+- **hemingway** — picks "true" up out of his own acknowledgement and turns it into the ask. His one rule, used as an invitation.
+- **oconnor** — the acknowledgement claims certainty about where violence lands; the closing gives that certainty up. Grace arrives through not knowing.
+- **villeneuve** — "hear" against "silences". Ten words, which is his whole method.
+- **scott** — world before story, so the ask is spatial. You enter a Scott film before you follow it.
+- **welles** — the unreliable narrator, pointed at the writer. Vain, delighted, and not promising to take it at face value.
+- **tarantino** — kept long on purpose. The run-on *is* the characterisation, and "let me talk about that instead" is the joke landing on himself.
+- **bruckheimer** — his actual doctrine as the ask. A producer asking for the opening reel is asking the only question he asks.
+- **feige** — long-game planting: he can't want the piece, he wants what it plants.
+- **lucas** — turns "settled" into the reason to send yours now. Fixes the flag: the middle sentence now pays off instead of hanging.
+- **king** — character first. Four words, and it's the only question he ever asks first.
+- **fey** — the tail was already the best thing in the line; it now extends the joke instead of stopping for a formula.
+- **kaufman** — the excellent tail is preserved untouched. Only the four dead words in front of it change.
+- **simon** — institutions and the people trapped in them: not "what is it about" but "what is it up against".
+- **leonard** — tail preserved. "Put yours down in front of me" is plainer than "show", which is the whole Leonard rule.
+- **highsmith** — the strongest of the 17. "Understand, don't forgive" turned into an appetite.
+- **christie** — tail preserved; "Yours next" carries the serial-detective rhythm.
+- **ferrante** — tail preserved. "How you say it" is the voice-as-body claim.
+
+### THE FOUR FLAGGED WHOSE CLOSING WAS THE PROBLEM
+
+| lens | proposed line (closing in bold) |
+|---|---|
+| **carver** | That's mine. I cut it to the bone years ago. **I'd rather see what you haven't cut yet.** |
+| **chekhov** | You have handed me my own pages. Bring me something of yours — **that is the one I should like to read.** |
+| **miyazaki** | This is my own. **Let me see yours instead, with the quiet parts left in.** |
+| **roth** | This is mine. I have lived in it long enough. **Send me yours — tell me what it can't quite say.** |
+
+- **carver** — the flag was that "cut it to the bone" is the most predictable phrase available about Carver. The acknowledgement is untouched as instructed, but the closing now earns it: the cliché becomes the setup for a real editorial ask.
+- **chekhov** — "proposition" gone. "The one I should like to read" keeps the formal translated register without the boardroom noun.
+- **miyazaki** — was the most anonymous line in the set. "The quiet parts left in" is *ma*, and it is an instruction only he would give.
+- **roth** — the worst line in the set, and the closing now does the work his descriptor promises: *the thing that cannot be said*.
+
+---
+
+### TWO PLACES WHERE "CLOSING ONLY" COLLIDES WITH A FLAG — Nenad decides
+
+Both were flagged for something sitting in the acknowledgement half, which the
+instruction says not to touch. Proposed closings above leave them alone. The
+alternatives below are offered, not applied.
+
+**1. `king` — "warts and all".** The flag was on that idiom, and it is in the
+acknowledgement. Optional, if he wants it gone:
+
+> This is mine — I'd know it anywhere, **every bad sentence in it**. Now yours — who's in it?
+
+**2. `roth` — the real weakness is the middle, not the closing.** "I have lived
+in it long enough" would sit unchanged under a dozen other names. The new
+closing carries the line, but the acknowledgement is still the generic half.
+Optional:
+
+> This is mine. **I know what it never quite manages to say.** Send me yours — tell me what it can't quite say.
+
+*(That variant repeats "say" deliberately — his subject twice, once as
+confession and once as invitation. If the echo reads as a slip rather than a
+rhyme, the first version stands.)*
+
+---
+
+### NOT TOUCHED
+
+The 14 lines that were neither flagged nor built on "Show me yours" stay
+exactly as they are: `bukowski`, `nabokov`, `coppola`, `wenders`, `spielberg`,
+`coens`, `jeunet`, `wachowski`, `sorkin`, `puzo`, `chandler`, `leguin`,
+`morrison`, `blume`. Several are the best in the set and the review already
+named them as worth protecting.
+
+### AFTER APPROVAL
+
+One commit, `src/prompts/lenses/self-recognition.ts` only, plus an extension to
+`tests/prompts/lens-self-recognition.test.ts` pinning that no closing formula
+appears more than four times — so the template cannot creep back silently.
+**Not deploying without approval.**
