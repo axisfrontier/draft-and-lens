@@ -2329,3 +2329,60 @@ the length performs the voice. It should not be trimmed for consistency.
 `roth` resolves to **Eric Roth**, the screenwriter. A writer who picks "Roth"
 from a grid of novelists and screenwriters may well expect Philip Roth. Not a
 copy question and not mine to decide — flagging it for the lens directory.
+
+
+## RESUME NOTE — 2026-08-24, usage-limit checkpoint
+
+**Tomorrow's first session is Codex-Maths.** D&L state as of this note:
+
+### Everything committed is pushed and deployed. Working tree clean.
+
+Today, in order: four copy fixes and the ask alignment (`adb7e8a`, `0ae8d27`,
+`86ce39e`, `57e5936`, `0d1a112`), the compressed Lucas portrait (`ab10312`),
+two British-English fixes (`9f358c9`, `b02414d`), doc corrections (`50dfd2c`
+audit date, `a38fd2e` queue trim, `58cf620` audit deferral), and the
+**Interrogate mode UI (`76e74ea`) — built, deployed, verified live by
+screenshot.** All verified on production. `tsc` clean, 248/248 tests, build
+compiled, IP grep exit 1 on every build.
+
+### DONE of tonight's four-item brief
+
+1. **Interrogate UI — done and verified live.** See the entry above. One
+   deviation, stated in full there: two of the four approved strings ship
+   gated behind `INTERROGATE_ANALYSIS_LIVE` in `src/lib/interrogate.ts`,
+   because Architecture v6's Law that interrogation is never faked forbids a
+   reading claiming to be interrogated when it was not. **One-word change if
+   Nenad disagrees.**
+2. **The 35 lens lines — reviewed, six flagged, one structural finding.** See
+   the entry above. Nothing was edited; all 35 are still exactly as they were.
+
+### NOT DONE — pick up here
+
+3. **Standing evaluation rule over tonight's build.** Not run. The earlier run
+   in this file covers only the daytime copy work, not the Interrogate UI or
+   the lens review.
+4. **Full handover note.** This note is the compressed version; the fuller one
+   asked for was not written.
+
+### What Nenad needs to decide, in priority order
+
+1. **The Interrogate gate** — leave the two strings shut until §21c, or flip
+   them now. My recommendation is to leave them shut; the reasoning is in the
+   entry above and I will change it in one word either way.
+2. **The lens set's closing formula** — 17 of 35 end "Show me yours." Whether
+   the aggregate is worth a rewrite is his call; the individual lines are fine.
+3. **The six flagged lens lines** — `roth` is the one I would fix regardless.
+4. **§21c best-in-class research** — still not started, still the hard
+   prerequisite before Interrogate can do anything.
+
+### Build order, unchanged
+
+`DL_ONLY_ReadFirst.md`'s active queue has one item: the Noel-driven UI
+exploration. Interrogate is not in the queue and is not next by default — its
+UI now exists but its analysis cannot be built until §21c.
+
+**Audit:** last real run 2026-08-22; the 2026-08-24 trigger was deferred by
+Nenad and recorded in `AUDIT_CHECKLIST.md` as a deferral, not a run. Next clock
+check due **2026-09-12**.
+
+### No blockers. Nothing is half-finished in the working tree.
