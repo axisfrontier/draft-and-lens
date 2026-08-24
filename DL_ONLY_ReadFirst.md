@@ -58,7 +58,7 @@ Don't reorder without Nenad's explicit instruction.
 
 `AUDIT_CHECKLIST.md` runs on **two** triggers, either sufficient: before any major new feature, **and every 2–3 weeks regardless of what is being built**. A feature-gated audit only ever ran when someone was already about to build; quiet weeks accrue drift nothing looks at.
 
-Every run is recorded in the checklist's own run log. **If the last recorded run is more than three weeks old, run it before anything else that session.** Last run: 2026-08-18.
+Every run is recorded in the checklist's own run log. **If the last recorded run is more than three weeks old, run it before anything else that session.** Last run: 2026-08-22.
 
 ## Standing evaluation rule — apply at the right moment, not on a timer
 

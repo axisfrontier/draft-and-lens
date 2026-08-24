@@ -25,7 +25,7 @@ Before doing anything else in this repo, read DL_ONLY_ReadFirst.md in full. This
 
 **Record the date of every run** in `AUDIT_CHECKLIST.md`'s run log, so the gap between runs is visible rather than assumed. If the last recorded run is more than three weeks old, run it before doing anything else that session.
 
-**Run log lives in `AUDIT_CHECKLIST.md`. Last run: 2026-08-18.**
+**Run log lives in `AUDIT_CHECKLIST.md`, which is the authority on the date. Last run: 2026-08-22.**
 
 ### Writer-facing copy — the editor's voice (standing rule, 2026-08-21)
 Every string a writer can read is the editor speaking. First person, direct, developmental. It does not explain the product, name the product in the third person, or describe its own machinery.
