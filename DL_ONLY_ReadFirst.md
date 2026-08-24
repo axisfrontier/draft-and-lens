@@ -46,13 +46,18 @@ Items 1–4 of the 2026-08-18 order are **done and verified live**: detection, t
 
 **Mentor Completeness (all four stages) shipped 2026-08-21/22:** lens self-recognition and the sixth `/how-i-read` scenario (stage 1), trajectory / Gap A (stage 2), writer-set goals / Gap B including the `writer_goals` migration (stage 3), and `/how-i-remember` plus the horizon line / Gap C (stage 4). **`/how-i-read` and `/how-i-remember` were merged into `/how-it-works` (two tabs) on 2026-08-22** — one nav entry, copy unchanged, both old routes redirect. **The signed-in half of stages 3 and 4 has still NOT been checked in a browser**; see the SESSION_LOG entry for exactly what is unseen.
 
-**Active queue:**
+**Active queue (trimmed 2026-08-24 — two entries were stale, see below):**
 
-1. **Lens-voice upload edge case — ACTIVE, approach to be agreed before code.** A writer pasting real published prose by one of the 36 lens voices (actual Carver, actual Hemingway) currently gets a reading of it as if it were their own work — and a lens can end up reading its own author's prose back to them. That is a trust and credibility risk, not a curiosity. Was deferred as "worth building once detection exists and is stable" (`DraftAndLens_Internal_Research_Notes.md`); detection is now stable, so it is live. Proposed approach lives in `SESSION_LOG.md` — **Nenad approves the approach before any code is written.**
-2. **Cross-submission pattern recognition (Depth spec, Part 1 Gap 2)** — needs a `writer_patterns` migration Nenad applies by hand. Design note in `SESSION_LOG.md`, decisions still open.
-3. **New UI design exploration (Noel-driven)** — see the backlog file.
+1. **New UI design exploration (Noel-driven)** — see `DraftAndLens_UIExploration_Backlog.md`. The only item in this queue that has not been built.
 
 Don't reorder without Nenad's explicit instruction.
+
+**Removed from this queue on 2026-08-24, both shipped and verified in source and on the live site:**
+
+- *Lens-voice upload edge case.* Built. `src/ai/lens-authorship.ts`, the provenance gate (`provenanceHold`, `page.tsx`), and all 35 `LENS_SELF_RECOGNITION` lines are in production. The build-order paragraph directly above this queue already recorded it as Mentor Completeness stage 1; the queue entry had simply never been struck. **Its 35 self-recognition lines are unapproved copy that is already live** — that part is still open, and it is a copy approval, not a build item. Inventory in `SESSION_LOG.md`.
+- *Cross-submission pattern recognition (Depth spec, Part 1 Gap 2).* Built. The `writer_patterns` migration is applied and the table is live, `PATTERN_COPY` was approved 2026-08-21, and the callout renders in `ReportView`. `writer_patterns` is also in `exportUserData` now, contrary to an older `SESSION_LOG` note.
+
+**Interrogate mode is NOT in this queue and is not next by default.** Its UI proposal is written up in `SESSION_LOG.md` awaiting approval, and §21c best-in-class research — a hard prerequisite in Architecture v6 — has not started.
 
 ## Periodic audit — it has a clock now (2026-08-21)
 
