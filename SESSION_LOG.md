@@ -2134,3 +2134,77 @@ already done.**
   (`c7b4047`); his ruling named case only.
 - **The satire gate fix** is unit-tested and deployed but never exercised by a
   live satire submission.
+
+
+## INTERROGATE MODE UI — BUILT AND VERIFIED LIVE (2026-08-24)
+
+`76e74ea`. Approved copy, approved placement, UI only. §21c not started, so
+nothing here changes what the analyst is asked or what comes back.
+
+### Verified on production, by screenshot
+
+- **HOW SHOULD I READ IT?** renders one rank below the numbered step headings,
+  directly under COMPLETE PIECE OR EXCERPT?, inside step 2. Step 3 follows
+  immediately below it — the numbering is undisturbed.
+- **READ IT is pre-selected** (amber), PUSH HARDER outlined. Clicking PUSH
+  HARDER selects it and deselects READ IT. No layout shift.
+- Both pills are **inert before there is work** and enable at the first word,
+  exactly like the row above them.
+- **No helper line, no report line** — the gate is shut. Confirmed the gated
+  strings are absent from the client bundle entirely (dead-code eliminated).
+
+### The one deviation from the brief, and why
+
+The brief said "the toggle must be visible and selectable but the mode's
+actual analytical content comes after the research is done." The toggle is
+exactly that. **But two of the four approved strings are not shipped visible,
+and this was not a judgement call I felt free to make either way:**
+
+> Architecture v6, **Law — Mentoring and interrogation are never faked.** "No
+> feature may simulate or fabricate mentor output … or interrogate output (a
+> best-in-class standard) without the genuine input behind it. Where a
+> capability cannot run, it is *described*, never performed."
+
+A visible toggle **describes**. These two **perform**, and both would be false
+on production today:
+
+- the helper line — "I'll take the question the reading normally leaves alone …
+  and show you what this tradition can do" — promises what this submission will
+  do, and the submission will not do it;
+- the report line — "This is a Push harder reading." — asserts that the reading
+  in front of the writer is one, when it is an ordinary reading.
+
+Both are built, tested, and gated on one constant,
+`INTERROGATE_ANALYSIS_LIVE` in `src/lib/interrogate.ts`, currently `false`.
+
+**To turn them on the day §21c lands and the analyst genuinely runs the
+interrogated read: change that one word to `true`.** Both strings appear
+together. `tests/lib/interrogate.test.ts` is written for the flipped state, so
+the flip has a safety net rather than a hope — including a test that fails if
+the flag is flipped, which is deliberate: it forces whoever flips it to read
+why it was shut.
+
+**If Nenad disagrees and wants them visible now, it is a one-word change and I
+will make it.** I did not make it unilaterally because the law is written as a
+law, not a preference, and shipping against it silently would be the worse
+error of the two.
+
+### Other implementation notes
+
+- **Resets at submission, not on return to the panel** (ruling 1, 2026-08-23),
+  with the submitted value snapshotted first — so resetting the control cannot
+  retroactively change what the report says the reading was.
+- **The choice is NOT sent to the server.** When the analysis is wired it
+  becomes a submitted field and the SERVER decides whether the line appears,
+  exactly as it already does for the differentiator. The client must never make
+  that call — that is what keeps a reloaded reading honest.
+- The goals fetch behind the helper's second sentence is gated on the same
+  constant: zero cost today, correct on the day of the flip.
+
+### Gotcha, confirmed the hard way again
+
+`getComputedStyle` on these pills lies. It reported every pill inert-coloured
+while `disabled` was already false, including COMPLETE PIECE, which is selected
+by default. The screenshot showed the truth: everything correct. This is the
+gotcha already recorded from 2026-08-23 — **screenshot to confirm pill state,
+never computed style.** It has now cost time twice.
