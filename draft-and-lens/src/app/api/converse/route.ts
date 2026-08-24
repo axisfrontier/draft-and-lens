@@ -28,14 +28,23 @@ function isLensId(id: unknown): id is LensId {
  * The canonical phrasing of each preset ask.
  *
  * Server-side rather than sent from the browser: what the model is asked is
- * prompt surface, and the option labels the writer sees are UI copy that will
- * change when the Editor voice is finalised. Keeping the two apart means the
- * copy can be rewritten without touching what the model is actually asked.
+ * prompt surface, and the browser must never be able to choose it.
+ *
+ * BUT THE VERB IS THE WRITER'S, NOT OURS. Nenad's ruling, 2026-08-24: each ask
+ * uses the same verb as the FragmentPanel option that sends it — working, fit,
+ * sound. This file previously argued the opposite, that independence let the
+ * UI copy be rewritten without touching the prompt; in practice the two drifted
+ * and the writer was answered a subtly different question from the one they
+ * clicked ("holding up" for "is working", "sit consistently with" for "fit
+ * with", "read as" for "sound"). Independence of *layer* is worth keeping;
+ * independence of *wording* was not.
+ *
+ * So: if an option's wording changes in FragmentPanel, change it here too.
  */
 const ASK_AS_QUESTION: Record<Exclude<FragmentAsk, 'free'>, string> = {
   craft: 'How is the writing itself working? Line-level craft only.',
-  fit: 'Does this sit consistently with what you have already read of my work?',
-  tradition: 'Does this read as authentic to the tradition I am working in?',
+  fit: 'Does this fit with what you have already read of my work?',
+  tradition: 'Does this sound authentic to the tradition I am working in?',
 };
 
 /**
