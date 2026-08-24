@@ -260,7 +260,8 @@ function HowItWorks(): React.ReactElement {
             in mind. Every reading thereafter is measured against it and the tradition it&apos;s written
             in: for example, you said you wanted this to feel more urgent, and here is how much of that
             is coming through and where. I won&apos;t reduce it to a score or a verdict — I&apos;ll tell
-            you what I can see, specifically, and where. Your goal never replaces the standard your work answers to;
+            you what I can see, specifically, and where. If a reading gives me nothing real to say about what you
+            wanted, I&apos;ll say nothing about it. Your goal never replaces the standard your work answers to;
             the tradition still decides that. But if what you want pulls against what the tradition
             needs, that&apos;s worth knowing, and I&apos;ll tell you.
           </p>
