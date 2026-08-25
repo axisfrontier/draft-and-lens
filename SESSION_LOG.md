@@ -2589,3 +2589,66 @@ reviewed, unchanged, never separately approved; the 14 untouched lines still
 unapproved copy. It also records that king's "warts and all" and roth's
 "I have lived in it long enough" were raised with alternatives and **kept by
 his choice** — so a later session does not helpfully "fix" a decision.
+
+
+## DEPLOYED — differentiator reworded, horizon nudge approved (2026-08-25)
+
+`a9edabc`, `c19c7fe`, `1321f69`. Pushed, hook fired (`vvMeyKdNtAf8YurzHHrv`).
+`tsc` clean · 250/250 · build compiled · IP grep exit 1.
+
+**1. Differentiator method line.** Was "I read this differently from the first
+time — against what you sent before, not on its own. That's what I mean by a
+reading." Now:
+
+> I read this alongside what you sent before, not on its own.
+
+Source and pinned test moved together, as both files require.
+
+**2. `nudge_mentor_horizon` — approved as written**, text unchanged. **All four
+nudges are now approved copy, and no `PLACEHOLDER` marker remains anywhere in
+`src/`.** The only unapproved writer-facing copy left is the 14 untouched lens
+lines and Category B of the inventory.
+
+### VERIFIED — and the honest limit, again
+
+**Verified live:** deploy landed, site healthy, Interrogate row still renders,
+and neither string appears in the client bundle (both are server-supplied, as
+they must be).
+
+**NOT verified end-to-end, and not cheaply verifiable by anyone.** Both lines
+fire **once per account for the life of that account**:
+
+- the differentiator needs a genuine revision of a stored work *with* retrievable
+  prior notes, and the `differentiator_method_line` milestone unclaimed;
+- the horizon nudge fires on an account's *second* reading.
+
+Nenad's own account has almost certainly spent both. Seeing either would mean a
+fresh account and paid readings — which is what the 2026-08-23 session did, and
+then had to delete two live test accounts from production to clean up.
+
+**The cheap path, if he wants to see the new differentiator on screen:** re-arm
+his own account rather than making a new one, then submit a revision of an
+existing work. The SQL is in the footer of
+`supabase/migrations/user_milestones.sql`:
+
+    delete from public.user_milestones
+     where user_id = '<clerk id>' and milestone = 'differentiator_method_line';
+
+His Clerk id is recorded earlier in this file. One reading, no test account, no
+cleanup.
+
+### A stale reason removed, and a question re-opened
+
+- **`user_milestones.sql`'s footer** justified its fail-closed behaviour with
+  "the copy is still placeholder". That is no longer true of either line it
+  gates, so the reason was corrected (`1321f69`). Behaviour unchanged — failing
+  closed is right regardless of approval status.
+- **`nudges.ts`: one leg of the horizon line's placement argument has gone.**
+  It fires on the second reading rather than the first, and one of the three
+  reasons was "displacing an approved line for an unapproved one is not my call
+  to make." Now that it is approved, that objection is void. The other two
+  reasons stand and behaviour is unchanged — but **the question the spec
+  actually asks is open again rather than settled: Gap C literally says "after
+  a first reading", which would mean displacing the revision-memory nudge.**
+  Nenad's call. Flagged in the source comment too, so it cannot rot back into
+  looking decided.
