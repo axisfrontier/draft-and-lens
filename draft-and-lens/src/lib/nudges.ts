@@ -76,15 +76,22 @@ const KEEP_SENDING: Nudge = {
 /**
  * Gap C's quiet line — the honest limit of what one reading can do.
  *
- * PLACEHOLDER COPY, quoted verbatim from the Mentor Completeness spec and
- * unapproved like every writer-facing string before Nenad reads it.
+ * APPROVED — Nenad, 2026-08-25, as written. Quoted verbatim from the Mentor
+ * Completeness spec, which is where the wording came from.
  *
  * WHERE THE SPEC WAS INTERPRETED RATHER THAN FOLLOWED LITERALLY, flagged here
  * rather than done quietly. Gap C asks for this "after a first reading". A
  * first reading already has a nudge — the approved revision-memory line — and
  * two quiet asides in one reading is the exact clutter the one-per-reading
- * rule exists to prevent. Displacing an approved line for an unapproved one
- * would also be my call to make, and it is not.
+ * rule exists to prevent.
+ *
+ * ONE LEG OF THAT REASONING HAS SINCE GONE. The original argument also said
+ * that displacing an approved line for an unapproved one was not my call to
+ * make. This line is now approved, so that objection no longer holds and the
+ * question the spec actually asks — should this fire on the FIRST reading,
+ * displacing revision memory? — is open again rather than settled. It is
+ * Nenad's, and nothing here has changed behaviour: the line still fires on the
+ * second reading. Recorded in SESSION_LOG.md so it is not lost.
  *
  * So it fires on the SECOND reading, which is after a first reading and is the
  * only slot in the sequence not already spoken for: 0 is revision memory, 2 is
