@@ -65,7 +65,7 @@ describe('approved copy', () => {
    */
   it('is exactly the final approved wording', () => {
     expect(DIFFERENTIATOR_COPY).toBe(
-      "I read this differently from the first time — against what you sent before, not on its own. That's what I mean by a reading."
+      "I read this alongside what you sent before, not on its own."
     );
   });
 

@@ -50,7 +50,7 @@ import 'server-only';
  * here.
  */
 export const DIFFERENTIATOR_COPY =
-  "I read this differently from the first time — against what you sent before, not on its own. That's what I mean by a reading.";
+  "I read this alongside what you sent before, not on its own.";
 
 export interface DifferentiatorInput {
   /** resolveRevision returned 'revised' — genuinely changed text of a stored work. */
