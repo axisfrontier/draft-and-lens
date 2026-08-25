@@ -2512,3 +2512,80 @@ One commit, `src/prompts/lenses/self-recognition.ts` only, plus an extension to
 `tests/prompts/lens-self-recognition.test.ts` pinning that no closing formula
 appears more than four times — so the template cannot creep back silently.
 **Not deploying without approval.**
+
+
+## DEPLOYED — the 21 lens closings (2026-08-25)
+
+`4bf4f1e`, pushed, hook fired (`xVofCppdxAm1cUt2RTis`). All 21 applied with
+Nenad's two amendments:
+
+- **fey** — "Now yours — I haven't regretted that one yet."
+- **kaufman** — "Give me yours instead — I haven't failed at that one yet."
+
+Both drop an echo the proposed versions carried ("apologised"… "apologise",
+"failed"… "failed at"). The other 19 are exactly as proposed. Acknowledgement
+halves untouched in all 21.
+
+`tsc` clean · **250/250 tests** (up from 248 — two new guards) · `✓ Compiled
+successfully` · IP bundle grep exit 1 · the new lens copy confirmed absent from
+`.next/static`, as server-side IP must be.
+
+### What is now guarded that was not before
+
+Every per-line test passed for the entire time the "Show me yours" template was
+in place, because nothing tested the set as a set. Two tests now do:
+
+1. no closing SENTENCE may be shared by more than two lenses;
+2. no closing's first THREE WORDS may be shared by more than four.
+
+The second exists because the first draft of this rewrite replaced "Show me
+yours" with "Bring me yours" ten times over — the same failure wearing a new
+phrase, and nothing would have caught it. Current distribution sits comfortably
+inside both: 34 distinct closings out of 35, one duplicate pair (`jeunet` and
+`chandler`, both untouched originals), maximum shared opening of four.
+
+The existing "hands the moment back to the writer" test **failed on three of
+the new lines** and was extended rather than loosened, each addition named:
+Bruckheimer's singular "your first ten minutes", Carver's "what you haven't cut
+yet", and Highsmith's "find me someone new to not forgive" — the only line in
+the set that makes the ask without addressing the writer at all, which
+satisfies the rule while matching nothing second-person.
+
+### VERIFIED LIVE — and the one thing that was NOT, deliberately
+
+**Verified on production:** the site is healthy, the Interrogate row still
+renders, and none of the new lens copy appears in the client bundle.
+
+**NOT verified end-to-end, and it cannot be by me.** A self-recognition line
+only fires when a writer submits real published prose by that lens's author,
+answers the provenance gate "it's mine", and then opens that lens. Producing
+that would mean pasting a substantial extract of copyrighted published work
+into the tool, which I am not going to do, and burning a full paid reading to
+see one sentence.
+
+**What is actually verified is the whole path except its last inch:** the
+strings are correct in source, typechecked, covered by five tests including two
+new aggregate guards, and shipped in a build that compiled clean. The remaining
+risk is not the copy — it is whether `lens-authorship.ts` still routes to it,
+which no line-level change here could have affected.
+
+**If Nenad wants the last inch closed**, the cheapest honest check is a short
+public-domain passage by a lens author whose work is out of copyright —
+**Chekhov** is the obvious one, and his line changed in this batch. Submit a
+page of a public-domain Chekhov translation, answer the provenance gate
+"it's mine", open the Chekhov lens, and confirm it returns:
+
+> You have handed me my own pages. Bring me something of yours — that is the
+> one I should like to read.
+
+That costs one reading and no copyright exposure. Recorded rather than done,
+because it spends his money.
+
+### Approval status is now recorded in the source file itself
+
+`self-recognition.ts`'s header states precisely what is approved and what is
+not: the 21 closings approved 2026-08-25; their acknowledgement halves
+reviewed, unchanged, never separately approved; the 14 untouched lines still
+unapproved copy. It also records that king's "warts and all" and roth's
+"I have lived in it long enough" were raised with alternatives and **kept by
+his choice** — so a later session does not helpfully "fix" a decision.
