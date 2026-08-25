@@ -50,8 +50,14 @@ alter table public.user_milestones enable row level security;
 -- ───────────────────────────────────────────────────────────────────────────
 -- UNTIL THIS IS APPLIED, nothing shows. claimMilestone() fails closed: a
 -- missing table is indistinguishable from "someone already claimed it", and
--- the safe reading of both is to stay quiet. That is deliberate — the copy is
--- still placeholder and must not reach a writer before Nenad approves it.
+-- the safe reading of both is to stay quiet. That was deliberate: it kept
+-- placeholder copy away from writers until Nenad had approved it.
+--
+-- BOTH LINES THIS TABLE GATES ARE NOW APPROVED COPY — the differentiator
+-- method line (2026-08-23, pinned by tests/lib/differentiator.test.ts and
+-- reworded 2026-08-25) and the mentor-horizon nudge (2026-08-25). The
+-- fail-closed behaviour stays, because failing closed is right regardless of
+-- approval status; only the reason above has changed.
 --
 -- AFTER APPLYING, verify it took. One row expected:
 --
@@ -68,3 +74,9 @@ alter table public.user_milestones enable row level security;
 --
 --   delete from public.user_milestones
 --    where user_id = '<clerk id>' and milestone = 'differentiator_method_line';
+--
+-- Same shape for the nudges, whose milestones are 'nudge_ledger_tracking',
+-- 'nudge_revision_memory', 'nudge_keep_sending' and 'nudge_mentor_horizon'.
+-- Each fires once per account for the life of that account, so re-arming is
+-- the ONLY way to see one again after it has been shown — including after a
+-- rewording, which reaches new accounts only.
