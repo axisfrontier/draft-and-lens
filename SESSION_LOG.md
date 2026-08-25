@@ -2652,3 +2652,50 @@ cleanup.
   a first reading", which would mean displacing the revision-memory nudge.**
   Nenad's call. Flagged in the source comment too, so it cannot rot back into
   looking decided.
+
+
+## RULING — Gap C nudge placement, SETTLED (2026-08-25)
+
+**Nenad, 2026-08-25:** revision memory takes priority over the mentor-horizon
+nudge. The horizon nudge fires only where revision memory does not apply. The
+second-reading slot stands; Gap C's literal "after a first reading" is not
+followed. **Closed — do not re-open.**
+
+This closes the question that approving the horizon line had re-opened.
+
+### No code change, and the reason is worth writing down exactly
+
+He is right that nothing needs changing, but **not because a priority check
+exists — there isn't one, and a future session looking for it will not find
+it.** `selectNudge` is a strict chain on `priorSubmissions`:
+
+    differentiatorShown || patternShown  → null   (silence outranks everything)
+    factsExtracted > 0                   → LEDGER_TRACKING
+    priorSubmissions === 0               → REVISION_MEMORY
+    priorSubmissions === 1               → MENTOR_HORIZON
+    priorSubmissions === 2               → KEEP_SENDING
+
+**The two can never compete.** Revision memory is gated on index 0 and the
+horizon line on index 1, so revision memory cannot lose a contest it is never
+in. The rule is satisfied structurally rather than by arbitration.
+
+And that is by construction, not by accident: revision memory's copy is
+forward-looking — *"If you resubmit this revised, I'll read it against what I
+said here"* — a sentence that only means anything to someone who has not yet
+come back. It is a first-reading line by what it says, not just by its gate.
+
+**Adding an explicit priority check would therefore be dead code**, which is
+precisely what the standing rules forbid. The ruling is recorded in the source
+comment above `MENTOR_HORIZON` instead, together with the condition under which
+it stops being vacuous: if either gate is ever widened so revision memory
+becomes reachable at index 1, this ruling is what breaks the tie, and that is
+the moment to write the check.
+
+**No new test either.** `tests/lib/nudges.test.ts` already pins both slots —
+"offers revision memory on a first reading" (:49) and "offers the mentor-horizon
+line on the second reading only" (:62). A third test asserting the same
+relationship would be duplication, not coverage.
+
+Note the true precedence is already stronger than the ruling requires: a shown
+differentiator or a named pattern silences the nudge entirely, and a real
+ledger event outranks every index-gated line.

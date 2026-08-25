@@ -85,13 +85,22 @@ const KEEP_SENDING: Nudge = {
  * two quiet asides in one reading is the exact clutter the one-per-reading
  * rule exists to prevent.
  *
- * ONE LEG OF THAT REASONING HAS SINCE GONE. The original argument also said
- * that displacing an approved line for an unapproved one was not my call to
- * make. This line is now approved, so that objection no longer holds and the
- * question the spec actually asks — should this fire on the FIRST reading,
- * displacing revision memory? — is open again rather than settled. It is
- * Nenad's, and nothing here has changed behaviour: the line still fires on the
- * second reading. Recorded in SESSION_LOG.md so it is not lost.
+ * SETTLED — Nenad, 2026-08-25. Revision memory takes priority; this line fires
+ * only where revision memory does not apply. The second-reading slot stands and
+ * Gap C's literal "after a first reading" is not followed. Do not re-open it.
+ *
+ * HOW selectNudge SATISFIES THAT, because it is not by a priority check and a
+ * future reader will look for one. The two can never compete: REVISION_MEMORY
+ * is gated on `priorSubmissions === 0` and this line on `=== 1`, so revision
+ * memory cannot lose a contest it is never in. That is structural, not
+ * incidental — its copy is forward-looking ("If you resubmit this revised…"),
+ * a sentence that only means anything to someone who has not yet come back.
+ * It is a first-reading line by construction.
+ *
+ * So the rule is already guaranteed, and ADDING AN EXPLICIT PRIORITY CHECK
+ * WOULD BE DEAD CODE. If either gate is ever widened — if revision memory
+ * becomes reachable at index 1 — the ruling above is what decides the tie, and
+ * that is the moment to write the check, not before.
  *
  * So it fires on the SECOND reading, which is after a first reading and is the
  * only slot in the sequence not already spoken for: 0 is revision memory, 2 is
