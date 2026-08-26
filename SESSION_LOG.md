@@ -2744,3 +2744,67 @@ changes nothing about the flag. §21c is *begun*, not done.
 The draft's content has had **no review** — not by Nenad, not against the corpus.
 It is one session's output, uncommitted and unread since. Treat it as a first
 draft of the prerequisite, not as the prerequisite.
+
+
+## RECONCILED — §21c research now covers exactly the 35 lenses (2026-08-26)
+
+`dc16324`, `0af26c1`, `538afed`, `b742eea`. Docs only; no `src/` change, nothing
+deployed, **`INTERROGATE_ANALYSIS_LIVE` untouched and still `false`.**
+
+Both files Nenad referred to were already in the repo root, not in `~/Downloads`
+— nothing was moved. `DraftAndLens_BestInClass_Research.md` was committed first
+in its found state so the two edits after it read as diffs.
+
+### The five gaps are filled
+
+Blume, Le Guin, Morrison, Puzo, Sorkin, verbatim from the transfer file, placed
+**before** `## NOTES FOR IMPLEMENTATION` rather than at the true end of the file
+— research content after the notes explaining how to use it would be a trap for
+the next reader. The transfer file was deleted in the same commit; keeping it
+would have been a second copy of a list, which is the exact failure
+`lens-directory.ts` was written to end.
+
+### Woolf and Goldman were errors — checked, not assumed
+
+The transfer file asked for this to be confirmed against the live list rather
+than guessed. Confirmed against `src/prompts/lenses/types.ts`. Neither is in
+`LENS_IDS` under any name, and the only two occurrences anywhere in `src/`
+explain both:
+
+- **Goldman — a drift the repo has already corrected once.** The header of
+  `src/components/lenses/lens-directory.ts` records that the stale landing-page
+  array "advertised Wilder, Pinter and Goldman, who are not lenses". He was
+  removed from the UI and then reappeared in the research. **If a third list of
+  lenses is ever written, expect him back a third time.**
+- **Woolf — a category error, not an invention.** She is real in the source, but
+  as an example under TRADITION 3, LITERARY MODERNISM, in
+  `src/prompts/modes/story.ts`. **That is the analyst's six-tradition taxonomy,
+  which is not the 35-lens set.** Best-in-class research is per-lens, so a
+  story-tradition example has no slot in it. Worth holding onto: the codebase
+  has two different things both called "tradition", and this is the second time
+  that has cost something.
+
+**Verified by set comparison, not by counting:** 35 in code, 35 `###` headings,
+no gaps, no orphans, exact match.
+
+### What this does NOT mean
+
+§21c is **content-complete, not done.** Two things still stand between it and
+the flag:
+
+1. **The content has never been reviewed** — not by Nenad, not against the
+   corpus. It is one session's prose plus a second session's five, now tidy.
+2. **Nothing consumes it.** No prompt reads this file; the analyst does not run
+   an interrogated read. That was always the second half of the flag's
+   condition, and it is untouched.
+
+**So the flag stays shut, and `tests/lib/interrogate.test.ts` should still fail
+if anyone flips it.** Completing coverage was the cheap half.
+
+### One thing not built, deliberately
+
+There is **no test asserting this file still matches `LENS_IDS`** — unlike
+`lens-directory.ts`, which has one precisely because a hand-kept second list
+drifted. This file is now a third hand-kept list of the 35. It will drift the
+next time a lens is added or renamed. Not built because it was not asked for;
+flagged because the precedent is right there in the repo.
