@@ -325,6 +325,70 @@ is the love story.
 
 ---
 
+## REMAINING TRADITIONS
+*Completed 2026-08-25. Four literary, one screenplay — filed here as one
+block rather than merged into the category sections above, so the later
+pass stays visible in the document as it is in the history.*
+
+### Blume / YA Realism / Honest Coming-of-Age
+**What the strongest work does:** The interior life of the young protagonist is 
+taken completely seriously — no adult condescension, no winking over the child's 
+head at the reader. The best Blume-tradition work treats the confusions and fears 
+of adolescence as genuinely significant, not as something to be outgrown and 
+laughed at later. Competent work in this tradition is age-appropriate and honest. 
+Best-in-class is honest about things adults prefer not to say plainly to young 
+readers, and trusts the reader to handle that honesty.
+
+**The standard:** Nothing is softened for the reader's comfort. It is softened, 
+if at all, for the reader's understanding.
+
+### Le Guin / Speculative Fiction / Anthropological SF
+**What the strongest work does:** The invented world or society is used to 
+genuinely defamiliarise something about how we actually live — not as allegory 
+with the serial numbers filed off, but as a real thought experiment that could 
+only be run this way. Competent work in this tradition builds an interesting 
+alternative world. Best-in-class builds a world whose internal logic forces a 
+real reconsideration of something taken for granted.
+
+**The standard:** The speculative element is not a costume on a familiar story. 
+It is the only way to ask the question the story is asking.
+
+### Morrison / American Gothic / Historical Reckoning
+**What the strongest work does:** The weight of history is present in the prose 
+itself — sentence rhythm, structure, and voice carry the past into the present 
+tense of the story, rather than the past being explained or summarised. Competent 
+work in this tradition addresses historical trauma. Best-in-class makes the 
+reader feel the historical trauma as a live pressure on the present moment of 
+the narrative, not as backstory.
+
+**The standard:** The past is not behind the story. It is inside every sentence 
+of it.
+
+### Puzo / Crime Family Epic / Loyalty and Corruption
+**What the strongest work does:** The moral logic of the criminal world is 
+internally coherent and almost persuasive — the reader understands, even as they 
+recoil, why these characters believe what they believe. Competent work in this 
+tradition depicts organised crime. Best-in-class makes the code of loyalty and 
+honour within that world feel like a real, complete value system, not a corruption 
+of a "normal" one.
+
+**The standard:** The family's logic makes sense from the inside. That is what 
+makes it frightening.
+
+### Sorkin / Rapid Dialogue / Idealism Under Pressure
+**What the strongest work does:** The speed and wit of the dialogue is not just 
+style — it dramatises characters thinking at their best, under pressure, in real 
+time. The best Sorkin-tradition work makes intelligence itself the source of 
+drama: characters win or lose based on how well they argue, not just what they do. 
+Competent work in this tradition has fast, smart dialogue. Best-in-class makes the 
+speed of the dialogue feel like the character's mind racing to solve a real 
+problem live, in front of the reader.
+
+**The standard:** The walking-and-talking isn't decoration. The talking is the 
+plot.
+
+---
+
 ## NOTES FOR IMPLEMENTATION
 
 1. These standards are tradition-specific observations, not generic quality metrics.
