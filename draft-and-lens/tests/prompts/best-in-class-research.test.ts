@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { BEST_IN_CLASS } from '../../src/prompts/interrogate/best-in-class';
 import { LENS_META } from '../../src/prompts/lenses/meta';
 import { LENS_IDS } from '../../src/prompts/lenses/types';
 
@@ -24,11 +25,13 @@ import { LENS_IDS } from '../../src/prompts/lenses/types';
  * INTERROGATE_ANALYSIS_LIVE exists to prevent. So this fails on a lens added
  * without an entry, and on an entry for a voice that is not a lens.
  *
- * The research lives at the REPO ROOT, one level above the Next.js app, and is
- * read here as text — the same way client-ip-guard.test.ts reads what it checks.
- * Nothing imports it at runtime today. When the wiring lands it will be a
- * server-only module rather than this file, and this test should then assert
- * the module too rather than being replaced by it.
+ * THE MODULE IS CANONICAL (Nenad, 2026-08-26). src/prompts/interrogate/best-in-class.ts
+ * is what the analyst actually reads; the markdown at the REPO ROOT is the
+ * human-readable research and cannot be the runtime source — it sits a level
+ * above the Next app and is never traced into the deployment. So this file
+ * checks three things against each other: module, markdown, and LENS_IDS. The
+ * markdown is read as text, the same way client-ip-guard.test.ts reads what it
+ * checks.
  */
 
 const RESEARCH = path.resolve(__dirname, '../../../DraftAndLens_BestInClass_Research.md');
@@ -83,5 +86,50 @@ describe('best-in-class research covers exactly the lens set', () => {
     const ids = headings.map((h) => idsByName.get(key(h))?.[0]).filter(Boolean);
     expect(headings.length).toBe(LENS_IDS.length);
     expect(new Set(ids).size).toBe(LENS_IDS.length);
+  });
+});
+
+/**
+ * Text as it reads, not as it is formatted: the markdown hard-wraps at eighty
+ * columns and marks its labels with asterisks, the module unwraps and
+ * capitalises them. Neither difference is a difference in what the analyst is
+ * told, and pinning either file's line breaks would make ordinary editing fail
+ * the suite for no reason.
+ */
+const prose = (s: string) =>
+  s.replace(/\*/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+
+describe('the module and the research say the same thing', () => {
+  /** Each markdown section body, keyed by lens id. */
+  function markdownSections(): Map<string, string> {
+    const text = readFileSync(RESEARCH, 'utf8');
+    const out = new Map<string, string>();
+    const blocks = text.split(/^### /m).slice(1);
+    for (const block of blocks) {
+      const [heading = '', ...rest] = block.split('\n');
+      const id = idsByName.get(key(heading.split('/')[0]!.trim()))?.[0];
+      // Body stops at the next '## ' heading and drops the '---' rules.
+      const body = rest.join('\n').split(/^##+ /m)[0]!.replace(/---/g, '');
+      if (id) out.set(id, body);
+    }
+    return out;
+  }
+
+  it('has a module entry for every lens, with real content in it', () => {
+    for (const id of LENS_IDS) {
+      // A blank or stub entry would pass a key check and give the analyst
+      // nothing — which is exactly the promise the flag exists to protect.
+      expect(BEST_IN_CLASS[id]?.length, `${id} has no standard`).toBeGreaterThan(200);
+      expect(BEST_IN_CLASS[id], `${id} is missing a half`).toContain('THE STANDARD:');
+    }
+  });
+
+  it('carries the same words as the research it was written from', () => {
+    const md = markdownSections();
+    for (const id of LENS_IDS) {
+      expect(prose(BEST_IN_CLASS[id]), `${id} has drifted from the markdown`).toBe(
+        prose(md.get(id) ?? '')
+      );
+    }
   });
 });

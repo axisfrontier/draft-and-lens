@@ -28,6 +28,12 @@ const FORBIDDEN_CLIENT_PHRASES = [
   'Whenever a note quotes a specific phrase, line, or passage VERBATIM',
   'ANTHROPIC_API_KEY',
   'sk-ant-',
+  // §21c. The best-in-class standards are the newest prompt IP in the project
+  // and the most portable — thirty-five paragraphs that would be worth lifting
+  // on their own. One phrase from the researched content, one from the
+  // directive that frames it.
+  'Best-in-class is sparse and pressurised.',
+  'THE AMBITION ITSELF — MANDATORY, THIS READING ONLY:',
 ];
 
 describe('client-IP guard', () => {
