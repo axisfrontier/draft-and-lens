@@ -2808,3 +2808,107 @@ There is **no test asserting this file still matches `LENS_IDS`** — unlike
 drifted. This file is now a third hand-kept list of the 35. It will drift the
 next time a lens is added or renamed. Not built because it was not asked for;
 flagged because the precedent is right there in the repo.
+
+
+## PROPOSAL — wiring §21c into the analyst (2026-08-26) — AWAITING NENAD, NOT BUILT
+
+Nothing below is built. `INTERROGATE_ANALYSIS_LIVE` is still `false`.
+
+### The blocker is not "full file or section". It is that there is no key.
+
+The research is keyed to **the 35 lenses**. Nothing in the reading pipeline
+produces a lens. There are **three different things called "tradition"** in this
+codebase and the wiring sits across all three:
+
+1. **`diagnostic.tradition`** — Brain 1's output. Free text, a label of at most
+   six words, from an **open vocabulary**: the prompt's own examples are
+   "naturalistic drama, mythic/fabular allegory, genre/commercial, literary
+   minimalism, magical realism, Southern Gothic, chamber drama". Not an enum.
+2. **`STORY_SYSTEM`'s six numbered TRADITIONS** — minimalist realism, mythic /
+   allegorical, literary modernism, gothic, satirical, genre. A closed set of
+   **six**, used to pick craft standards. This is where Woolf lives.
+3. **The 35 lenses** — what §21c researched.
+
+**And no lens is chosen for a reading at all.** Lenses are the conversation
+feature (`/api/lens`, `/api/converse`); `/api/analyse` never takes one. The
+lens-voice mentions in that route are the authorship gate, a different thing.
+
+So "matched section only" needs a matcher that does not exist. **That is the
+decision, and everything else follows from it.** Woolf was the first bill this
+three-way ambiguity presented; this is the second.
+
+### Option A — put the whole file in the system prompt. NOT RECOMMENDED.
+
+19.8 KB, 3,074 words, ~5k tokens, appended for push-harder reads and cacheable
+through `cachedSystemBlock`. So cost is survivable.
+
+Rejected on correctness, not cost: it hands the analyst 35 standards and asks it
+to pick its own, which is precisely what the research's own implementation note 1
+forbids — *"The analyst must know the identified tradition before applying any of
+these."* A model choosing between Carver and Hemingway mid-reading is free to
+blend them, and nothing downstream can tell that it did.
+
+### Option B — matched section, matched by a hand-written alias table. NOT RECOMMENDED.
+
+A map from free text to lens id would be a **fourth** hand-kept copy of the lens
+list, and lossy by construction — "chamber drama" and "naturalistic drama"
+resolve to no lens without someone deciding they do. This project has now paid
+for that pattern three times (landing page, research, and the test written today
+to stop the third).
+
+### Option C — matched section, matched by Brain 1. RECOMMENDED.
+
+Brain 1 is already the tradition authority — the analyst "receives the tradition
+LOCKED from Brain 1 and never re-identifies it". It already reads the opening and
+closing. Give it one more field:
+
+    bestInClassLens: LensId | null
+
+constrained to the 35 ids, **instructed to return null rather than force a fit**.
+The judgement happens where the reading already happens, the output is a closed
+enum a test can check, and it costs no extra call and a handful of tokens.
+
+Then the analyst receives **exactly one section**, average 83 words, longest 243
+— trivial next to `AMBITION_AGAINST_EXECUTION`, which already ships on every read.
+
+### The honest no-match path already exists, and it is why C works
+
+`bestInClassLens: null` → send no standard, and suppress the best-in-class half
+of the mode while keeping the ambition-fit half. **That is not a new behaviour —
+it is exactly the excerpt rule Nenad already ruled on 2026-08-23**, and
+`HELPER_EXCERPT` is approved copy that says it out loud.
+
+**But the approved copy does not cover this case.** `interrogateHelperLine` has
+two forms, complete and excerpt. A push-harder read of a *complete* work whose
+tradition matched no lens would promise "show you what this tradition can do"
+and then not. **That is a copy decision, not a build one — flagged, not
+guessed.**
+
+### Where the text lives — a module, not this file
+
+The research **must not be read from disk at runtime.** It sits at the repo root,
+one level above the Next app, so it is not traced into the deployment and `fs`
+would fail in production. Prompt IP also has to be server-side under `src/`.
+
+So: `src/prompts/interrogate/best-in-class.ts`, `server-only`, a
+`Record<LensId, string>`. Today's drift test then asserts **doc ↔ module ↔
+LENS_IDS** rather than doc ↔ LENS_IDS. Which forces a question worth answering
+once: **is the module canonical and the .md its provenance, or the reverse?**
+
+### Still open after all of the above
+
+**Where does best-in-class appear in the report?** The structure builders
+(`report/story-structure.ts` and its siblings) define the sections, and §21b adds
+two things to the reading. New section, or inside TRADITION ALIGNMENT — which
+script calls GENRE ALIGNMENT and stage play does not have at all? Unresolved;
+`AMBITION_AGAINST_EXECUTION` dodged it by attaching to the system prompt.
+
+### Four decisions needed
+
+1. **Option C** — Brain 1 returns the lens id. Approve or redirect.
+2. **The no-match helper line** — new copy needed for push + complete + no match.
+3. **Where best-in-class lands** in the report structure.
+4. **Module or .md canonical** once the module exists.
+
+The flag stays false through all of it. It flips when the reading genuinely
+carries interrogated content, not when this wiring compiles.
