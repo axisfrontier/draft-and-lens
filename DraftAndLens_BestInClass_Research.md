@@ -69,15 +69,6 @@ pleasure in the prose is part of what the work is about.
 
 **The standard:** The style is not decoration. It is the subject.
 
-### Woolf / Stream of Consciousness / Modernist Interior
-**What the strongest work does:** The movement between interiority and exterior 
-world creates a rhythm that feels like consciousness itself. Competent work renders 
-thought. Best-in-class renders the texture of being — the way attention moves, 
-catches, drifts, returns. The prose rhythm enacts what it describes.
-
-**The standard:** The reader doesn't observe the character thinking. The reader 
-thinks alongside the character.
-
 ### Ferrante / Autofiction / Female Rage and Interiority
 **What the strongest work does:** The narrator's self-knowledge is radically 
 honest about its own limits. The best Ferrante-tradition work holds the narrator 
@@ -278,14 +269,6 @@ corruption of the other. Competent work in this tradition is powerful and
 operatic. Best-in-class makes the operatic scale feel intimate.
 
 **The standard:** The most important moment in the film is a small, private one.
-
-### Goldman / Screenwriting Craft
-**What the strongest work does:** The structure is invisible — the machinery of 
-setup and payoff is so precisely engineered that the viewer never sees it working. 
-Competent work in this tradition is well-constructed. Best-in-class is so 
-well-constructed that it feels spontaneous.
-
-**The standard:** The ending was always going to be this. You just couldn't see it coming.
 
 ### Wachowski / Concept Cinema / Ideas
 **What the strongest work does:** The philosophical concept is dramatised, not 
