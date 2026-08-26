@@ -1,5 +1,8 @@
 import 'server-only';
 
+import { LENS_META } from './lenses/meta';
+import { LENS_IDS } from './lenses/types';
+
 /**
  * Craft principle: see inline PROMPT_RATIONALE.
  * Last reviewed: 2026-06-07 (verbatim migration from DraftAndLens.html)
@@ -11,10 +14,47 @@ const PASS1_GENRE_MARKERS = "\n\nGENRE TRADITION MARKERS — recognise these tra
 
 const PASS1_EXCERPT_AWARENESS = "\n\nSUBMISSION TYPE AWARENESS\n\nThis submission is an EXCERPT — a fragment of a larger work (a chapter, a scene, opening pages), not a complete piece. Do not attempt to identify arc, resolution, or structural completeness; these are not present by design and their absence is not diagnostic information. Focus your reading on what IS present: voice, register, period, genre markers, and narrative stance. Your craftQuestions and primaryConcern must reflect a fragment reading — e.g. whether the voice sustains, whether the pages establish enough to orient a reader — never whether the piece resolves or completes an arc.";
 
+
+/**
+ * The lens roster, written out from the single source rather than restated here
+ * — a hand-copied list of the thirty-five is exactly the drift that has already
+ * cost this project three times.
+ */
+const LENS_ROSTER = LENS_IDS.map((id) => `${id} (${LENS_META[id].name})`).join(', ');
+
+/**
+ * Push harder only — ask Brain 1 which lens's tradition this work belongs to.
+ *
+ * WHY BRAIN 1 AND NOT A TABLE. `tradition` is free text from an open vocabulary
+ * ("chamber drama", "magical realism"), and the best-in-class research is keyed
+ * to the thirty-five lenses. Nothing maps one to the other. Brain 1 already owns
+ * the tradition — everything downstream receives it locked — so the match is
+ * made where the reading happens, by the model that did it, and comes back as a
+ * closed enum the server can check. A hand-written alias table was the
+ * alternative and was rejected as a fourth copy of the lens list.
+ *
+ * WHY NULL IS THE EXPECTED ANSWER. Thirty-five voices do not cover the field of
+ * literature. A forced match sends the analyst the wrong tradition's standard,
+ * which is worse than sending none — the writer cannot tell it is the wrong one.
+ * The null path is built and honest, so the model is told to use it.
+ *
+ * NOT ADDED TO THE ORDINARY READING. Appended only for push-harder reads, so a
+ * normal submission's system prompt is byte-identical to what it was.
+ */
+const PASS1_LENS_MATCH = `\n\nBEST-IN-CLASS LENS MATCH — ONE EXTRA FIELD, THIS READING ONLY:\n\nThis writer has asked to be pushed harder, which means the reading may set the work beside the standard its own tradition sets for itself. Those standards exist for thirty-five specific voices, and you must say which of them — if any — this work's tradition actually belongs to.\n\nThe roster: ${LENS_ROSTER}.\n\nReturn the id, exactly as spelled above, in \`bestInClassLens\`. This is a SEPARATE judgement from the \`tradition\` label: name the voice whose tradition this work is working in, not the voice it superficially resembles in subject matter.\n\nRETURN null IF NOTHING GENUINELY FITS, and expect to return null often. Thirty-five voices do not cover all of literature, and a near-miss is not a match — a work of quiet domestic realism is not "Carver" because it is quiet, and a novel with a crime in it is not "Chandler". A wrong match sends the reading a standard from the wrong tradition, which is worse than sending none at all. Do not stretch. Do not pick the closest of a bad set. null is a correct and expected answer.`;
+
 const PASS1_JSON_SHAPE = "\n\nReturn ONLY valid JSON — no preamble, no markdown, no backticks — in exactly this shape:\n{\"tradition\":\"...\",\"register\":\"...\",\"ambition\":\"...\",\"craftQuestions\":[\"...\",\"...\"],\"strengths\":[\"...\",\"...\"],\"primaryConcern\":\"...\",\"title\":\"...\",\"summary\":\"...\",\"formNotes\":\"...\"}";
 
+/** The same shape with the push-harder field appended — id string or null. */
+const PASS1_JSON_SHAPE_WITH_LENS = PASS1_JSON_SHAPE.slice(0, -1) + ',"bestInClassLens":null}';
+
 /** Brain 1 — tradition identification before any craft rule (LearnedCorpus P1). */
-export function buildPass1System(submissionType?: 'complete' | 'excerpt'): string {
+export function buildPass1System(
+  submissionType?: 'complete' | 'excerpt',
+  matchLens = false
+): string {
   const awareness = submissionType === 'excerpt' ? PASS1_EXCERPT_AWARENESS : '';
-  return PASS1_BASE + PASS1_GENRE_MARKERS + awareness + PASS1_JSON_SHAPE;
+  const lensMatch = matchLens ? PASS1_LENS_MATCH : '';
+  const shape = matchLens ? PASS1_JSON_SHAPE_WITH_LENS : PASS1_JSON_SHAPE;
+  return PASS1_BASE + PASS1_GENRE_MARKERS + awareness + lensMatch + shape;
 }

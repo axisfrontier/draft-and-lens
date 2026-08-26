@@ -1,10 +1,21 @@
 import 'server-only';
 
+import type { LensId } from './lenses/types';
+
 /** User-declared submission type — server never infers (§15). */
 export type AnalysisMode = 'script' | 'story' | 'play' | 'treatment';
 
 export interface DiagnosticResult {
   tradition: string;
+  /**
+   * Which lens's tradition this work belongs to, for the §21c best-in-class
+   * standard. Push-harder reads only; null on every ordinary reading, and null
+   * on a push read where nothing genuinely fitted — which is the common case
+   * and not a failure. Never inferred from `tradition`, which is free text from
+   * an open vocabulary; set by Brain 1 and validated against LENS_IDS before it
+   * is trusted.
+   */
+  bestInClassLens?: LensId | null;
   register: string;
   ambition: string;
   craftQuestions: string[];

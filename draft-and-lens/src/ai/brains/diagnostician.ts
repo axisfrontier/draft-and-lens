@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { buildPass1System } from '../../prompts/diagnostic';
+import { LENS_IDS, type LensId } from '../../prompts/lenses/types';
 import type { DiagnosticResult } from '../../prompts/types';
 import { MODELS, TOKEN_LIMITS } from '../config';
 import { callJsonBrain } from './_shared';
@@ -21,12 +22,31 @@ const FALLBACK: DiagnosticResult = {
   title: 'Untitled',
   summary: '',
   formNotes: '',
+  bestInClassLens: null,
 };
+
+/**
+ * Brain 1's lens match, or null — never the model's word for it.
+ *
+ * A model asked for one of thirty-five ids can return a name ("Carver"), a
+ * near-miss ("chandler " with a space), an invented id, or the string "null".
+ * Anything that is not exactly a member of LENS_IDS becomes null, because the
+ * whole point of the null path is that a wrong standard is worse than none.
+ * Nothing about a push read breaks when this is null — it is the ordinary
+ * outcome.
+ */
+function validateLens(value: unknown): LensId | null {
+  return typeof value === 'string' && (LENS_IDS as readonly string[]).includes(value)
+    ? (value as LensId)
+    : null;
+}
 
 export async function runDiagnostician(
   text: string,
   modeLabel: string,
-  submissionType?: 'complete' | 'excerpt'
+  submissionType?: 'complete' | 'excerpt',
+  /** Push harder — ask for the §21c lens match too. Off for ordinary reads. */
+  matchLens = false
 ): Promise<DiagnosticResult> {
   // Opening + closing only — fast, cheap, forms the view that guides everything.
   const maxChars = 3000;
@@ -40,8 +60,10 @@ export async function runDiagnostician(
     model: MODELS.diagnostician,
     maxTokens: TOKEN_LIMITS.diagnostician,
     brain: 'diagnostician',
-    system: buildPass1System(submissionType),
+    system: buildPass1System(submissionType, matchLens),
     user: `This is a ${modeLabel}. Read carefully and return the diagnostic JSON.\n\n${excerpt}`,
   });
-  return result ?? FALLBACK;
+  if (!result) return FALLBACK;
+  // Validate rather than trust: the field is a closed enum downstream.
+  return { ...result, bestInClassLens: matchLens ? validateLens(result.bestInClassLens) : null };
 }
