@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   INTERROGATE_ANALYSIS_LIVE,
   INTERROGATE_REPORT_LINE,
+  INTERROGATE_REPORT_LINE_NO_MATCH,
   READING_DEPTH_DEFAULT,
   READING_DEPTH_PILLS,
   READING_DEPTH_SUBLABEL,
@@ -33,7 +34,11 @@ describe('the gate on interrogate claims', () => {
   });
 
   it('says nothing in the reading while the gate is shut, even when asked for', () => {
-    expect(interrogateReportLine('push')).toBeNull();
+    // Every combination, because each one is a different claim: a matched
+    // standard, no match at all, and an excerpt where the standard is withheld.
+    expect(interrogateReportLine('push', true, 'complete')).toBeNull();
+    expect(interrogateReportLine('push', false, 'complete')).toBeNull();
+    expect(interrogateReportLine('push', false, 'excerpt')).toBeNull();
   });
 
   it('promises nothing in the panel while the gate is shut, either form', () => {
@@ -65,6 +70,12 @@ describe('approved copy, pinned', () => {
     expect(INTERROGATE_REPORT_LINE).toBe('This is a Push harder reading.');
   });
 
+  it('the no-match line reads exactly as approved', () => {
+    expect(INTERROGATE_REPORT_LINE_NO_MATCH).toBe(
+      "I'll question the ambition itself, not just how far you got with it. This one doesn't map cleanly onto any of my thirty-five lenses, so I won't hold it against a specific standard — just against itself, at its fullest."
+    );
+  });
+
   it('never says "hold against" anywhere', () => {
     // The 2026-08-23 rejection: in British English "hold something against
     // someone" reads as resentment, the opposite of the intent. It was the
@@ -75,6 +86,23 @@ describe('approved copy, pinned', () => {
       ...READING_DEPTH_PILLS.map((p) => p.label),
     ];
     for (const s of strings) expect(s.toLowerCase()).not.toContain('hold');
+  });
+
+  it('exempts the no-match line, deliberately — do not "fix" this', () => {
+    // INTERROGATE_REPORT_LINE_NO_MATCH contains "hold it against", and it is
+    // NOT in the list above. That is not an oversight.
+    //
+    // What was rejected on 2026-08-23 was "I'll hold it against what you said
+    // you're working on" — holding a work against a PERSON'S STATED GOALS,
+    // where the idiom reads as resentment. The approved line holds a work
+    // against a STANDARD, and negates it: "I won't hold it against a specific
+    // standard — just against itself". That is the comparison sense.
+    //
+    // Nenad approved this wording on 2026-08-26 with the earlier rejection on
+    // the record. RAISED WITH HIM AGAIN at build time because the construction
+    // is one word from the banned one; if he changes his mind, this test and
+    // the pinned copy above move together.
+    expect(INTERROGATE_REPORT_LINE_NO_MATCH.toLowerCase()).toContain('hold it against');
   });
 });
 

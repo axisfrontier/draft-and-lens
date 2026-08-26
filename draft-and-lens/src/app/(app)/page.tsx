@@ -21,7 +21,6 @@ import {
   READING_DEPTH_PILLS,
   READING_DEPTH_SUBLABEL,
   interrogateHelperLine,
-  interrogateReportLine,
   type ReadingDepth,
 } from '@/lib/interrogate';
 import {
@@ -75,6 +74,7 @@ type StreamEvent =
   | { type: 'pattern'; tendency: string; text: string; trendNote?: string }
   | { type: 'goal_progress'; notes: Array<{ goalId: string; goal: string; note: string }> }
   | { type: 'goal_prompt' }
+  | { type: 'interrogate'; line: string }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -125,7 +125,9 @@ export default function AppHomePage() {
   const [depth, setDepth] = useState<ReadingDepth>(READING_DEPTH_DEFAULT);
   /** What THIS reading was asked for — snapshotted at submission, so resetting
    *  the control cannot retroactively change what the report says it is. */
-  const [submittedDepth, setSubmittedDepth] = useState<ReadingDepth>(READING_DEPTH_DEFAULT);
+  /** The §21b line the SERVER decided this reading may carry. Never computed
+   *  here: the client knows what was asked for, not what was found. */
+  const [interrogateLine, setInterrogateLine] = useState<string | null>(null);
   /** Whether the writer has live goals, for the helper's second sentence. */
   const [hasGoals, setHasGoals] = useState(false);
   const [text, setText] = useState('');
@@ -491,7 +493,7 @@ export default function AppHomePage() {
     // Ruling 1 (2026-08-23): the toggle resets on every submission and never
     // persists. Snapshot first — the report line must describe what THIS
     // reading was asked for, not what the control happens to say afterwards.
-    setSubmittedDepth(depth);
+    setInterrogateLine(null);
     setDepth(READING_DEPTH_DEFAULT);
     setError('');
     setStreamed('');
@@ -522,6 +524,9 @@ export default function AppHomePage() {
           mode,
           text: effectiveText,
           submissionType,
+          // How they asked to be read (§21b). The server decides what the
+          // reading claims about itself; this only reports what was chosen.
+          depth,
           ...(forceRefresh ? { forceRefresh: true } : {}),
           ...(confirmedOwn ? { confirmedOwn: true } : {}),
           ...(chosenManuscript ? { manuscriptId: chosenManuscript } : {}),
@@ -604,6 +609,8 @@ export default function AppHomePage() {
             setPattern({ tendency: evt.tendency, text: evt.text, trendNote: evt.trendNote });
           } else if (evt.type === 'goal_progress') {
             setGoalNotes(evt.notes);
+          } else if (evt.type === 'interrogate') {
+            setInterrogateLine(evt.line);
           } else if (evt.type === 'goal_prompt') {
             setGoalPrompt(true);
           } else if (evt.type === 'error') setError(evt.message);
@@ -1532,7 +1539,7 @@ export default function AppHomePage() {
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}
           differentiator={differentiator || undefined}
-          interrogateLine={interrogateReportLine(submittedDepth) ?? undefined}
+          interrogateLine={interrogateLine ?? undefined}
           goalNotes={goalNotes}
           goalPrompt={goalPrompt}
           nudge={nudge || undefined}

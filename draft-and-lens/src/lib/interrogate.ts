@@ -62,6 +62,28 @@ export const READING_DEPTH_PILLS: ReadonlyArray<{ value: ReadingDepth; label: st
 export const INTERROGATE_REPORT_LINE = 'This is a Push harder reading.';
 
 /**
+ * What the reading carries instead when nothing in the lens set fitted it.
+ * Approved by Nenad 2026-08-26.
+ *
+ * WHY IT IS A REPORT LINE AND NOT A THIRD HELPER FORM. It was approved
+ * alongside the two helper lines and opens with HELPER_EXCERPT's own first
+ * sentence, so its natural home looks like `interrogateHelperLine`. It cannot
+ * live there. The helper renders under the pills BEFORE the writer submits,
+ * and "this one doesn't map cleanly onto any of my thirty-five lenses" is a
+ * claim about a work nobody has read yet — the editor would be asserting the
+ * outcome of a reading that has not happened. Submission type is known in
+ * advance and a match never is.
+ *
+ * So it goes where it becomes true: the top of the reading, chosen by the
+ * server once Brain 1 has actually failed to match. The tense carries: it
+ * states the terms of the reading below it, which is what an editor's opening
+ * line does. Flagged to Nenad rather than reworded — the copy is approved as
+ * written and this is placement, not text.
+ */
+export const INTERROGATE_REPORT_LINE_NO_MATCH =
+  "I'll question the ambition itself, not just how far you got with it. This one doesn't map cleanly onto any of my thirty-five lenses, so I won't hold it against a specific standard — just against itself, at its fullest.";
+
+/**
  * The goals-aware second sentence, approved 2026-08-23.
  *
  * "I'll hold it against what you said you're working on" was REJECTED and must
@@ -107,9 +129,24 @@ export function interrogateHelperLine(
  *
  * Same gate as the helper: a reading that was not actually interrogated must
  * not say it was.
+ *
+ * DECIDED ON THE SERVER, from the diagnostic — the client knows what was asked
+ * for but not what was found, and a reading must never claim a standard it was
+ * not given. `matchedLens` is whether Brain 1 returned a lens the server
+ * validated, never the client's guess.
+ *
+ * On an excerpt the plain line stands whatever the match was: the writer was
+ * already told, in the helper line they chose from, that no standard is applied
+ * to a passage. Repeating it at the top of the reading would say the same thing
+ * twice and explain the machinery besides.
  */
-export function interrogateReportLine(depth: ReadingDepth): string | null {
+export function interrogateReportLine(
+  depth: ReadingDepth,
+  matchedLens: boolean,
+  submissionType: 'complete' | 'excerpt'
+): string | null {
   if (depth !== 'push') return null;
   if (!INTERROGATE_ANALYSIS_LIVE) return null;
+  if (submissionType !== 'excerpt' && !matchedLens) return INTERROGATE_REPORT_LINE_NO_MATCH;
   return INTERROGATE_REPORT_LINE;
 }
