@@ -12,11 +12,14 @@ import { SCRIPT_SYSTEM } from './modes/script';
 import { STORY_SYSTEM } from './modes/story';
 import { TREATMENT_SYSTEM } from './modes/treatment';
 import { buildScriptReportStructure } from './report/script-structure';
+import { buildInterrogateDirective } from './interrogate/directive';
+import type { LensId } from './lenses/types';
 import { buildStoryReportStructure } from './report/story-structure';
 import { buildTreatmentReportStructure } from './report/treatment-structure';
 import { REGISTER } from './register';
 import { AMBITION_AGAINST_EXECUTION } from './tradition-depth';
 import type { AnalysisMode, DiagnosticResult } from './types';
+import type { ReadingDepth } from '../lib/interrogate';
 
 /**
  * Brain 2 system prompt builders — tradition locked after Brain 1 (LearnedCorpus P1).
@@ -162,11 +165,21 @@ export function buildAnalystSystemPrompt(
   mode: AnalysisMode,
   genre: string,
   diagnostic: DiagnosticResult,
-  submissionType?: 'complete' | 'excerpt'
+  submissionType?: 'complete' | 'excerpt',
+  /** 'push' adds the §21b interrogation; ordinary reads are unchanged. */
+  depth: ReadingDepth = 'read'
 ): string {
   const base = buildSystemPrompt(mode, genre);
   const excerptBlock = submissionType === 'excerpt' ? EXCERPT_READING_MODE : '';
-  if (!diagnostic.tradition) return base + excerptBlock;
+  // Last, so it is the final instruction the analyst reads — and on BOTH return
+  // paths: a push read whose diagnostic came back empty still asked to be
+  // pushed, and the ambition question does not depend on the tradition.
+  const interrogateBlock = buildInterrogateDirective(
+    depth,
+    (diagnostic.bestInClassLens as LensId | null) ?? null,
+    submissionType
+  );
+  if (!diagnostic.tradition) return base + excerptBlock + interrogateBlock;
 
   const strengths = (diagnostic.strengths ?? []).map((s, i) => `${i + 1}. ${s}`).join('\n');
   const craftQuestions = (diagnostic.craftQuestions ?? []).map((q, i) => `${i + 1}. ${q}`).join('\n');
@@ -244,7 +257,7 @@ GENRE CORPUS PRINCIPLES — MANDATORY, APPLY WHEN THE CONFIRMED TRADITION MATCHE
 
 22. In contemporary literary realism and autofiction, the emotional payoff is the contract with the reader. Unlike crime or thriller, withholding emotional resolution IS a genuine failure in this tradition — not earned ambiguity. The inner life is the plot. A narrative that ends without emotional specificity has broken its contract.`;
 
-  return base + diagnosticBlock + excerptBlock;
+  return base + diagnosticBlock + excerptBlock + interrogateBlock;
 }
 
 export interface AnalystUserPromptInput {

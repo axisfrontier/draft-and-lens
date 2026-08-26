@@ -11,6 +11,7 @@ import {
 import { buildGoalDirective } from '../../prompts/fragments/goals';
 import { buildRevisionDirective } from '../../prompts/fragments/revision';
 import type { AnalysisMode, DiagnosticResult } from '../../prompts/types';
+import type { ReadingDepth } from '../../lib/interrogate';
 import { cachedSystemBlock, getAnthropicClient } from '../client';
 import { adaptiveAnalystConfig } from '../config';
 import { recordBrainUsage } from '../cost-tracker';
@@ -42,6 +43,8 @@ export interface AnalystInput {
   /** What the writer says they are trying to do, in their own words (Gap B).
    *  Held alongside the tradition, never as a rubric — see buildGoalDirective. */
   goals?: readonly string[];
+  /** How the writer asked to be read (§21b). 'push' adds the interrogation. */
+  depth?: ReadingDepth;
 }
 
 export async function runAnalyst(
@@ -62,11 +65,12 @@ export async function runAnalyst(
     priorRevisionNotes,
     submissionType,
     goals,
+    depth,
   } = input;
 
   // System: cache the constant mode+genre base; append the per-work diagnostic
   // block as a second (uncached) block so the large prefix is reused (§14b).
-  const fullSystem = buildAnalystSystemPrompt(mode, genre, diagnostic, submissionType);
+  const fullSystem = buildAnalystSystemPrompt(mode, genre, diagnostic, submissionType, depth);
   const baseSystem = buildSystemPrompt(mode, genre);
   const dynamicSystem = fullSystem.startsWith(baseSystem)
     ? fullSystem.slice(baseSystem.length)

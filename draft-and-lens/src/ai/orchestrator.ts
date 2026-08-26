@@ -6,6 +6,7 @@ import type {
   MarketResult,
   ScoreResult,
 } from '../prompts/types';
+import type { ReadingDepth } from '../lib/interrogate';
 import { runAnalyst } from './brains/analyst';
 import { runBible } from './brains/bible';
 import { runDiagnostician } from './brains/diagnostician';
@@ -48,6 +49,10 @@ export interface PipelineInput {
   submissionType?: 'complete' | 'excerpt';
   /** Writer-set goals in their own words (Gap B). Reaches Brain 2 only. */
   goals?: readonly string[];
+  /** How the writer asked to be read (§21b). 'push' interrogates the ambition
+   *  and, where Brain 1 matched a lens on a complete work, sets it beside that
+   *  tradition's best-in-class standard. */
+  depth?: ReadingDepth;
 }
 
 export interface PipelineCallbacks {
@@ -117,7 +122,14 @@ async function runPipelineBody(
 
   // ── Brain 1 — Diagnostician (always first) ─────────────────────────────
   cb.onStage?.('read', 'Reading your work');
-  let diagnostic = await runDiagnostician(text, modeLabel, input.submissionType);
+  // Brain 1 is asked for the §21c lens match only on a push read — an ordinary
+  // reading's system prompt is byte-identical to what it was before §21b.
+  let diagnostic = await runDiagnostician(
+    text,
+    modeLabel,
+    input.submissionType,
+    input.depth === 'push'
+  );
   // 5A: surface the tradition the moment it's known — this is well before the
   // analyst emits its first token, and is the single biggest lever against the
   // blank-screen perception of slowness (Latency Diagnostic Brief, Q4/5A).
@@ -171,6 +183,7 @@ async function runPipelineBody(
         priorRevisionNotes: input.priorRevisionNotes,
         submissionType: input.submissionType,
         goals: input.goals,
+        depth: input.depth,
       },
       cb.onAnalystText,
       cb.signal
