@@ -2912,3 +2912,92 @@ script calls GENRE ALIGNMENT and stage play does not have at all? Unresolved;
 
 The flag stays false through all of it. It flips when the reading genuinely
 carries interrogated content, not when this wiring compiles.
+
+
+## BUILT AND DEPLOYED — §21c wired into the analyst (2026-08-26)
+
+`216a17a`, `3364b9f`, `815cb8f`, `32e83d2`. Pushed, hook fired, **live and Ready
+in production**. `tsc` clean · 267/267 · build compiled · IP grep exit 1.
+
+**`INTERROGATE_ANALYSIS_LIVE` is still `false`, and must not be flipped without
+reading the section at the end of this entry.**
+
+### What now happens on a push-harder read
+
+1. Brain 1 is asked for one extra field, `bestInClassLens: LensId | null`,
+   **only** on a push read. An ordinary reading's diagnostic prompt is
+   byte-identical to what it was.
+2. The server validates it against `LENS_IDS` and coerces anything else to null.
+3. The analyst system prompt gains the ambition question, and — on a complete
+   work with a match — that tradition's standard. Attached like
+   `AMBITION_AGAINST_EXECUTION`; no new report section.
+4. The line the reading may carry is chosen **on the server** from what Brain 1
+   found, and streamed to the client as an `interrogate` event.
+
+### The three cases are separated in code, not left to the model
+
+The approved helper lines promise three different readings, so the prompt keeps
+three different promises: matched complete work gets the standard; an excerpt
+gets the ambition question and the true reason the standard is withheld; no
+match gets the work's own ceiling and an explicit ban on improvising a standard.
+
+**A bug worth recording because it was live in the first draft:** an excerpt WITH
+a match was being sent the no-match text, which told the analyst that nothing
+fitted this work's tradition when something had. That is a falsehood the reading
+could have repeated to a writer. `tests/prompts/interrogate-directive.test.ts`
+now pins it in both directions.
+
+### Verified against the real API, not just by unit test
+
+`runDiagnostician` run live on two texts written for the purpose:
+
+| case | tradition Brain 1 named | `bestInClassLens` |
+|---|---|---|
+| minimalist domestic story | `literary minimalism` | `"carver"` |
+| lyric nature essay | `lyric nature essay` | `null` |
+| the same story, ordinary read | `Literary minimalism` | `null` |
+
+The middle row is the one that mattered: it is quiet, domestic and English, and
+a model looking for a match would have reached for Carver or Le Guin. It
+returned null, which is what the prompt asks for and what the null path exists
+to serve.
+
+### THREE THINGS FOR NENAD — the flag does not flip until these are settled
+
+**1. The no-match copy says "hold it against", one word from the phrase that was
+rejected.** Approved 2026-08-26 and shipped as approved. The 2026-08-23
+rejection was "I'll hold it against what you said you're working on" — holding a
+work against a PERSON'S GOALS, where the idiom reads as resentment. The new line
+holds a work against a STANDARD and negates it. Different sense, and it reads
+correctly. But `tests/lib/interrogate.test.ts` carries a rule against the phrase,
+so the new line is **explicitly exempted there with the reasoning**, rather than
+quietly excluded. Confirm the exemption stands.
+
+**2. The no-match copy is wired as a REPORT line, not a third helper form.** It
+was approved beside the two helper lines and opens with the excerpt line's own
+first sentence, so its intended home looks like the helper. It cannot be: the
+helper renders under the pills BEFORE submission, and "this one doesn't map
+cleanly onto any of my thirty-five lenses" is a claim about a work nobody has
+read yet. Submission type is known in advance; a match never is. So it sits at
+the top of the reading, chosen by the server once Brain 1 has actually failed to
+match. **The words are unchanged. The placement is my call and needs yours.**
+
+**3. What is still NOT verified, and it is the half that decides the flag.** No
+push-harder reading has been read end-to-end on production. What is proven is
+that the right prompt is assembled and the right lens is found. What is NOT
+proven is what the analyst does with it: whether the standard reads as a horizon
+or hardens into a score, whether the ambition question stays developmental
+rather than turning cold, and whether the reading keeps the editor's voice under
+the extra pressure. **That is a reading somebody has to read**, and it costs a
+real submission on a real account.
+
+**Until that has been read and judged, the flag stays false.** Everything else
+is done.
+
+### One thing noticed in passing, not acted on
+
+The Vercel dashboard shows **two production deployments per commit** — the git
+push auto-deploys, and then the documented process fires the hook, which
+deploys the same commit again. It goes back through the whole visible history.
+Harmless but it doubles build minutes; the deploy process in `CLAUDE.md` may
+have one redundant step. Not changed — flagged only.
