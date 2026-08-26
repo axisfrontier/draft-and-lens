@@ -270,7 +270,7 @@ operatic. Best-in-class makes the operatic scale feel intimate.
 
 **The standard:** The most important moment in the film is a small, private one.
 
-### Wachowski / Concept Cinema / Ideas
+### Wachowskis / Concept Cinema / Ideas
 **What the strongest work does:** The philosophical concept is dramatised, not 
 explained — the audience understands the idea through what happens to the 
 characters, not through dialogue about it. Competent work in this tradition is 
