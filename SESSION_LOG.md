@@ -2699,3 +2699,48 @@ relationship would be duplication, not coverage.
 Note the true precedence is already stronger than the ruling requires: a shown
 differentiator or a named pattern silences the nudge entirely, and a real
 ledger event outranks every index-gated line.
+
+
+## FOUND ON RESUME — a §21c draft exists that the record says does not (2026-08-26)
+
+`DraftAndLens_BestInClass_Research.md` has been sitting **untracked** in the repo
+root. Its own header dates it 2026-08-23. Every later entry in this file — the
+2026-08-24 and 2026-08-25 sessions — states that §21c is "not started". Both
+cannot be true, and the file is the older artefact, so **the log has been wrong
+since the 24th** rather than the file being new.
+
+Nothing was committed at the moment of the finding. **Superseded later the same
+day — see the reconciliation entry at the end of this file.**
+
+### What the draft actually covers — 30 of the 35 lenses
+
+Counted 2026-08-26 from `### ` headings in the draft against the keys in
+`src/prompts/lenses/self-recognition.ts`.
+
+- Draft: **32 traditions.** Lenses in code: **35.**
+- **Five lenses have no entry:** `blume`, `leguin`, `morrison`, `puzo`, `sorkin`.
+- **Two draft entries answer to no lens:** Woolf, Goldman.
+
+So it is substantial but **not the complete prerequisite**. The gate it exists to
+open is per-tradition: the Interrogate brain is told to know the identified
+tradition before applying any standard (draft, "Notes for Implementation" §1). A
+writer landing on one of the five uncovered lenses would get Push harder with
+nothing behind it — which is the exact failure `INTERROGATE_ANALYSIS_LIVE`
+was shut to prevent.
+
+**`INTERROGATE_ANALYSIS_LIVE` therefore stays `false`.** Finding this draft
+changes nothing about the flag. §21c is *begun*, not done.
+
+### The draft's own three implementation constraints, recorded here so they survive
+
+1. Tradition must be identified before any standard is applied.
+2. **Suppress the best-in-class standard on excerpts** — the ambition-fit question
+   may run on a passage, the finished-work standard may not.
+3. Frame questions, never verdicts. *"is this piece reaching for that?"* is the
+   mode; *"this lacks menace"* is not.
+
+### Unverified
+
+The draft's content has had **no review** — not by Nenad, not against the corpus.
+It is one session's output, uncommitted and unread since. Treat it as a first
+draft of the prerequisite, not as the prerequisite.
