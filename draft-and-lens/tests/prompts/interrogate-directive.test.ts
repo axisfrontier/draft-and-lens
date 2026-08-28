@@ -75,6 +75,49 @@ describe('the push-harder directive', () => {
       expect(d).toMatch(/Do not explain it again in the reading|Say nothing about lenses/);
     }
   });
+
+  /**
+   * The three guards added 2026-08-28. Each closes a defect found by READING the
+   * first real push-harder output, not by testing the prompt — so each test here
+   * pins the instruction, and the thing it actually prevents is a property of the
+   * prose the analyst writes. Evidence in SESSION_LOG.md, entry of 2026-08-27.
+   */
+  it('bans reusing the standard\'s own wording, in a form the model can measure', () => {
+    const d = buildInterrogateDirective('push', 'carver', 'complete');
+    // The general "do not quote" instruction was already present and the analyst
+    // drifted past it. What makes this one different is that it is countable.
+    expect(d).toContain('more than three consecutive words');
+    expect(d).toContain('four or more words');
+  });
+
+  it('keeps the yardstick on the matched tradition and inside the researched set', () => {
+    const d = buildInterrogateDirective('push', 'carver', 'complete');
+    expect(d).toContain('the ONLY standard this reading may hold the work against');
+    // Refining within the tradition stays allowed — the analyst's instinct that
+    // this was a British rather than American minimalism was correct and useful.
+    // Only moving the measure onto an unresearched name is forbidden.
+    expect(d).toContain('You may refine WITHIN it');
+    expect(d).toMatch(/transfer the comparison to a writer outside this tradition/);
+  });
+
+  it('forbids the reading narrating itself, on every push read', () => {
+    // Seen under push pressure only, so it lives in the ambition block that all
+    // three cases share — matched, unmatched and excerpt alike.
+    for (const d of [
+      buildInterrogateDirective('push', 'carver', 'complete'),
+      buildInterrogateDirective('push', null, 'complete'),
+      buildInterrogateDirective('push', 'carver', 'excerpt'),
+    ]) {
+      expect(d).toContain('DO NOT NARRATE THE READING');
+      expect(d).toContain("The reading's honest verdict is");
+    }
+  });
+
+  it('leaves the ordinary reading untouched by all three guards', () => {
+    // The guards are prompt text on the push path only. An ordinary reading's
+    // system prompt must stay byte-identical, which is the §21b promise.
+    expect(buildInterrogateDirective('read', 'carver', 'complete')).toBe('');
+  });
 });
 
 describe('Brain 1 is only asked for the lens on a push read', () => {

@@ -37,6 +37,28 @@ import { BEST_IN_CLASS } from './best-in-class';
  * THE DISPOSITION IS UNCHANGED. Push harder is a harder reading, not a colder
  * one. The Mentor addendum's Part A still governs every word of it: developmental,
  * never directive; a reading, never a rewrite.
+ *
+ * THREE GUARDS ADDED 2026-08-28, EACH FROM A DEFECT IN THE FIRST REAL READING.
+ * The tone risk §21b was built to catch did not materialise — the standard framed
+ * questions and stayed a horizon. These three did, and none was visible to unit
+ * tests, because each is a property of the prose the analyst wrote rather than of
+ * the prompt it was sent. Verbatim evidence for all three is in SESSION_LOG.md
+ * under the 2026-08-27 entry.
+ *   • The four-word rule in `standardBlock`. "Do not quote these sentences back"
+ *     was already there and the analyst drifted past it, returning Carver's
+ *     "it lands, which is different" almost intact. A ban it can measure itself
+ *     against replaces one it has to interpret.
+ *   • Staying inside the matched tradition, also in `standardBlock`. The analyst
+ *     matched `carver`, then moved the yardstick to Trevor — a sharper call, and
+ *     a standard nobody researched. §21c's guarantee is that the comparison is
+ *     always one of the thirty-five, so the substitution had to be closed even
+ *     though the literary instinct behind it was sound.
+ *   • Not narrating the reading, in `AMBITION_INTERROGATED` so all three cases
+ *     get it. Push pressure made the reading self-conscious ("the reading's
+ *     honest verdict is"), which is the machinery talk the editor's voice rule
+ *     in CLAUDE.md forbids. Scoped here rather than to the whole analyst: it has
+ *     only ever been seen under this mode. Promote it if an ordinary reading
+ *     does it too.
  */
 
 /** The ambition question. Every push-harder read gets this, matched or not. */
@@ -48,7 +70,9 @@ That question has real answers in both directions, and you must be open to all o
 
 THIS IS NOT PERMISSION TO BE HARSH. It is permission to raise a question the ordinary reading holds back. The register does not change — developmental, specific, in the tradition's own vocabulary. A writer who asked to be pushed has asked for more exactness, not for severity, and a harsher tone would be answering a request they did not make.
 
-EVIDENCE-GATED, like everything else: raise it only where you can quote the passage that shows it (⟦…⟧). Never speculate about intent beyond what the prose makes visible.`;
+EVIDENCE-GATED, like everything else: raise it only where you can quote the passage that shows it (⟦…⟧). Never speculate about intent beyond what the prose makes visible.
+
+DO NOT NARRATE THE READING — MANDATORY: never make "the reading" the subject of a sentence and never announce its honesty, its verdicts, its duties or its difficulty. "The reading's honest verdict is", "the craft question the reading must answer honestly", "this reading will now push harder" — all wrong, and the first is wrong twice over, because a reading that advertises its own honesty invites the writer to wonder about the readings that did not. Say the thing instead of introducing it: the sentence that follows such a preamble is almost always the real note, and it is stronger with the preamble deleted. Name the question the WORK raises as much as you like — that is the reading doing its job. Just never describe the reading doing it.`;
 
 /** What replaces the standard when nothing in the lens set fits the work. */
 const NO_STANDARD = `NO BEST-IN-CLASS STANDARD FOR THIS WORK — DELIBERATE, NOT AN OMISSION:
@@ -80,7 +104,11 @@ HOW TO USE IT. This frames questions; it never delivers verdicts. "The strongest
 
 It is a horizon, not a threshold. The work is not failing because it is not yet the strongest example of its tradition — almost nothing is. Name the specific distance between what this work is doing and what the tradition can do, in the tradition's own vocabulary, and name what the work would have to reach for to close it. Where the work is already there, say so with the same specificity.
 
-Do NOT name this as a checklist, quote these sentences back at the writer, or present it as an external authority the reading is deferring to. It is what you already know about the tradition, made explicit so the reading can use it.`;
+Do NOT name this as a checklist or present it as an external authority the reading is deferring to. It is what you already know about the tradition, made explicit so the reading can use it.
+
+NEVER REPRODUCE THE WORDING ABOVE — MANDATORY, AND MEASURABLE SO IT CANNOT BE DRIFTED PAST: do not reuse more than three consecutive words from this standard anywhere in the reading. Not as a quotation, not as a sentence of your own that happens to land on the same phrasing, and not with the ends trimmed off. Before writing any sentence about what the tradition's strongest work does, check it against the text above word by word; if a run of four or more words matches, rewrite it in the vocabulary of THIS work — its own objects, scenes and sentences. The standard is a brief to read from, never a phrase-book to write from. A writer who received these sentences back would be reading a rubric, which is precisely what this mode must never hand them.
+
+STAY INSIDE THE MATCHED TRADITION — MANDATORY: the standard above is the ONLY standard this reading may hold the work against. It is the one whose demands have actually been researched, and it was matched to this work deliberately. You may refine WITHIN it — naming which region, decade or temperature of the tradition this work belongs to, and reading it at that precision — and you may mention other writers as lineage or context. What you must NOT do is transfer the comparison to a writer outside this tradition and make THEM the measure: "the tradition this story is working in — [other author], specifically" is the failure, and so is any sentence that moves the yardstick off the matched tradition and onto a name that arrived from your own reading rather than from the standard above. That substitution is invisible to the writer and it silently swaps a vetted standard for an unvetted one. If the match feels approximate, say so plainly in the work's own terms and keep reading against the standard you were given.`;
 }
 
 /**
