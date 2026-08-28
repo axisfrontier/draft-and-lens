@@ -39,7 +39,12 @@ describe('the push-harder directive', () => {
     expect(d).toContain(BEST_IN_CLASS.carver);
     expect(d).not.toContain(BEST_IN_CLASS.hemingway);
     // A horizon, not a threshold — the difference between a standard and a score.
-    expect(d).toContain('is this piece reaching for that?');
+    // The wording here changed on 2026-08-28. The old exemplar quoted a ready-made
+    // question ("... is this piece reaching for that?"), which is precisely the
+    // sentence shape that let the standard's own phrasing through; the demand it
+    // stood for is unchanged and still asserted.
+    expect(d).toContain("reaching for what the tradition's strongest work reaches for");
+    expect(d).toContain('It is a horizon, not a threshold');
   });
 
   it('withholds the standard on an excerpt, and says so for the RIGHT reason', () => {
@@ -88,6 +93,15 @@ describe('the push-harder directive', () => {
     // drifted past it. What makes this one different is that it is countable.
     expect(d).toContain('more than three consecutive words');
     expect(d).toContain('four or more words');
+    // The countable rule alone did NOT hold on the 2026-08-28 verification run:
+    // the standard's own phrasing came back inside a question, because the
+    // instruction above it invited exactly that conversion. The worked example
+    // is what carries the rule now, so it is pinned too.
+    expect(d).toContain('TRANSLATE IT INTO THIS WORK BEFORE YOU WRITE A WORD OF IT');
+    expect(d).toContain("built from THIS story's own nouns");
+    // The illustration must stay marked as invented, or the model may read the
+    // flat-clearance details as belonging to the submission in front of it.
+    expect(d).toContain('NOT the submission you are reading');
   });
 
   it('keeps the yardstick on the matched tradition and inside the researched set', () => {

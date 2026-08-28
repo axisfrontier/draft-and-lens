@@ -100,7 +100,13 @@ function standardBlock(lens: LensId): string {
 
 ${BEST_IN_CLASS[lens]}
 
-HOW TO USE IT. This frames questions; it never delivers verdicts. "The strongest work in this tradition achieves X — is this piece reaching for that?" is the move. "This lacks X" is not: it converts a standard into a score, which is the one thing this mode must never become.
+HOW TO USE IT. This frames questions; it never delivers verdicts. Asking whether the piece is reaching for what the tradition's strongest work reaches for is the move. "This lacks X" is not: it converts a standard into a score, which is the one thing this mode must never become.
+
+TRANSLATE IT INTO THIS WORK BEFORE YOU WRITE A WORD OF IT. The question you ask must be built from THIS story's own nouns — its objects, its characters, its scenes — not from the standard's vocabulary with a question mark added. Converting the standard into a question while keeping its wording is the specific failure, because the sentence still arrives in the standard's voice rather than the work's, and the writer receives a rubric wearing a question mark.
+Illustrating the difference on an invented work — a story about clearing a dead man's flat; NOT the submission you are reading, and none of its details belong in your reading:
+  • WRONG — the standard, rephrased: "Does each image carry double weight, surface meaning and something deeper simultaneously?"
+  • RIGHT — the same demand, in that work's terms: "The unpaid gas bill is doing two jobs at once. Is the cat? Is the spare key?"
+The right version is harder to write and it is the only one worth writing: it could only have been produced by someone who actually read the work.
 
 It is a horizon, not a threshold. The work is not failing because it is not yet the strongest example of its tradition — almost nothing is. Name the specific distance between what this work is doing and what the tradition can do, in the tradition's own vocabulary, and name what the work would have to reach for to close it. Where the work is already there, say so with the same specificity.
 
