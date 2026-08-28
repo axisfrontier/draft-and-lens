@@ -3001,3 +3001,133 @@ push auto-deploys, and then the documented process fires the hook, which
 deploys the same commit again. It goes back through the whole visible history.
 Harmless but it doubles build minutes; the deploy process in `CLAUDE.md` may
 have one redundant step. Not changed — flagged only.
+
+
+## THE FIRST PUSH-HARDER READING, READ END TO END — FOR TONE REVIEW (2026-08-27)
+
+This is item 3 of the 2026-08-26 entry above: *"That is a reading somebody has to
+read."* It has now been read. **`INTERROGATE_ANALYSIS_LIVE` is still `false` and
+was never flipped** — see "The flag was not needed" below. Nothing in the
+codebase changed. **Nenad reviews the text below before anything else happens.**
+
+### How it was run
+
+A purpose-written complete short story, "The Inventory" (1,270 words, British
+domestic minimalism), through the real brains against the real API, in the
+orchestrator's own sequence: Brain 1 with `matchLens: true` → Brain 1b →
+narrator verifier → analyst at `depth: 'push'` → narrator correction. Nothing
+stubbed. 264 s, 20,076 characters of report.
+
+| | |
+|---|---|
+| tradition (Brain 1) | `British literary minimalism` |
+| register | `spare, oblique, restrained` |
+| `bestInClassLens` | **`"carver"`** — a real match, not a null case |
+| report line today (flag false) | `null` |
+| report line if flipped | `This is a Push harder reading.` |
+
+**The flag was not needed, and this matters for how the result is read.**
+`buildInterrogateDirective` does not consult `INTERROGATE_ANALYSIS_LIVE`. The
+flag gates only the two writer-facing strings — the helper line and the report
+line. The analysis itself was already wired and already runs. So this reading is
+exactly what a writer would get the moment the flag flips; it is not a local
+approximation of one. Flipping the flag adds one sentence at the top and changes
+no other word below.
+
+**No production data was created.** `readings` and `submission_telemetry` are
+written only by `/api/analyse`, which was bypassed. Nothing to clean up there.
+The temporary harness `tests/tmp-live-pushread.test.ts` was deleted afterwards.
+
+### Where the Interrogate content actually is — read this before the text
+
+**There is no discrete "Interrogate section", by design.** Nenad's ruling of
+2026-08-26 attached the mode to the analyst system prompt following
+`AMBITION_AGAINST_EXECUTION`, explicitly adding no report section. So the mode
+surfaces as pressure distributed through the ordinary headings. The four
+passages below are every place it surfaced, complete and verbatim, unedited.
+
+---
+
+#### 1. OVERVIEW — verbatim, complete
+
+> This story works in British literary minimalism — specifically the contemporary British short fiction lineage of William Trevor, Tessa Hadley, and Claire-Louise Bennett, closer to that temperature than to American Carver, though sharing his structural principle: the visible surface holds an invisible weight, and the weight is what the story is about. The evaluation questions this tradition demands are: does the restraint do work, or does it merely avoid? Does the withholding create pressure — does the reader feel what isn't said — or does it simply leave a gap? And does the story's domestic inventory accumulate into something that lands, rather than merely stops?
+>
+> What this story is attempting: to render grief's resistance to itself entirely through the surfaces of ordinary life — objects, gestures, deferred tasks — without ever naming grief, allowing, or avoidance directly. That is a precise and demanding ambition, and it is the correct ambition for this material. The execution is almost entirely equal to it. Almost.
+>
+> The primary question the reading needs to answer is whether the ending's legibility — the fence panel repaired in eleven minutes, the reason that would not sound like a reason — closes the gap between restraint and resolution in the right direction, or tips across it into satisfaction the tradition would have held back.
+
+#### 2. THE ENDING — verbatim, complete
+
+> The ending is the primary concern of this reading, and the reading's honest verdict is: it earns almost everything it reaches for, and the "almost" is specific.
+>
+> The fence-panel repair in eleven minutes is structurally correct — the task introduced early as deferred, now completed; the duration that feels shorter than expected; the inability to think of a reason that would sound like a reason. These are the tradition's instruments used well. The self-knowledge Ray arrives at is genuine: he cannot justify the avoidance in retrospect, which means the avoidance was never rational, which means it was grief, which the story has never named and does not name here.
+>
+> ⟦standing there afterwards with the drill going cold in his hand he could not think of one reason he had left it since February, not one that would sound like a reason if he said it out loud.⟧ — "the drill going cold in his hand" is right: the cooling hardware is time passing, task complete, the ordinary world reasserting itself. "Not one that would sound like a reason if he said it out loud" is the story's most interior moment — Ray acknowledging the gap between how avoidance feels from inside and how it would read from outside.
+>
+> But the resolution that precedes this — the embrace, the "It was quilted," Louise's understanding, the photograph placed under the passports — arrives in a sequence that releases rather than pressurises. Each beat is handled well individually; together they constitute three consecutive resolutions. The tradition this story is working in — Trevor, specifically — tends to end on a single image that allows multiple readings and holds them in tension rather than releasing them. The strongest endings in this tradition do not resolve: they land, which is different.
+>
+> What the fence-panel close does is resolve: Ray has fixed the thing, processed the grief sufficiently to act, understood himself, and the story lets him. That is not a failure of craft — the images are earned and the emotion is not announced. But the question is whether the story's ambition was to arrive at resolution or to sustain a more unresolved pressure. The material — an unknown woman in a photograph, a coat that may or may not have existed, a zip that will not close — suggests the latter. The ending delivers the former with considerable skill.
+>
+> This is a fixable question, not a structural failure. The photograph placed under the passports is the story's most resonant closing image and it arrives before the fence panel; there is an argument that the fence panel is one beat too many — that ⟦where it would be found by somebody one day who would not know what it was either⟧ is where the story ends.
+
+#### 3. WHAT TO REVISE, item 3 — verbatim, complete
+
+> **3. Consider whether the ending is one beat long.**
+>
+> The photograph placed ⟦under the passports, where it would be found by somebody one day who would not know what it was either⟧ — this is the story's most unresolved and resonant image, and it arrives before the fence panel. The fence panel is structurally correct and the final line earns its weight. But together they constitute a double resolution — two consecutive closing beats — where the tradition tends to trust one. This is not a directive to cut the fence panel; it is a question to sit with: if the story ended on the passports drawer, what would be held in suspension that the fence panel releases? The writer is the only person who can answer whether that suspension is preferable to the earned resolution the fence panel currently delivers.
+
+#### 4. WHERE TO GROW NEXT — verbatim, complete
+
+> The precision this story achieves through objects — each one doing emotional work without being pointed at — is a genuine and developed instrument. The next place to take it is a story where the object in question is contested: not unknown (as the photograph is), but actively disputed by two characters who are each right. The coat dispute in this story gestures at that possibility and then resolves it — Louise is right, Ray is wrong. What the writer could build toward is a story where the object is genuinely ambiguous and neither character has the privileged reading of it, so the reader is left holding the dispute rather than the resolution. That asymmetry — both sides specific, neither side wrong — would put this writer's particular instrument under a pressure it has not yet been asked to bear.
+
+---
+
+### THREE THINGS THE READING SURFACED — Nenad's calls, not mine
+
+**1. The standard is quoted back at the writer, nearly verbatim, and the
+directive forbids exactly that.** `BEST_IN_CLASS.carver` ends: *"The ending
+doesn't resolve — it lands, which is different."* THE ENDING says: *"The
+strongest endings in this tradition do not resolve: they land, which is
+different."* `standardBlock()` says **"Do NOT … quote these sentences back at
+the writer."** The OVERVIEW's three "evaluation questions this tradition
+demands" are the same standard converted to questions — *"The white space does
+work"* → *"does the restraint do work"*; *"the reader feels what isn't said"* →
+*"does the reader feel what isn't said"*. That conversion is the move the
+directive asks for and reads well. The near-verbatim sentence is not. **No
+writer could detect either.** It is a fidelity question, not a tone one, and the
+fix is a line in the directive, not a rebuild.
+
+**2. The analyst swapped the researched standard for an unresearched one.**
+Brain 1 matched `carver`; the analyst opened by moving the work *away* from him
+— *"closer to that temperature than to American Carver"* — and then made Trevor
+the standard-bearer: *"The tradition this story is working in — Trevor,
+specifically."* So the horizon the writer is held to is Trevor's, and Trevor is
+not one of the thirty-five. Two readings of this and they are genuinely
+different products: the analyst is refining a rough match honestly and in the
+tradition's real vocabulary (good, and the ruling that the standard is "what you
+already know … made explicit" invites it), **or** the researched standard is
+being silently replaced by one nobody researched, which is the §21c guarantee
+leaking. Worth knowing that the rough match was *correct* — a British domestic
+minimalist story genuinely is Carver-adjacent — and the analyst said so more
+precisely than the lens id could.
+
+**3. On the tone question §21b actually asked — the standard did NOT curdle
+into a score.** The evidence, all of it in the text above: *"This is not a
+directive to cut the fence panel; it is a question to sit with"*; *"The writer
+is the only person who can answer"*; *"That is not a failure of craft"*; *"This
+is a fixable question, not a structural failure."* The ambition verdict landed
+on the *correctly-matched* branch — *"it is the correct ambition for this
+material"* — rather than defaulting to a deficit, which is the branch that
+proves the prompt's four-way opening was real and not decoration. The register
+stayed developmental and the editor's voice held under the extra pressure.
+**One wobble, minor:** *"the reading's honest verdict is"* is the reading
+narrating its own machinery, which the voice rule dislikes. One clause.
+
+### WHAT HAPPENS NEXT — nothing, until Nenad has read the above
+
+The flag stays `false`. Points 1 and 2 are open questions on the *directive*, and
+both are cheap to fix once ruled. Point 3 is the one that gated the flag and it
+came back clean — but "clean on one reading of one matched story" is what was
+proven, not "clean". The two decisions still open from 2026-08-26 (the "hold it
+against" exemption, and the no-match line's placement at the top of the report)
+are also still open and unchanged.
