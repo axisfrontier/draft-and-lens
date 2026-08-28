@@ -3131,3 +3131,162 @@ came back clean — but "clean on one reading of one matched story" is what was
 proven, not "clean". The two decisions still open from 2026-08-26 (the "hold it
 against" exemption, and the no-match line's placement at the top of the report)
 are also still open and unchanged.
+
+
+## THE THREE GUARDS, AND THE SECOND READING THAT TESTED THEM (2026-08-28)
+
+`25b1fea` then `fe2d6d3`. `tsc` clean · 272/272 · **`INTERROGATE_ANALYSIS_LIVE`
+still `false`, never touched.** Not deployed — no hook fired, nothing pushed.
+
+Nenad's rulings on the three defects in the 2026-08-27 reading: fix the quoting
+leak with a countable rule; forbid leaving the researched set; cut the
+self-narration. All three are in. A second reading was then run to verify them —
+a fresh story in a **different** tradition, so the fixes were tested as general
+rules rather than as patches to the Carver case.
+
+| | first reading | second reading |
+|---|---|---|
+| story | "The Inventory", 1,270 words | "The Crossing at Kalambaka", 1,000 words |
+| tradition | British literary minimalism | literary minimalism |
+| lens | `carver` | **`hemingway`** |
+
+### What the verification actually found — one guard failed on first attempt
+
+Measured by n-gram overlap between the reading and `BEST_IN_CLASS.hemingway`:
+
+| guard | result |
+|---|---|
+| self-narration | **held.** Zero hits for "the reading's", "this reading", "the reading must/will/needs". |
+| stay in the researched set | **held.** Hemingway the only writer named; no yardstick moved. |
+| no reuse of the standard's wording | **FAILED.** Three five-word runs and six four-word runs, including *"surface meaning and something deeper simultaneously"* and *"carry the entire emotional weight"* — both lifted whole. |
+
+**Why the countable rule lost, and it is worth knowing before writing another
+one.** The instruction directly above it supplied a template: *"The strongest
+work in this tradition achieves X — is this piece reaching for that?"* That
+sentence tells the model to convert the standard into a question, and the
+cheapest way to do that is to keep X's wording and add a question mark. A
+concrete exemplar beat an abstract prohibition sitting four lines below it. The
+rule was not ignored so much as outvoted by its own neighbour.
+
+**The fix was to delete what defeated it,** not to write a firmer version of it.
+The template is gone; in its place is the demand it stood for — build the
+question from this work's own nouns — carried by a worked wrong/right pair. The
+example uses an invented work (a flat clearance) and says so explicitly in the
+prompt, because a concrete example risks the model reading those details as
+belonging to the submission in front of it. The countable rule stays as a
+backstop.
+
+**Re-measured on the same story and the same lens, the prompt the only
+variable:** three five-word runs and six four-word runs → **one four-word run**
+(*"trusts the reader completely"*). Reduced, not eliminated. Whether that
+residue matters is a judgement call and it is Nenad's: it is four words of
+generic craft language, and no writer could source it.
+
+### Two new things the second reading showed — neither is a regression
+
+**1. An external authority appeared, from inside the set.** WHAT IS WORKING now
+opens: *"To Chekhov's note to Gorky: Find the characteristic detail. Not several
+details, but one characteristic detail."* Chekhov IS one of the thirty-five, so
+the stay-in-set rule is satisfied — but `standardBlock` also says not to
+"present it as an external authority the reading is deferring to", and opening a
+section by deferring to Chekhov is that, in a milder form. Not fixed; flagged.
+
+**2. The ambition question came back thinner than in the first reading.** It is
+present — *"That is a disciplined and difficult ambition, and this story largely
+serves it"* — but it is one clause, where the Carver reading gave it a paragraph
+and returned to it in THE ENDING. Two possible causes and they need different
+responses: the story genuinely offered less to interrogate, or the enlarged
+`standardBlock` is crowding `AMBITION_INTERROGATED` out. One reading each way is
+not enough to tell. **Worth watching on the next run rather than acting on now.**
+
+---
+
+### THE INTERROGATE CONTENT OF THE SECOND READING — verbatim, complete
+
+Still no discrete section, per the 2026-08-26 ruling. These are the passages
+carrying the mode.
+
+#### OVERVIEW
+
+> This story works in the Hemingway-lineage minimalist tradition — the iceberg method, where dialogue does the work of concealment, and environmental detail carries the emotional weight that no character will speak aloud. The tradition's central demand: that what is withheld must be felt as fully as what is said, and that the surface of ordinary conversation must hold the pressure of something larger beneath it without cracking.
+>
+> The story knows exactly what it is trying to do. Two people, a café, a departure that has been decided before the scene begins. The ambition is precise: to render, through the logistics of buses and monasteries and beer brands, the interior distance opening between two people who will not name what is ending. That is a disciplined and difficult ambition, and this story largely serves it.
+>
+> The craft is, on the whole, working. Dialogue rhythms earn their keep; the environmental architecture is active rather than atmospheric. The single structural question — whether something genuinely shifts across the scene, or whether obliqueness simply holds static — has a clear answer: the story does move. The man's pre-meditated planning is revealed mid-scene, the emotional confrontation arrives with precision, and the closing image delivers a self-indictment the opening could not have prepared. That is accumulation, not stasis.
+>
+> One note of honest qualification follows in the revision section, concerning the moment where the prose comes closest to breaking its own contract.
+
+#### WHAT TO REVISE, item 1 — the interrogated note
+
+> **1.** ⟦"Whatever it takes to do it," he said. "I don't know how long. That's the honest answer and you won't like it but it's the honest one."⟧
+>
+> This is the story's weakest passage, and it matters most because it arrives at the scene's emotional peak — the moment he finally says the thing. The problem is specific: *"That's the honest answer and you won't like it but it's the honest one"* is the man explaining his own honesty to her, which is a different act from being honest. In every other exchange, the man is evasive, indirect, self-concealing — his speech is characterised by logistics rather than declaration. Here, he breaks that pattern not by arriving at vulnerability but by announcing it. "The honest answer" names itself twice in the same sentence, which is the grammatical shape of a man who doesn't quite trust what he has said.
+>
+> The move: strip the declaration back to what he actually knows. He knows the what (go back) and the when (tonight). What he does not know — what is genuinely unknown to him — is the how long and the what for. The passage could end at the edge of that unknowing, rather than explaining that the unknowing is honest. The scene around this line is doing its job precisely; this line overstates.
+
+#### WHERE TO GROW NEXT
+
+> This story's instrument is the scene — compressed, real-time, one location, everything carried by what two people do with their hands and what they will not say. The writer owns that instrument with considerable confidence. What this piece suggests as a possible direction: a story built across multiple such scenes, where the same two people (or a different pairing) return to the same kind of surface conversation at different intervals — and what the reader carries between scenes, unspoken in both, is what the story is actually about. The discipline here is proving that absence accumulates. What's been demonstrated in a single scene is harder and more interesting across two or three.
+
+#### VERDICT
+
+> **VERDICT: DEVELOP FURTHER**
+>
+> This is accomplished, disciplined minimalist realism — a story that knows its tradition and works within it with consistency and genuine skill. The dialogue rhythms hold, the imagery earns its keep, the closing self-indictment is prepared by the opening exchange and arrived at without announcement. The story is very close to finished. What stands between this draft and a complete one is a single passage — the man's declaration of his own honesty at the scene's emotional peak — where the prose breaks the evasive, logistical character of his speech and names itself, doing what the surrounding silence was already doing more precisely. Fix that passage to match the compression the rest of the story sustains, and this is ready.
+
+---
+
+## ⚠️ A SEPARATE AND MORE SERIOUS BUG, FOUND BY THIS RUN — NOT INTERROGATE, NOT FIXED, NOT MINE TO FIX WITHOUT A RULING
+
+**Brain 1 is shown a mid-sentence fragment of any submission between roughly
+3,000 and 6,000 characters, with nothing telling it the text was cut.**
+
+`src/ai/brains/diagnostician.ts`:
+
+```
+const maxChars = 3000;
+const opening = text.slice(0, maxChars);
+const closing = text.length > maxChars * 2 ? text.slice(-maxChars) : '';
+const excerpt = closing ? `[OPENING OF WORK]\n${opening}\n\n[CLOSING OF WORK]\n${closing}` : opening;
+```
+
+Above 6,000 characters the model gets opening AND closing, each **labelled**, so
+it knows it is reading extracts. Below 3,000 it gets everything. **In between it
+gets the first 3,000 characters and no label at all** — so a truncated
+submission is indistinguishable, to Brain 1, from a work that simply ends there.
+
+**It produced a fabricated defect in a real reading.** "The Crossing at
+Kalambaka" is 5,495 characters. Character 3,000 falls here:
+
+> `...going to tell them."\n\nShe laughed at that, and he was glad`
+
+The first run's reading then told the writer, as WHAT TO REVISE item 3:
+
+> **3.** The mid-sentence cut ⟦She laughed at that, and h⟧ — complete the sentence or remove the cut. If this is a submission artifact, the sentence needs its ending.
+
+There is no cut. The story runs to a full stop and continues for another 2,500
+characters. The reading invented a flaw out of the pipeline's own truncation and
+asked the writer to repair it — and gave it a numbered revision slot.
+
+**Why this is worse than it looks.**
+- It is **not** interrogate-specific. Every ordinary reading in that size band
+  is exposed, and 3,000–6,000 characters is roughly 500–1,000 words — squarely
+  where short fiction and most beta submissions live.
+- Brain 1 sets tradition, register, ambition and summary, and every later brain
+  is told the tradition is **confirmed**. A diagnosis formed without the ending
+  propagates through the whole reading.
+- **It is intermittent in what you can SEE.** The truncation is deterministic;
+  whether the model remarks on it is not. The second run of the same story did
+  not mention the cut at all. So the visible symptom will come and go while the
+  underlying blindness is constant — which is exactly the shape of bug that
+  survives casual testing.
+- It violates the product's own standard against inventing anything, and it did
+  so in the most damaging place: a direct instruction to change the work.
+
+**Not fixed.** It is outside the named scope of this session's task and the
+obvious repairs are not equivalent — label the truncation so Brain 1 knows what
+it is holding; or lower the two-slice threshold so the band cannot exist; or
+raise `maxChars` so a whole short story fits. The third is the only one that
+lets Brain 1 read a 5,000-character story **whole**, and it costs tokens on
+every submission. **Nenad's call, and it should be taken before the next
+deploy** — this is live in production today, on ordinary readings.
