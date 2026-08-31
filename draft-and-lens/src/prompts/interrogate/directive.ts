@@ -53,6 +53,29 @@ import { BEST_IN_CLASS } from './best-in-class';
  *     a standard nobody researched. §21c's guarantee is that the comparison is
  *     always one of the thirty-five, so the substitution had to be closed even
  *     though the literary instinct behind it was sound.
+ *
+ * TIGHTENED 2026-08-31, and the register work does NOT live here. Nenad's
+ * review found the interrogated notes too long, too dense and too academic —
+ * "a critical essay rather than a person giving you notes across a desk". The
+ * A/B that followed found the cause was not this mode: an ordinary reading of
+ * the same story came back LONGER (3,577 words against push's 3,314) and just
+ * as third-person. The register is the analyst's house style, so the fix is
+ * `HOW THESE NOTES ARE WRITTEN` in `analyst.ts`, which governs the whole
+ * reading. Repeating it here would duplicate it and would leave the
+ * interrogated notes in a different voice from the prose around them, which is
+ * worse than the state it set out to fix.
+ *
+ * What changed here is only length: every block above says the same thing in
+ * fewer words. Every guard is intact, and the phrasing the tests pin is
+ * deliberately unchanged — those exact sentences are what closed the quoting
+ * leak, and rewording them for style would have cost their provenance for
+ * nothing.
+ *
+ * ONE ADDITION, approved by Nenad on review: `DO NOT DEFER TO IT IN THE PROSE`
+ * in `standardBlock`. The second reading opened a section by citing Chekhov —
+ * inside the researched set, so the stay-in-set rule was satisfied, but still
+ * the reading deferring to an external authority. It was logged as flagged and
+ * not fixed; it is fixed now.
  *   • Not narrating the reading, in `AMBITION_INTERROGATED` so all three cases
  *     get it. Push pressure made the reading self-conscious ("the reading's
  *     honest verdict is"), which is the machinery talk the editor's voice rule
@@ -64,22 +87,22 @@ import { BEST_IN_CLASS } from './best-in-class';
 /** The ambition question. Every push-harder read gets this, matched or not. */
 const AMBITION_INTERROGATED = `THE AMBITION ITSELF — MANDATORY, THIS READING ONLY:
 
-The writer has asked to be pushed harder. The ordinary reading takes the work's ambition as given and asks how well it was executed. This reading does not. Ask the prior question: was this ambition the right one for this material?
+The writer asked to be pushed. The ordinary reading takes the ambition as given and asks how well it was executed. This one asks the prior question: was this ambition the right one for this material?
 
-That question has real answers in both directions, and you must be open to all of them: the ambition is right and the execution has not caught up; the ambition is smaller than the material deserves, and the work is settling for less than it has; the ambition is larger than this material can carry, and the strain shows; or the ambition and the material are correctly matched, which is worth saying plainly when it is true.
+Real answers run in every direction and you must stay open to all of them. The ambition is right and the execution has not caught up. It is smaller than the material deserves, and the work is settling. It is larger than this material can carry, and the strain shows. Or it is correctly matched, which is worth saying plainly when it is true.
 
-THIS IS NOT PERMISSION TO BE HARSH. It is permission to raise a question the ordinary reading holds back. The register does not change — developmental, specific, in the tradition's own vocabulary. A writer who asked to be pushed has asked for more exactness, not for severity, and a harsher tone would be answering a request they did not make.
+THIS IS NOT PERMISSION TO BE HARSH. It is permission to raise a question the ordinary reading holds back. Someone who asked to be pushed wants more exactness, not more severity — a harsher tone answers a request they did not make.
 
 EVIDENCE-GATED, like everything else: raise it only where you can quote the passage that shows it (⟦…⟧). Never speculate about intent beyond what the prose makes visible.
 
-DO NOT NARRATE THE READING — MANDATORY: never make "the reading" the subject of a sentence and never announce its honesty, its verdicts, its duties or its difficulty. "The reading's honest verdict is", "the craft question the reading must answer honestly", "this reading will now push harder" — all wrong, and the first is wrong twice over, because a reading that advertises its own honesty invites the writer to wonder about the readings that did not. Say the thing instead of introducing it: the sentence that follows such a preamble is almost always the real note, and it is stronger with the preamble deleted. Name the question the WORK raises as much as you like — that is the reading doing its job. Just never describe the reading doing it.`;
+DO NOT NARRATE THE READING — MANDATORY: never make "the reading" the subject of a sentence, and never announce its honesty, its verdicts, its duties or its difficulty. "The reading's honest verdict is", "the craft question the reading must answer" — both wrong, and the first twice over, because a reading that advertises its own honesty invites the writer to wonder about the ones that did not. Say the thing instead of introducing it. Name the question the WORK raises as much as you like; just never describe the reading doing it.`;
 
 /** What replaces the standard when nothing in the lens set fits the work. */
 const NO_STANDARD = `NO BEST-IN-CLASS STANDARD FOR THIS WORK — DELIBERATE, NOT AN OMISSION:
 
-This work's tradition did not match any of the thirty-five voices whose standards have been researched. Do NOT improvise one, and do NOT reach for the nearest tradition that half-fits — a standard from the wrong tradition is worse than none, because the writer cannot tell it is the wrong one.
+This work's tradition matched none of the thirty-five researched voices. Do NOT improvise one, and do NOT reach for the nearest tradition that half-fits — a standard from the wrong tradition is worse than none, because the writer cannot tell it is the wrong one.
 
-Hold the work against ITSELF at its fullest instead: what would this piece be if it were doing everything it is already trying to do, as well as it could be done? That is a real standard and an exacting one. Say nothing about lenses, matching, or what could not be found — the writer has already been told, in the terms they chose, and repeating it here would be the reading explaining its own machinery.`;
+Hold the work against ITSELF at its fullest: what would this piece be if it did everything it is already trying to do, as well as it could be done? That is a real standard and an exacting one. Say nothing about lenses, matching, or what could not be found — the writer has already been told, in the terms they chose.`;
 
 /**
  * What replaces the standard on an excerpt — a different reason from a missing
@@ -88,9 +111,9 @@ Hold the work against ITSELF at its fullest instead: what would this piece be if
  */
 const EXCERPT_NO_STANDARD = `NO BEST-IN-CLASS STANDARD ON AN EXCERPT — DELIBERATE, NOT AN OMISSION:
 
-This submission is an excerpt, so the standard its tradition sets for itself is withheld — it is a whole-work standard, and a passage held against a finished book is not a fair reading. This is true whether or not the tradition matched; do not reach for one anyway.
+This submission is an excerpt, so the standard its tradition sets for itself is withheld — that is a whole-work standard, and a passage held against a finished book is not a fair reading. True whether or not the tradition matched; do not reach for one anyway.
 
-Hold the pages against what THEY are reaching for instead: at their fullest, doing everything they are already trying to do, as well as it could be done. The writer has already been told why the comparison is not being made, in the terms they chose. Do not explain it again in the reading.
+Hold the pages against what THEY are reaching for: at their fullest, doing everything they are already trying to do, as well as it could be done. The writer has already been told why the comparison is not being made. Do not explain it again in the reading.
 
 `;
 
@@ -100,21 +123,20 @@ function standardBlock(lens: LensId): string {
 
 ${BEST_IN_CLASS[lens]}
 
-HOW TO USE IT. This frames questions; it never delivers verdicts. Asking whether the piece is reaching for what the tradition's strongest work reaches for is the move. "This lacks X" is not: it converts a standard into a score, which is the one thing this mode must never become.
+IT FRAMES QUESTIONS, NEVER VERDICTS. Ask whether the piece is reaching for what the tradition's strongest work reaches for. "This lacks X" turns a standard into a score, which is the one thing this mode must never become.
 
-TRANSLATE IT INTO THIS WORK BEFORE YOU WRITE A WORD OF IT. The question you ask must be built from THIS story's own nouns — its objects, its characters, its scenes — not from the standard's vocabulary with a question mark added. Converting the standard into a question while keeping its wording is the specific failure, because the sentence still arrives in the standard's voice rather than the work's, and the writer receives a rubric wearing a question mark.
-Illustrating the difference on an invented work — a story about clearing a dead man's flat; NOT the submission you are reading, and none of its details belong in your reading:
+It is a horizon, not a threshold. The work is not failing because it is not yet the strongest example of its tradition — almost nothing is. Name the specific distance between what this work does and what the tradition can do, and name what it would take to close it. Where the work is already there, say so with the same specificity.
+
+TRANSLATE IT INTO THIS WORK BEFORE YOU WRITE A WORD OF IT. The question you ask must be built from THIS story's own nouns — its objects, its characters, its scenes — not the standard's vocabulary with a question mark added: that arrives in the standard's voice and hands the writer a rubric. Illustrated on an invented work, a story about clearing a dead man's flat — NOT the submission you are reading, and none of its details belong in your reading:
   • WRONG — the standard, rephrased: "Does each image carry double weight, surface meaning and something deeper simultaneously?"
   • RIGHT — the same demand, in that work's terms: "The unpaid gas bill is doing two jobs at once. Is the cat? Is the spare key?"
-The right version is harder to write and it is the only one worth writing: it could only have been produced by someone who actually read the work.
+The right version is harder to write and it is the only one worth writing. It could only have come from someone who actually read the work.
 
-It is a horizon, not a threshold. The work is not failing because it is not yet the strongest example of its tradition — almost nothing is. Name the specific distance between what this work is doing and what the tradition can do, in the tradition's own vocabulary, and name what the work would have to reach for to close it. Where the work is already there, say so with the same specificity.
+NEVER REPRODUCE THE WORDING ABOVE — MANDATORY, AND COUNTABLE SO IT CANNOT BE DRIFTED PAST: do not reuse more than three consecutive words from this standard anywhere in the reading. Not as a quotation, not as a sentence of your own that happens to land on the same phrasing, not with the ends trimmed off. Check each sentence you write about the tradition against the text above word by word; if four or more words match, rewrite it in this work's own objects and scenes. The standard is a brief to read from, never a phrase-book to write from.
 
-Do NOT name this as a checklist or present it as an external authority the reading is deferring to. It is what you already know about the tradition, made explicit so the reading can use it.
+STAY INSIDE THE MATCHED TRADITION — MANDATORY: the standard above is the ONLY standard this reading may hold the work against. It is the one whose demands have been researched, and it was matched to this work deliberately. You may refine WITHIN it — naming which region, decade or temperature of the tradition this work belongs to — and you may mention other writers as lineage. You must NOT transfer the comparison to a writer outside this tradition and make THEM the measure: "the tradition this story is working in — [other author], specifically" is the failure. That substitution is invisible to the writer and silently swaps a vetted standard for an unvetted one. If the match feels approximate, say so plainly in the work's own terms and keep reading against the standard you were given.
 
-NEVER REPRODUCE THE WORDING ABOVE — MANDATORY, AND MEASURABLE SO IT CANNOT BE DRIFTED PAST: do not reuse more than three consecutive words from this standard anywhere in the reading. Not as a quotation, not as a sentence of your own that happens to land on the same phrasing, and not with the ends trimmed off. Before writing any sentence about what the tradition's strongest work does, check it against the text above word by word; if a run of four or more words matches, rewrite it in the vocabulary of THIS work — its own objects, scenes and sentences. The standard is a brief to read from, never a phrase-book to write from. A writer who received these sentences back would be reading a rubric, which is precisely what this mode must never hand them.
-
-STAY INSIDE THE MATCHED TRADITION — MANDATORY: the standard above is the ONLY standard this reading may hold the work against. It is the one whose demands have actually been researched, and it was matched to this work deliberately. You may refine WITHIN it — naming which region, decade or temperature of the tradition this work belongs to, and reading it at that precision — and you may mention other writers as lineage or context. What you must NOT do is transfer the comparison to a writer outside this tradition and make THEM the measure: "the tradition this story is working in — [other author], specifically" is the failure, and so is any sentence that moves the yardstick off the matched tradition and onto a name that arrived from your own reading rather than from the standard above. That substitution is invisible to the writer and it silently swaps a vetted standard for an unvetted one. If the match feels approximate, say so plainly in the work's own terms and keep reading against the standard you were given.`;
+DO NOT DEFER TO IT IN THE PROSE — MANDATORY: never present the standard, or any writer named in it, as an authority the reading is answering to. Opening a note by citing what a named master said and measuring the writer against it is the failure, even when that master is inside the researched set. This is what you already know about the tradition, made usable — not a citation.`;
 }
 
 /**
