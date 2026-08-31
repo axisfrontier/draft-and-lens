@@ -3290,3 +3290,103 @@ raise `maxChars` so a whole short story fits. The third is the only one that
 lets Brain 1 read a 5,000-character story **whole**, and it costs tokens on
 every submission. **Nenad's call, and it should be taken before the next
 deploy** — this is live in production today, on ordinary readings.
+
+---
+
+## 2026-08-31 — Claude Code session. Brain 1 truncation: RULED, FIXED, DEPLOYED
+
+**Nenad's ruling (relayed in session):** raise `maxChars`. Not an interrogate-scoped
+decision — a live correctness bug on ordinary readings, in the band most short
+fiction sits in. Labelling the cut or lowering the two-slice threshold both leave
+Brain 1 reading a mutilated submission and only change how honestly it admits it.
+Only raising the window lets Brain 1 read the whole thing. He also asked
+explicitly for the blind spot to be **closed, not shifted** — check above 6,000
+characters for the same defect in a different form.
+
+**Shipped: `6c3408f`.** `src/ai/brains/diagnostician.ts`, plus
+`tests/brains/diagnostician.test.ts` (33 tests). Deployed 2026-08-31.
+
+### What it actually cost, measured before the fix went in
+
+Reproduced on a fresh 4,615-character story through the real Brain 1 prompt. The
+old path did not merely add a stray revision note — it made the pipeline's own
+cut the reading's **`primaryConcern`**:
+
+> "whether the mid-sentence cut-off ending is a deliberate formal act — the
+> sentence breaking where the self breaks — or an artifact of incompletion"
+
+and put it in `craftQuestions` and `formNotes` as the thing craft analysis
+"should treat as the primary structural question". `primaryConcern` and
+`craftQuestions` both go downstream, so the whole reading would have been
+organised around a defect the writer's draft does not have. That is worse than
+the single numbered note recorded on 2026-08-28. Same story, new path: no cut
+mentioned, ending read, tradition right.
+
+### The fix is a shape change, not just a number
+
+`READ_WINDOW_CHARS = 12000`, and **the budget is now ONE number**. Previously it
+was a slice size (3,000) plus a threshold (`> maxChars * 2`), and with two
+numbers there is *always* a band between them where the text is cut and nothing
+says so. Raising 3,000 to 6,000 would have moved the band to 6,000–12,000, not
+removed it. The single-slice branch now fires **only when the whole text fits**,
+so no such band can exist at any length whatever the constant is set to. This is
+the part that matters; the number is replaceable.
+
+**Why 12,000 and not "whole piece always".** The cap is 4,000 words ≈ 20,800
+characters (measured, 5.2 chars/word on literary prose). A window of 28,000 would
+have made the two-slice path unreachable — the same dead-branch shape as
+`FREE_WORD_LIMIT` and the three dead brains. At 12,000 it serves everything over
+~2,300 words and stays live. It matches the structural reader's 12,000 but is
+deliberately **not** a shared constant: that brain samples five waypoints for its
+own reasons and the two numbers should stay free to move apart.
+
+### The same blind spot above 6,000, in a different form — found and closed
+
+Above the window the extracts were labelled `[OPENING OF WORK]` /
+`[CLOSING OF WORK]`, which says where they came from but **never that they are
+cuts**. A slice boundary lands mid-sentence, so the model was still free to read
+that ragged edge as the writer's own — the identical fabricated-defect failure,
+one band up, just with a weaker trigger. Both extracts are now prefaced with what
+they are, how much was removed, and "Never read a cut edge as a flaw in the
+writing."
+
+Verified live on a 13,827-character submission: the opening extract ends
+"and then put the" and the diagnostic says nothing about it, while still catching
+the genuine corruption in the test fixture. Discrimination intact.
+
+### Cost
+
+Measured with `count_tokens` on literary prose — 4.44 chars/token, Sonnet 4.6 at
+$3/MTok input. Worst case **+1,407 input tokens, +$0.0042 per reading**, and
+**bounded**: Brain 1's input no longer grows with manuscript length past 12,000
+characters. Submissions under 3,000 characters are byte-identical to before.
+
+### ⚠️ OPEN — the same defect, live, in a file this task was not scoped to touch
+
+**`src/app/api/lens/route.ts:97` — `text.slice(0, 12000)`, no label, and the
+output is a lens reading streamed verbatim to the writer.**
+
+This is the same defect class, not a variant: a model forms a writer-facing craft
+opinion on a text it has been given no reason to think is incomplete. It is
+reachable — the route enforces no word cap of its own, and 12,000 characters is
+~2,300 words against a 4,000-word submission cap, so any longer piece gets its
+lens reading built on a silent truncation.
+
+**Not fixed. Different file, different feature, and the standing rules are "touch
+only the named files" and "one change per commit".** The fix is the one already
+written and proven next door — reuse the labelled-extract shape rather than
+inventing a second one. **Nenad's call.**
+
+**Checked and deliberately left alone:** `scorer.ts` (6,000), `bible.ts` (8,000),
+`market.ts` (4,000) and `analyst.ts` (28,000) all already label with
+`[truncated]`; `structural-reader.ts` marks its gaps with `[...]`. `moderation.ts`,
+`provenance-check.ts` and `lens-authorship.ts` cut at 6,000 unlabelled, but all
+three are classifiers that emit no craft note — a cut cannot become a fabricated
+defect in a writer's report. Recorded so a future session does not re-audit them.
+
+### Also carried to origin by this push
+
+The push that deployed this fix also pushed four commits that were sitting
+unpushed locally: `a77f02a`, `25b1fea`, `fe2d6d3`, `a960ce1` — the §21c guards and
+the two reading write-ups. `INTERROGATE_ANALYSIS_LIVE` is still `false` and was
+confirmed false before the hook fired, so nothing writer-facing changed from them.
