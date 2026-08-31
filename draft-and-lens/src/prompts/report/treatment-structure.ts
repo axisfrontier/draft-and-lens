@@ -40,7 +40,19 @@ const SECTIONS: ReportSection[] = [
   { heading: 'WHERE TO GROW NEXT', body: WHERE_TO_GROW_NEXT },
 ];
 
-const VERDICT_FOOTER = "---\nVERDICT: [READY TO DRAFT / DEVELOP FURTHER / SIGNIFICANT REWORK NEEDED]\nOne honest paragraph. Reference the treatment's specific tradition and the film it is trying to become.\n---";
+/**
+ * The verdict footer asks for the BOLD form because that is what the model
+ * actually writes, on every path, every time — ordinary readings and push reads
+ * alike. The prompt used to ask for a bare `VERDICT:` and got `**VERDICT:**`
+ * back regardless; asking for what already happens removes a mismatch rather
+ * than pretending it is not there.
+ *
+ * `extractVerdict` still accepts bare, bolded and `##` forms. That tolerance is
+ * the safety net and stays: it is what stops a formatting whim costing the
+ * writer their verdict, and it is the reason this line is a tidy-up rather than
+ * a fix.
+ */
+const VERDICT_FOOTER = "---\n**VERDICT: [READY TO DRAFT / DEVELOP FURTHER / SIGNIFICANT REWORK NEEDED]**\nOne honest paragraph. Reference the treatment's specific tradition and the film it is trying to become.\n---";
 
 /** Report section contract for the analyst (Brain 2) — section inclusion is
  *  evidence-gated (see EVIDENCE_GATING), not word-count-tiered. */
