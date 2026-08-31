@@ -3390,3 +3390,127 @@ The push that deployed this fix also pushed four commits that were sitting
 unpushed locally: `a77f02a`, `25b1fea`, `fe2d6d3`, `a960ce1` — the §21c guards and
 the two reading write-ups. `INTERROGATE_ANALYSIS_LIVE` is still `false` and was
 confirmed false before the hook fired, so nothing writer-facing changed from them.
+
+---
+
+## 2026-08-31/09-01 — Claude Code session. Three live bugs, and the reading's voice changed
+
+All deployed. **`INTERROGATE_ANALYSIS_LIVE` is still `false`, untouched all
+session — that flag decision is Nenad's and is explicitly not part of this
+work.** `DraftAndLens_Handover_2026-08-25.md` left untracked and untouched
+throughout, at his instruction, three times.
+
+Commits, in order: `6c3408f` (Brain 1 window — entry above), `6ac4d1f` (docs),
+`4a40591` (lens route), `f4443f0` (verdict parsing), `da29855` (register
+reform), `634a61c` (verdict footer).
+
+### 1. The lens was reading part of the work and calling it the whole work — `4a40591`
+
+`/api/lens` cut at 12,000 characters with no label and streamed a lens reading
+of the fragment to the writer verbatim. Same defect as Brain 1's, in the worse
+place: a lens reading IS the writer-facing text. Reachable in ordinary use —
+`ReportView` sends `submittedText`, which the 4,000-word cap allows up to about
+20,800 characters, so anything over ~2,300 words was affected.
+
+The window did not move. The shape did, and it now lives in
+**`src/ai/read-window.ts`** rather than in either caller, because two paths
+needed the identical property. **Each caller keeps its own window** — different
+models, different jobs; the shared thing is the shape, not the number.
+
+**Nenad's ruling on the missing word cap: leave it.** `/analyse` and `/converse`
+refuse over-cap text; `/lens` truncates instead. Noted as a product
+inconsistency, not urgent, not blocking. He will decide later whether it should
+refuse. Do not "fix" it.
+
+### 2. The verdict was being dropped from EVERY reading — `f4443f0`
+
+Chasing a formatting difference between two interrogate samples turned up
+something neither sample caused, and the diagnosis I first reported was wrong.
+
+`extractVerdict` capped the detail paragraph at **400 characters**. VERDICT is
+the last thing in the report, so the terminator it needed — `\n##`, `\n---`, or
+end of report — sat beyond the cap, and the paragraph is longer than 400:
+measured at **839, 909 and 911** characters on three consecutive real readings.
+The match failed and the function returned **null**.
+
+`ReportView.tsx` renders a permanent "Verdict" sidebar link, so the writer got a
+link that scrolled to an empty div. Meanwhile `parseReport` had no verdict
+handling at all, so `## VERDICT: X` became an eleventh section while a bare or
+bolded one was absorbed by WHERE TO GROW NEXT — decided by nothing but the
+model's formatting mood that run.
+
+**`**VERDICT:**` versus `## VERDICT:` was NOT the break.** The ordinary reading,
+with no interrogate anywhere near it, produced the bolded form too. Recording
+that because it was reported to Nenad the wrong way round first.
+
+### 3. The register reform — `da29855`. This changes EVERY reading, not just push reads
+
+Nenad's review: the interrogate output was too long, too dense, "a critical
+essay rather than a person giving you notes across a desk".
+
+**The A/B found the cause was not interrogate.** Same story, same Brain 1
+diagnostic, same lens:
+
+| | ordinary (control) | push, before | push, after |
+|---|---|---|---|
+| report words | **3,577** | 3,314 | **2,439** |
+| "you"/"your" | 2 | 3 | **17** |
+| revision notes | — | 201, 202 | **157, 120, 105, 67** |
+
+The push read was already SHORTER than the ordinary one, and the ordinary
+reading opened a note "In the Munro tradition, the gap between what a character
+cannot do and what she later does must be felt as a specific, if unnamed,
+internal event". The register was the analyst's house style.
+
+So the fix is **`HOW THESE NOTES ARE WRITTEN` in `analyst.ts`**, governing the
+whole reading: address the writer as "you", say the diagnosis once, plain
+sentences, countable 120-word ceiling per note. It carries a worked wrong/right
+pair (71 words against 44) and sits **directly above the rules that produce the
+padding**, because 2026-08-28 established that a concrete neighbouring exemplar
+beats an abstract rule — this time the neighbour effect works for us.
+
+Three rules made length structural and each was amended without losing what it
+protects: `ACKNOWLEDGE DUAL READINGS` is now a check satisfiable in one
+sentence rather than a mandated defence-then-prosecution structure;
+`TEACH THE MOVE` keeps its taster, capped; `MECHANISM/REACH` keeps both halves
+as two things to say, not two paragraphs.
+
+The interrogate directive went 1,090 → 921 words and **deliberately does not
+repeat the register rules** — duplicating them would leave interrogated notes in
+a different voice from the prose around them, which is worse than the state it
+set out to fix.
+
+**Four directive tests failed on the first pass** because sentences had been
+reworded for style. Those exact sentences are what closed the quoting leak, so
+**the wording went back rather than the tests moving.** Worth remembering: the
+phrasing in `interrogate-directive.test.ts` is pinned on purpose.
+
+One approved addition: `DO NOT DEFER TO IT IN THE PROSE`, closing the Chekhov
+opening logged as flagged-not-fixed on 2026-08-28.
+
+**Nenad approved the register shift on the AFTER sample and explicitly accepted
+the scope** — it changes the voice of ordinary readings too. Notes are down
+~45%; the whole report is down 32% against the ordinary control, not the half
+that was asked for. He accepted that.
+
+Known residue: the 120-word ceiling was overshot once (157 on the first note).
+Countable, so tunable, but not absolute.
+
+### 4. The verdict footer — `634a61c`
+
+**Nenad's ruling: fix the prompt, not the model.** All three structure prompts
+asked for a bare `VERDICT:` and got `**VERDICT:**` back on every path. They now
+ask for the bold form. **The parser keeps its tolerance for bare, bolded and
+`##` forms — he was explicit that the safety net stays.** Tests pin both halves
+together so neither can drift without the other failing.
+
+### What the two test stories cost, and a rule worth keeping
+
+"The Inventory" and "The Crossing at Kalambaka" are **gone** — their harnesses
+were deleted and never committed, so the reviewed readings cannot be reproduced
+against their own submissions. Nenad accepted this. The A/B above used a new
+controlled story, "The Long Field" (1,059 words, matched `carver`), kept at
+`scratchpad/story.ts` for that run only.
+
+**If a live-run fixture is worth reviewing output from, commit it.** This is the
+second time a deleted harness has cost a comparison.

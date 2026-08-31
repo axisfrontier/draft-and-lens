@@ -57,6 +57,50 @@ Don't reorder without Nenad's explicit instruction.
 - *Lens-voice upload edge case.* Built. `src/ai/lens-authorship.ts`, the provenance gate (`provenanceHold`, `page.tsx`), and all 35 `LENS_SELF_RECOGNITION` lines are in production. The build-order paragraph directly above this queue already recorded it as Mentor Completeness stage 1; the queue entry had simply never been struck. **Its 35 self-recognition lines are unapproved copy that is already live** — that part is still open, and it is a copy approval, not a build item. Inventory in `SESSION_LOG.md`.
 - *Cross-submission pattern recognition (Depth spec, Part 1 Gap 2).* Built. The `writer_patterns` migration is applied and the table is live, `PATTERN_COPY` was approved 2026-08-21, and the callout renders in `ReportView`. `writer_patterns` is also in `exportUserData` now, contrary to an older `SESSION_LOG` note.
 
+## The reading's voice changed on 2026-09-01 — know this before touching any prompt
+
+**Every reading now addresses the writer as "you", and every note is capped at
+120 words.** `HOW THESE NOTES ARE WRITTEN` in `src/prompts/analyst.ts` governs
+all of it. This is not interrogate-scoped: ordinary readings changed too, and
+Nenad approved that scope explicitly on a reviewed sample.
+
+Three older rules were amended to stop mandating multi-part notes —
+`ACKNOWLEDGE DUAL READINGS` (now a check, not a defence-then-prosecution
+structure), `TEACH THE MOVE` (taster capped) and `NAME THE MECHANISM, THEN THE
+REACH` (both halves, one short note). **They were amended, not weakened. Do not
+restore the old sequencing to "fix" a note that reads thin — check the 120-word
+ceiling first.**
+
+Measured on one story, same diagnostic and lens: 3,314 → 2,439 words, "you"
+3 → 17, longest note 201 → 157. The ceiling was overshot once; it is countable
+and tunable.
+
+**The phrasing in `tests/prompts/interrogate-directive.test.ts` is pinned on
+purpose.** Four tests failed during this work because sentences had been
+reworded for style; those exact sentences are what closed the 2026-08-28 quoting
+leak. If a test like that fails, restore the wording — do not move the test.
+
+## Two things that were silently broken and are now fixed (2026-09-01)
+
+Both were live on ordinary readings, neither was caused by Interrogate, and
+neither was visible without running the real pipeline and inspecting output.
+
+1. **The verdict was dropped from every reading.** `extractVerdict` capped the
+   detail at 400 characters; real verdict paragraphs run 839–911. The sidebar's
+   permanent "Verdict" link scrolled to an empty div. Fixed in `f4443f0`; the
+   parser now accepts bare, bolded and `##` forms and `parseReport` keeps the
+   verdict out of the section list. **That tolerance is a deliberate safety net
+   — do not "simplify" it away**, even though the prompts now ask for the bold
+   form (`634a61c`).
+2. **Two paths cut a submission with nothing saying so** — Brain 1 between 3,000
+   and 6,000 characters, and `/api/lens` above 12,000. Both now use
+   `src/ai/read-window.ts`: text is whole, or it is declared cut. **Each caller
+   passes its own window; the shared thing is the shape, not the number.**
+
+**Open, not urgent, Nenad's call:** `/api/lens` has no word cap, so it truncates
+where `/analyse` and `/converse` refuse. Logged as a product inconsistency.
+Leave it alone until he rules.
+
 ## Two live states a session must know before touching either (2026-08-24)
 
 ### 1. Interrogate mode — UI complete and live, analysis gated. DO NOT FLIP THE FLAG.
@@ -67,7 +111,17 @@ The UI is built, deployed and verified on production: the "How should I read it?
 
 **Do not flip that flag.** Not to make the UI look finished, not to demo it, not because the strings are already written. It stays `false` until **§21c best-in-class research is done AND the analyst genuinely runs the interrogated read**. Flipping it early puts the product in breach of its own Architecture v6 law — *Mentoring and interrogation are never faked*: a reading that was not interrogated must never tell a writer that it was. A test in `tests/lib/interrogate.test.ts` fails if the flag is flipped, deliberately, so that whoever flips it has to read why it was shut.
 
-**Interrogate is still NOT in the active queue and is not next by default.** §21c has not started.
+**Interrogate is still NOT in the active queue and is not next by default.**
+
+**Status as of 2026-09-01.** §21c research is done and the analyst genuinely runs
+the interrogated read — the two conditions above are met in code. Three guards
+were added on 2026-08-28 and verified on a second reading; the directive was
+tightened and the reading's register reformed on 2026-09-01, both reviewed by
+Nenad on real output. **The flag is still `false` and stays that way.** He has
+said twice, in the clearest terms, that flipping it is his decision to make
+separately and is not part of any task handed over. `tests/lib/interrogate.test.ts`
+still fails if it is flipped. Do not flip it. Do not propose flipping it as a
+next step.
 
 ### 2. Lens self-recognition lines — rewrites proposed, NOT approved, NOT deployed
 
