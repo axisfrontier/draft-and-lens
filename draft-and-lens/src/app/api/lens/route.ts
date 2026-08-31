@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getAnthropicClient } from '../../../ai/client';
+import { excerptForReading } from '../../../ai/read-window';
 import { isLensAuthorsOwnWork } from '../../../ai/lens-authorship';
 import { LENS_IDS, getLensSystemPrompt } from '../../../prompts/lenses';
 import { LENS_META } from '../../../prompts/lenses/meta';
@@ -11,6 +12,24 @@ import type { LensId } from '../../../prompts/lenses';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
+
+/**
+ * How much of the submission a lens reads, in characters.
+ *
+ * The number is unchanged — this route already stopped at 12,000. What changed
+ * (2026-08-31) is that it now says so. Before, the text was cut here with no
+ * label, so a lens giving its opinion on the work could not tell a truncated
+ * submission from one that ended where it stopped — the same defect Brain 1
+ * had, in the one place it is worst, because a lens reading streams to the
+ * writer verbatim as a reading. Reachable in ordinary use: `ReportView` sends
+ * the already-submitted text, which the 4,000-word cap allows up to roughly
+ * 20,800 characters, so any piece over ~2,300 words was being read in part and
+ * presented as whole.
+ *
+ * Kept separate from Brain 1's window on purpose. Different model, different
+ * job, different budget; the shared thing is the shape, not the number.
+ */
+const LENS_READ_WINDOW_CHARS = 12000;
 
 function isLensId(id: unknown): id is LensId {
   return typeof id === 'string' && (LENS_IDS as readonly string[]).includes(id);
@@ -94,7 +113,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           messages: [
             {
               role: 'user',
-              content: `Here is the work:\n\n${text.slice(0, 12000)}`,
+              content: `Here is the work:\n\n${excerptForReading(text, LENS_READ_WINDOW_CHARS)}`,
             },
           ],
         });

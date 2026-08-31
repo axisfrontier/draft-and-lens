@@ -4,6 +4,7 @@ import { buildPass1System } from '../../prompts/diagnostic';
 import { LENS_IDS, type LensId } from '../../prompts/lenses/types';
 import type { DiagnosticResult } from '../../prompts/types';
 import { MODELS, TOKEN_LIMITS } from '../config';
+import { excerptForReading } from '../read-window';
 import { callJsonBrain } from './_shared';
 
 /**
@@ -64,35 +65,16 @@ function validateLens(value: unknown): LensId | null {
 const READ_WINDOW_CHARS = 12000;
 
 /**
- * The submission as Brain 1 should see it: whole when it fits, and when it
- * does not, two labelled extracts that say plainly that they are cuts.
- *
- * THE SINGLE-SLICE BRANCH FIRES ONLY WHEN THE WHOLE TEXT FITS. That is the
- * property that matters, and it is why the budget is one number rather than a
- * slice size plus a separate threshold. With two numbers there is always a
- * band between them where the text is cut and nothing says so — that band was
- * the bug, and raising the slice size alone would only have moved it somewhere
- * else. Here no such band exists at any length, whatever the constant is set
- * to.
- *
- * The header names the cuts as cuts. A slice boundary lands mid-sentence, and
- * `[CLOSING OF WORK]` on its own left the model free to read that ragged edge
- * as the writer's — the same fabricated-defect failure one band up. Saying
- * what the edges are costs a line of prompt.
+ * The submission as Brain 1 should see it — whole when it fits, two labelled
+ * extracts when it does not. The shape, and why it is shaped that way, lives in
+ * `excerptForReading`; this is Brain 1's window applied to it.
  *
  * Exported for the tests, which are the only thing that can see this: the
  * truncation is deterministic but whether a model remarks on it is not, so the
  * symptom comes and goes while the blindness stays constant.
  */
 export function buildDiagnosticExcerpt(text: string): string {
-  if (text.length <= READ_WINDOW_CHARS) return text;
-  const half = Math.floor(READ_WINDOW_CHARS / 2);
-  const omitted = text.length - half * 2;
-  return [
-    `[TWO EXTRACTS FROM A LONGER WORK — NOT THE WHOLE WORK. ${omitted.toLocaleString()} characters have been removed from the middle. Both extracts begin and end at an arbitrary character cut made by this system, not at a sentence the writer wrote, so either may start or stop mid-sentence. Never read a cut edge as a flaw in the writing.]`,
-    `[OPENING OF WORK]\n${text.slice(0, half)}`,
-    `[CLOSING OF WORK]\n${text.slice(-half)}`,
-  ].join('\n\n');
+  return excerptForReading(text, READ_WINDOW_CHARS);
 }
 
 export async function runDiagnostician(
