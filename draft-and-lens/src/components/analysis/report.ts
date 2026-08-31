@@ -31,8 +31,35 @@ export function verdictColour(ruling: string): string {
   return '#8b2020';
 }
 
+/**
+ * The verdict line, however the model chose to dress it: bare (what the
+ * structure prompts actually ask for), as a `##` heading, or bolded. All three
+ * have been seen in production output, on ordinary readings as much as any
+ * other kind — the format is the model's whim, not a signal, so the parser
+ * accepts all of them rather than the report being at the mercy of one.
+ */
+const VERDICT_LINE = /^[ \t]*(?:#{1,6}[ \t]*)?\*{0,2}VERDICT:/i;
+
+/**
+ * The ruling, then the paragraph under it.
+ *
+ * THE DETAIL USED TO BE CAPPED AT 400 CHARACTERS and that cap silently deleted
+ * the verdict from essentially every reading. VERDICT is the last thing in the
+ * report, so nothing after it satisfies the `\n##` or `\n---` terminator and
+ * `$` sits at the end of a paragraph the prompts ask to be "one honest
+ * paragraph" — measured at 839-911 characters on three consecutive real
+ * reports. Past 400 the lookahead could not be reached, the whole match failed,
+ * and `extractVerdict` returned null. `ReportView` renders a permanent
+ * "Verdict" sidebar link, so the writer got a link that scrolled to an empty
+ * div, while the verdict text either became a duplicate section or was absorbed
+ * into the end of WHERE TO GROW NEXT.
+ *
+ * The detail now runs to the next heading, the next rule, or the end of the
+ * report, whichever comes first. No `m` flag: `$` here must mean end of report,
+ * not end of line, so the line anchor is written as `(?:^|\n)` instead.
+ */
 const VERDICT_RE =
-  /VERDICT:\s*\[?([^\]\n[]{3,60})\]?\n?([\s\S]{0,400}?)(?=\n##|\n---|$)/i;
+  /(?:^|\n)[ \t]*(?:#{1,6}[ \t]*)?\*{0,2}VERDICT:[ \t]*\[?([^\]\n[]{3,60}?)\]?\*{0,2}[ \t]*(?:\n|$)([\s\S]*?)(?=\n[ \t]*#{1,6}[ \t]|\n---|$)/i;
 
 /** Pull the VERDICT ruling + detail out of the report, if present. */
 export function extractVerdict(report: string): Verdict | null {
@@ -94,6 +121,16 @@ export function parseReport(reportRaw: string): ParsedReport {
 
   let cur: ReportSectionData | null = null;
   for (const line of text.split('\n')) {
+    // The verdict has its own band and its own sidebar link. Whatever shape it
+    // arrives in, it closes the open section and never becomes one itself —
+    // otherwise a `## VERDICT` run duplicates it into the Analysis group while
+    // a bare or bolded one is silently swallowed by WHERE TO GROW NEXT, and
+    // which of those the writer gets depends on nothing but the model's mood.
+    if (VERDICT_LINE.test(line)) {
+      if (cur) place(cur);
+      cur = null;
+      continue;
+    }
     const hm = line.match(/^##\s+(.+)/);
     if (hm) {
       if (cur) place(cur);
