@@ -3514,3 +3514,132 @@ controlled story, "The Long Field" (1,059 words, matched `carver`), kept at
 
 **If a live-run fixture is worth reviewing output from, commit it.** This is the
 second time a deleted harness has cost a comparison.
+
+---
+
+## 2026-09-01 — Claude Code session. The merge: Push Harder becomes every reading
+
+**Two decisions are recorded here, and NEITHER had a repo record before this
+entry.** Both were relayed in session on 2026-09-01. The first was described as
+"previously discussed"; a search of `SESSION_LOG.md`, `DL_ONLY_ReadFirst.md`,
+`CLAUDE.md` and the spec files found nothing, and the repo's standing position
+was the opposite — that `INTERROGATE_ANALYSIS_LIVE` stays `false` and flipping
+it is Nenad's separate call. It was scoped rather than built until he confirmed,
+per "no record, no proceed". This entry is that record. A future session reading
+only the repo would otherwise conclude the merge was a mistake.
+
+### DECISION 1 — Interrogate mode is merged into every reading. The toggle goes.
+
+Every reading now runs Brain 1's tradition match and the best-in-class
+comparison as standard. The READ IT / PUSH HARDER control is removed entirely,
+not defaulted-on. The interrogate-tuned directive — the 2026-08-28 guards, the
+2026-09-01 register reform, the VERDICT format, the quoting-leak rule, stay
+inside the researched thirty-five, do not open on a named master — becomes the
+standard directive for ALL readings.
+
+**`INTERROGATE_ANALYSIS_LIVE` is RETIRED, not repurposed.** Its only job was to
+stop a reading claiming it was interrogated when it wasn't. When every reading
+is interrogated there is no false claim left to make, so the gate guards
+nothing. Repurposing it as a kill-switch would be worse than useless: a flag
+that disables interrogation while the copy says every reading interrogates
+recreates the exact fake the v6 law forbids, inverted. It was also the ONLY
+boolean flag in the codebase, and a permanent `false` is the orphaned-flag drift
+`AUDIT_CHECKLIST.md` exists to catch.
+
+**The reasoning comment moves, verbatim, into the directive header.** It is the
+clearest statement in the repo of the Architecture v6 law in practice and must
+not die in a deleted file. Nenad's explicit instruction.
+
+### DECISION 2 — no-match disclosure: OPTION B. No silent fallback, ever.
+
+The question the merge forced: Brain 1 is told to return `null` often, and today
+a writer who gets no match was pre-warned because they chose the mode and read
+the helper line. With no toggle, nobody is pre-warned. Five options were laid
+out; Nenad ruled **Option B — symmetric disclosure**.
+
+**Every reading discloses what it was read against**, decided on the SERVER from
+`diagnostic.bestInClassLens`, never by the client. On a null match the reading
+carries the existing approved no-match copy — including its "doesn't map cleanly
+onto any of my thirty-five lenses" clause.
+
+**Why that clause STAYS, against the recommendation to drop it.** It was
+proposed for removal as machinery talk. Nenad overruled with the reason:
+*there is no toggle any more to have pre-warned the writer*, so the reading
+itself has to carry the whole explanation. The clause was fine when the writer
+had just chosen from a menu; it is now the only place the explanation can live.
+Do not "fix" this later on editor's-voice grounds without reading this paragraph.
+
+**Why the guarantee is code-level and not prose-level.** Option D (disclose
+inside the reading's own prose, where the demand is made) was the more elegant
+design and was rejected as the sole mechanism because it is unenforceable — a
+property of generated prose, which 2026-08-28 established will drift and which
+no unit test can see. Option C (disclose only the no-match case) was rejected
+because an asymmetric line becomes a negative signal: a writer who meets it
+twice learns it means "my work didn't fit", which is a verdict on them rather
+than a limit of a thirty-five-voice set, and that is backwards.
+
+**Precision on the v6 law, corrected in session.** The silent fallback was first
+reported as "arguably the fake the law forbids". That is too strong. `NO_STANDARD`
+explicitly forbids improvising a standard, so nothing is fabricated and the
+letter of the law is satisfied. What breaks is the second clause — "where a
+capability cannot run, it is DESCRIBED, never performed" — because under a
+silent merge the capability is neither performed nor described, merely absent.
+Narrower than first stated, and still real.
+
+### DECISION 3 — `bestInClassLens` goes into `submission_telemetry` now
+
+Match rate is the multiplier on the whole merge: the matched and unmatched paths
+differ by ~5x in cost and are the two branches of the disclosure ruling above,
+and NOTHING currently records which fired. `depth` was never persisted either,
+so there is also no data on how often Push Harder was chosen historically — the
+merge is being made blind on that, knowingly. Going forward the match is logged.
+
+### Measured before building — real numbers, not estimates
+
+Prompt strings emitted through the real builders (`buildPass1System`,
+`buildInterrogateDirective`) and counted with `messages.count_tokens` on each
+brain's own tokenizer.
+
+| Addition | Model | Tokens |
+|---|---|---|
+| Brain 1 lens roster | sonnet-4-6 | 789 → 1,316 (**+527**) |
+| Directive, matched lens | sonnet-4-6 | **+1,199** (min 1,165 / max 1,249, n=35) |
+| Directive, matched lens | opus-4-8 | **+1,733** (min 1,688 / max 1,796) |
+| Directive, no match | sonnet-4-6 / opus-4-8 | +519 / +739 |
+| Directive, excerpt | sonnet-4-6 / opus-4-8 | +501 / +711 |
+
+The Opus counts are larger for identical text — Opus 4.7+ has a different
+tokenizer. Do not compare the two columns as if they measured the same thing.
+
+**Brain 1's addition is cached** (`cachedSystemBlock`, no dynamic tail), so it
+costs ~$0.0002 on a hit. It also *improves* caching: `matchLens` on/off produced
+two competing cache variants, and after the merge there is one.
+
+**The analyst's addition is NOT cached, and that is the number that matters.**
+`analyst.ts:73-80` caches only `baseSystem` (mode + genre) and sends the
+diagnostic, excerpt and interrogate blocks as a second UNCACHED block. Full
+input price every reading.
+
+Added cost per reading: **$0.0018** (short, no match) to **$0.0107** (worst case
+— Opus tier, matched, cache write). Per 1,000 readings: **$1.80–$10.70**. At beta
+volumes, input cost is not a reason to hesitate.
+
+**UNMEASURED, and it is the larger half: output tokens.** Output is 5x input.
+The only comparison on record is the 2026-08-31 A/B (ordinary control 3,577
+words vs push-after 2,439), but that control predates the register reform, which
+now governs both paths — so there is no post-reform ordinary-vs-push figure and
+the delta could go either way. **Nenad has explicitly withheld approval for the
+A/B that would settle it**, because it means running the real pipeline twice and
+spending real money. Do not run it without asking him again.
+
+### Also recorded: `64b10a8`, committed 2026-09-01 and not yet deployed
+
+`feat: when a lens reads part of a piece, the editor says so before the reading
+starts`. `partialReadNotice` in a new `src/app/api/lens/notice.ts`, emitted as
+its own NDJSON event before the reading; `readCoverage` in `read-window.ts`;
+render in `ReportView`. This closes the item `DL_ONLY_ReadFirst.md` had listed as
+"open, not urgent, Nenad's call" — he ruled: `/api/lens` keeps truncating rather
+than refusing, but the writer must be told, visibly, in the reading itself. The
+copy names the opening and the ending rather than "the first N words", because
+the middle is what gets dropped.
+

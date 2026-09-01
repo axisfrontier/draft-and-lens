@@ -97,13 +97,43 @@ neither was visible without running the real pipeline and inspecting output.
    `src/ai/read-window.ts`: text is whole, or it is declared cut. **Each caller
    passes its own window; the shared thing is the shape, not the number.**
 
-**Open, not urgent, Nenad's call:** `/api/lens` has no word cap, so it truncates
-where `/analyse` and `/converse` refuse. Logged as a product inconsistency.
-Leave it alone until he rules.
+**RULED 2026-09-01 and built (`64b10a8`, committed, not yet deployed).**
+`/api/lens` still has no word cap and still truncates where `/analyse` and
+`/converse` refuse — Nenad's ruling is that it keeps truncating rather than
+refusing, but **the writer must be told, visibly, in the reading itself**.
+`partialReadNotice` (`src/app/api/lens/notice.ts`) is emitted as its own NDJSON
+event before a word of the reading. The copy names the opening and the ending,
+not "the first N words", because the middle is what gets dropped. Do not
+"simplify" it back into a front-truncation sentence.
 
 ## Two live states a session must know before touching either (2026-08-24)
 
-### 1. Interrogate mode — UI complete and live, analysis gated. DO NOT FLIP THE FLAG.
+### 1. Interrogate mode — MERGED INTO EVERY READING, 2026-09-01. The flag is retired.
+
+**Everything in this section below this box is HISTORY. It describes the state
+before the merge and is kept because the reasoning still governs the code.**
+
+Nenad ruled on 2026-09-01 that Push Harder is merged into every reading: the
+toggle is removed entirely, Brain 1 always runs the tradition match, and the
+interrogate-tuned directive is now the standard directive for all readings.
+`INTERROGATE_ANALYSIS_LIVE` is **retired, not repurposed** — when every reading
+is interrogated there is no false claim left for it to gate. Its reasoning
+comment was moved verbatim into the directive header; it is the clearest
+statement in the repo of the v6 law in practice and must not be lost.
+
+**No silent fallback, ever (Option B).** Every reading discloses what it was read
+against, decided on the SERVER from `diagnostic.bestInClassLens`. On a null match
+the reading carries the approved no-match copy, "thirty-five lenses" clause
+included — that clause STAYS, because there is no toggle any more to have
+pre-warned the writer, so the reading has to carry the explanation itself. Do not
+strip it later on editor's-voice grounds.
+
+Full ruling, the four rejected options, and the measured token/cost figures are
+in `SESSION_LOG.md` under 2026-09-01.
+
+---
+
+#### HISTORY — the pre-merge state, and why the flag existed
 
 The UI is built, deployed and verified on production: the "How should I read it?" sub-label row inside step 2, READ IT / PUSH HARDER, READ IT pre-selected. It is approved copy in an approved placement.
 
@@ -120,8 +150,12 @@ tightened and the reading's register reformed on 2026-09-01, both reviewed by
 Nenad on real output. **The flag is still `false` and stays that way.** He has
 said twice, in the clearest terms, that flipping it is his decision to make
 separately and is not part of any task handed over. `tests/lib/interrogate.test.ts`
-still fails if it is flipped. Do not flip it. Do not propose flipping it as a
-next step.
+still failed if it was flipped, deliberately, so that whoever flipped it had to
+read why it was shut.
+
+**Superseded 2026-09-01.** The flag is retired and the mode is merged — see the
+box at the top of this section. This paragraph is kept for the reasoning, not as
+a live instruction.
 
 ### 2. Lens self-recognition lines — rewrites proposed, NOT approved, NOT deployed
 
