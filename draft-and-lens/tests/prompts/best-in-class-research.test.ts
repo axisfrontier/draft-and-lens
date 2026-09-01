@@ -22,7 +22,8 @@ import { LENS_IDS } from '../../src/prompts/lenses/types';
  * A gap here is not cosmetic once §21c is wired. Push harder promises a writer
  * the standard their tradition sets for itself; a lens with no entry means that
  * promise has nothing behind it, which is the exact condition
- * INTERROGATE_ANALYSIS_LIVE exists to prevent. So this fails on a lens added
+ * INTERROGATE_ANALYSIS_LIVE existed to prevent (retired by the merge,
+ * 2026-09-01; the separation in directive.ts is the guarantee now). So this fails on a lens added
  * without an entry, and on an entry for a voice that is not a lens.
  *
  * THE MODULE IS CANONICAL (Nenad, 2026-08-26). src/prompts/interrogate/best-in-class.ts

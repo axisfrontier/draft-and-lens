@@ -3643,3 +3643,102 @@ than refusing, but the writer must be told, visibly, in the reading itself. The
 copy names the opening and the ending rather than "the first N words", because
 the middle is what gets dropped.
 
+
+### The build, as shipped — commits and what each one is for
+
+`7ed9402` deploy-hook doc fix · `31613f4` this ruling · `b7fecf6` telemetry field
+· `02c8710` the merge · `4b17edb` audit fixes. **Nothing is pushed and nothing is
+deployed** — the merge deploy is on hold pending Nenad, and the telemetry
+migration must be applied to the live database first.
+
+**Verified at every step:** `tsc` clean, **356/356 tests green**,
+`✓ Compiled successfully`, IP bundle grep **exit 1**. The upload screen was
+checked in a real browser on `localhost:3000` after the toggle removal — the
+"How should I read it?" row is gone, spacing between the excerpt pills and step 3
+is correct with no orphaned gap, step numbering unaffected (the toggle was a
+sub-label row, never a numbered step), full design system intact.
+
+**The beta gate was disabled for that check by running dev with an empty
+`BETA_GATE_PASSWORD`,** which `middleware.ts` treats as "no gate". No password
+was entered anywhere and nothing in the repo changed to allow it.
+
+### The pinned phrasing did its job, exactly as DL_ONLY_ReadFirst warned
+
+One directive test failed on the first pass: the ambition question had been
+reworded while its opt-in framing was removed. **The wording went back, not the
+test** — "was this ambition the right one for this material?" is restored
+verbatim inside the new sentence. This is the second time that rule has caught a
+live rewording; it is working and should not be relaxed.
+
+### Two strings are LIVE-BUT-UNAPPROVED and Nenad has not signed them off
+
+Recorded prominently because the repo is already carrying one instance of this
+(the 35 lens self-recognition lines, unapproved and in production) and a second
+should not accumulate silently. **Neither is deployed.**
+
+1. **The matched-case line.** `HELPER_COMPLETE`, approved 2026-08-24, with ONE
+   word changed: "the reading normally leaves alone" → "**a** reading normally
+   leaves alone". The definite article pointed at Draft & Lens's own ordinary
+   reading, which the merge abolished; the indefinite makes it a claim about
+   editorial practice at large. One word, unapproved.
+2. **The excerpt line.** `HELPER_EXCERPT`, approved 2026-08-24, **verbatim and
+   unchanged**, relocated from under the pills to the top of the reading. Its
+   tense already worked ("I'll … What I won't do"), which is the tell that it was
+   always describing the terms of a reading rather than a control. A placement
+   change, not a rewrite — but it was approved for a surface that no longer
+   exists, so it is his call.
+
+The no-match line is approved copy, verbatim, unchanged, and needs nothing.
+
+### `/how-it-works` — copy may need ADDING, and that is his call too
+
+The audit found zero references to the toggle anywhere in `/how-it-works`,
+`/about`, `/glossary` or pricing, so the merge removed nothing from them. That
+absence is itself the finding: the toggle shipped on 2026-08-24 and was never
+explained on the page that explains the product. Now that every reading
+interrogates, there is a real claim to make there and nothing making it. **Not
+written — new writer-facing copy is Nenad's.**
+
+### Audit findings NOT actioned — each needs a decision, not a fix
+
+1. **`reconciled_reason` is write-only.** Written at `continuity-flags.ts:471`
+   (writer-supplied text, capped at 500 chars), never selected or read anywhere.
+   Either future-facing or dead storage. It is the writer's own words, so
+   whether it is surfaced or dropped should be a choice. Covered by the account
+   delete cascade (`FACTS_TABLE` is in the loop), so no GDPR exposure.
+2. **`src/stripe/tiers.ts` has zero consumers.** Nothing in `src/` or `tests/`
+   imports `TIERS`. No route checks `analysesPerMonth`, no component reads
+   `features` — every writer currently gets everything. Kept and annotated
+   rather than deleted, because it records billing intent a git log would not.
+   Whether it stays in code, moves to a pricing doc, or goes is his.
+3. **The pre-launch legal TODO is stale.** `src/ai/client.ts:14` — verify the
+   no-training wording against Anthropic's current Commercial Terms, "Last
+   reviewed: 2026-06-22", now ten weeks old.
+   `DraftAndLens_Anthropic_Terms_Record.md` is dated 30 Jul, so a review may have
+   happened without the comment being updated. It underwrites a public legal
+   claim; worth knowing which.
+
+**Checked and clean, recorded so nobody re-audits:** `INTERROGATE_ANALYSIS_LIVE`
+was the only boolean flag in the codebase and is now gone, leaving none; no bare
+`window.close()`; no tautological or skipped tests; `return !error` appears 11
+times and 10 check rows, the one bare case (`readings.ts:419`) deleting all rows
+for a user where zero rows is legitimate success; CLAUDE.md's sidebar counts
+verified against `ReportView.tsx` and correct (3/2/3/5 = 13 constant, story mode
+14 sections); `best-in-class.ts` carries all 35 standards; `superseded_by`
+correctly dead by the 2026-08-16 soft-delete ruling; no gate-vs-cap
+contradictions of the 2026-08-17 kind.
+
+### ⚠ WHAT MUST HAPPEN BEFORE THIS DEPLOYS, in order
+
+1. **Nenad approves the two strings above** (or replaces them).
+2. **Apply `supabase/migrations/submission_telemetry_best_in_class_lens.sql` to
+   the live database FIRST.** `logSubmissionTelemetry` sends one insert with
+   every column at once inside a best-effort try/catch, so against a table
+   without the column the WHOLE insert fails and telemetry goes **silently
+   dark** — no error, no rows, no reading affected, nothing to notice.
+   `tests/lib/telemetry-columns.test.ts` catches a forgotten migration FILE; it
+   cannot catch an unapplied one.
+3. **Then deploy**, and read a real reading end to end — the disclosure line has
+   never been seen rendered, because seeing it costs an API call.
+4. **The output-token A/B is still unrun and unapproved.** It is the larger half
+   of the merge's cost and remains unmeasured. Do not spend on it without asking.
