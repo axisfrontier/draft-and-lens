@@ -22,8 +22,14 @@
 1. `npm run build` — must show `✓ Compiled successfully`
 2. `git commit`
 3. `git push origin main`
-4. `curl -X POST "$(pbpaste)"` — Vercel hook URL on clipboard first
+4. `curl -X POST "$VERCEL_DEPLOY_HOOK"` — the hook URL is a persistent environment
+   variable. Never ask Nenad to paste it, and never read it from the clipboard.
 5. Verify: `git log origin/main..HEAD --oneline` should be empty before firing hook
+
+**Step 4 is redundant and is under review (flagged 2026-09-01, not yet ruled).**
+The Vercel project has an active GitHub integration, so step 3's push already
+builds and promotes. Firing the hook starts a SECOND production build of the same
+commit. The root `CLAUDE.md` carries the full finding; this file defers to it.
 
 ### Repo hygiene
 - Never commit to codex-maths in a draft-and-lens session.

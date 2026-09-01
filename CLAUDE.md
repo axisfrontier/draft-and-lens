@@ -50,8 +50,19 @@ Full sweep done 2026-08-21 (`0983ad2`, `c2d618b`). Before adding any new writer-
 1. `npm run build` — must show `✓ Compiled successfully`
 2. `git commit`
 3. `git push origin main`
-4. `curl -X POST "$(pbpaste)"` — Vercel hook URL on clipboard first
+4. `curl -X POST "$VERCEL_DEPLOY_HOOK"` — the hook URL is a persistent environment
+   variable. Never ask Nenad to paste it, and never read it from the clipboard:
+   `$(pbpaste)` sent whatever happened to be copied at the time.
 5. Verify: `git log origin/main..HEAD --oneline` should be empty before firing hook
+
+**Step 4 is redundant and is under review (flagged 2026-09-01, not yet ruled).**
+The Vercel project has an active GitHub integration, so every push to `main` in
+step 3 already builds and promotes to production on its own. Firing the hook
+starts a SECOND production build of the same commit — confirmed on the dashboard,
+where seven consecutive commits each appear twice, one row from the git
+integration and one from the hook. Nothing wrong has shipped, because both builds
+are the same commit, but the live deployment is the git one at least as often as
+the hook one. Delete this step or keep it deliberately; do not silently drop it.
 
 ## Working directory (non-negotiable)
 This project lives at: `/Users/nenadkojic 1/Projects/Draft&Lens/draft-and-lens`
