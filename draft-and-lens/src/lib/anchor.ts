@@ -50,7 +50,7 @@ export function hasAnchors(report: string): boolean {
 }
 
 /** Pull each ⟦quote⟧ out of the report with the sentence/clause it belongs to. */
-export function extractAnchors(report: string): Anchor[] {
+function extractAnchors(report: string): Anchor[] {
   if (!report) return [];
   const anchors: Anchor[] = [];
   const re = new RegExp(OPEN + '([^' + OPEN + CLOSE + ']{1,400})' + CLOSE, 'g');
@@ -102,7 +102,7 @@ export function extractAnchors(report: string): Anchor[] {
 }
 
 /** Locate a quote in the text. Exact (case-insensitive) first, then whitespace-tolerant. */
-export function findAnchor(
+function findAnchor(
   quote: string,
   text: string,
   occurrence: number

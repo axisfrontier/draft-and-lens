@@ -73,7 +73,7 @@ export function formatFor(filename: string): UploadFormat | null {
  * .docx renamed .txt, a PDF saved as .md). Without it the mojibake reaches the
  * analyst and the failure only surfaces on the analysis screen.
  */
-export function readableRatio(text: string): number {
+function readableRatio(text: string): number {
   const sample = Array.from(text.slice(0, 4000));
   if (sample.length === 0) return 0;
   let readable = 0;

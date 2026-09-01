@@ -48,7 +48,15 @@ const SCRIPT_SECTIONS: string[] = [
   'What Is Working',
   'Character Consistency',
   'Genre Alignment',
-  'What To Revise',
+  // 'What To Revise' is deliberately ABSENT from all three lists, and this
+  // comment is here so it is not "restored" as an oversight. parseReport lifts
+  // WHAT TO REVISE into its own callout (report.ts, the place() function), so
+  // it never enters parsed.sections and a placeholder reserved for it here can
+  // never fill. It sat in these lists until the 2026-09-01 audit, contradicting
+  // this file's own header rule — the same drift the 2026-08-22 audit caught in
+  // the other direction with 'Where To Grow Next'. The two lists have to be
+  // read together or they drift silently in whichever direction was last
+  // forgotten.
 ];
 
 const STORY_SECTIONS: string[] = [
@@ -64,7 +72,6 @@ const STORY_SECTIONS: string[] = [
   'What Is Working',
   'Character Consistency',
   'Tradition Alignment',
-  'What To Revise',
   // Added to the story prompt on 2026-08-19 and missed here until the
   // 2026-08-22 audit, so it streamed in with no placeholder ahead of it. The
   // two lists have to be read together or they drift silently: this one only
@@ -86,7 +93,6 @@ const TREATMENT_SECTIONS: string[] = [
   'What Is Working',
   'Character Consistency',
   'Tradition Alignment',
-  'What To Revise',
 ];
 
 const SECTIONS_BY_MODE: Record<Mode, string[]> = {

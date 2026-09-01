@@ -135,7 +135,7 @@ export function compareTexts(oldText: string, newText: string): Comparison {
 }
 
 /** A short magnitude+location sentence for the analyst's revision framing. */
-export function summarizeChange(c: Comparison): string {
+function summarizeChange(c: Comparison): string {
   const where = c.location ? `, concentrated in ${c.location}` : ' spread through the piece';
   return `Roughly ${c.changePct}% of the text has changed${where}.`;
 }
