@@ -161,6 +161,9 @@ export function ReportView({
   // Lens voices
   const [activeLensId, setActiveLensId] = useState<string | null>(null);
   const [lensReadings, setLensReadings] = useState<Record<string, string>>({});
+  // Set only when a lens read part of the piece. The editor says so above the
+  // reading, so a long submission never looks like it was read whole.
+  const [lensPartial, setLensPartial] = useState<Record<string, string>>({});
   const [lensLoading, setLensLoading] = useState<string | null>(null);
 
   // Personal editor
@@ -207,7 +210,11 @@ export function ReportView({
         for (const line of lines) {
           if (!line.trim()) continue;
           try {
-            const ev = JSON.parse(line) as {type: string; delta?: string; reading?: string};
+            const ev = JSON.parse(line) as {type: string; delta?: string; reading?: string; message?: string};
+            if (ev.type === 'partial' && ev.message) {
+              const note = ev.message;
+              setLensPartial((prev) => ({ ...prev, [lensId]: note }));
+            }
             if (ev.type === 'text' && ev.delta) {
               reading += ev.delta;
               setLensReadings((prev) => ({ ...prev, [lensId]: reading }));
@@ -946,6 +953,15 @@ export function ReportView({
                       }}>
                         {group.entries.find(e => e.id === activeLensId)?.name ?? activeLensId}
                       </div>
+                      {lensPartial[activeLensId] && (
+                        <div style={{
+                          fontSize: '.78rem', lineHeight: 1.7, color: 'var(--paper-dark)',
+                          opacity: 0.85, marginBottom: '1rem', paddingBottom: '.85rem',
+                          borderBottom: '1px solid var(--amber-d)',
+                        }}>
+                          {lensPartial[activeLensId]}
+                        </div>
+                      )}
                       <div style={{
                         fontSize: '.9rem', lineHeight: 1.85, color: 'var(--paper-dark)',
                         fontStyle: 'italic', whiteSpace: 'pre-wrap',

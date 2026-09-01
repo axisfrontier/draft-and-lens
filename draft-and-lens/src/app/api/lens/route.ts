@@ -2,7 +2,8 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getAnthropicClient } from '../../../ai/client';
-import { excerptForReading } from '../../../ai/read-window';
+import { excerptForReading, readCoverage } from '../../../ai/read-window';
+import { partialReadNotice } from './notice';
 import { isLensAuthorsOwnWork } from '../../../ai/lens-authorship';
 import { LENS_IDS, getLensSystemPrompt } from '../../../prompts/lenses';
 import { LENS_META } from '../../../prompts/lenses/meta';
@@ -106,6 +107,16 @@ export async function POST(req: NextRequest): Promise<Response> {
         controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
 
       try {
+        // Before a word of the reading: if the piece was cut, say so. Sent as
+        // its own event so the client can render it as the editor speaking
+        // rather than as the first line of the lens's reading.
+        const coverage = readCoverage(text, LENS_READ_WINDOW_CHARS);
+        if (!coverage.whole) {
+          send({
+            type: 'partial',
+            message: partialReadNotice(coverage.wordsRead, coverage.wordsTotal),
+          });
+        }
         const anthropicStream = await client.messages.stream({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 1200,

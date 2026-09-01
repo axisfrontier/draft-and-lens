@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { excerptForReading } from '../../src/ai/read-window';
+import { excerptForReading, readCoverage } from '../../src/ai/read-window';
 
 /**
  * The claim this module makes is not about any particular window. It is that
@@ -76,3 +76,49 @@ describe('excerptForReading', () => {
     expect(excerptForReading('', 12_000)).toBe('');
   });
 });
+
+describe('readCoverage', () => {
+  it('reports the whole piece as whole, and counts its words', () => {
+    const t = prose(5_000);
+    const c = readCoverage(t, 12_000);
+    expect(c.whole).toBe(true);
+    expect(c.wordsRead).toBe(c.wordsTotal);
+  });
+
+  it('reports a cut piece as cut, and reads less than the whole', () => {
+    const t = prose(30_000);
+    const c = readCoverage(t, 12_000);
+    expect(c.whole).toBe(false);
+    expect(c.wordsRead).toBeLessThan(c.wordsTotal);
+    expect(c.wordsRead).toBeGreaterThan(0);
+  });
+
+  it('counts BOTH extracts, not just the opening', () => {
+    // The middle is what goes. Counting only the head would understate what was
+    // read by half and make the writer-facing copy wrong.
+    const t = prose(30_000);
+    const c = readCoverage(t, 12_000);
+    const openingOnly = countWordsLocal(prose(30_000).slice(0, 6_000));
+    expect(c.wordsRead).toBeGreaterThan(openingOnly * 1.8);
+  });
+
+  it('agrees with excerptForReading about whether the text was cut', () => {
+    for (const w of WINDOWS) {
+      for (const n of LENGTHS) {
+        const t = prose(n);
+        expect(readCoverage(t, w).whole, `window=${w} length=${n}`).toBe(
+          excerptForReading(t, w) === t
+        );
+      }
+    }
+  });
+
+  it('handles an empty submission', () => {
+    expect(readCoverage('', 12_000)).toEqual({ whole: true, wordsRead: 0, wordsTotal: 0 });
+  });
+});
+
+function countWordsLocal(s: string): number {
+  const t = s.trim();
+  return t === '' ? 0 : t.split(/\s+/).length;
+}

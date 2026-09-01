@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { countWords } from '../lib/limits';
+
 /**
  * What a brain is shown when a submission is longer than its read window.
  *
@@ -25,13 +27,46 @@ import 'server-only';
  * ragged edge as the writer's own — the same fabricated-defect failure, one
  * band up.
  */
+/** Half a window, rounded down — the size of each extract when the text is cut. */
+function halfWindow(windowChars: number): number {
+  return Math.floor(windowChars / 2);
+}
+
 export function excerptForReading(text: string, windowChars: number): string {
   if (text.length <= windowChars) return text;
-  const half = Math.floor(windowChars / 2);
+  const half = halfWindow(windowChars);
   const omitted = text.length - half * 2;
   return [
     `[TWO EXTRACTS FROM A LONGER WORK — NOT THE WHOLE WORK. ${omitted.toLocaleString()} characters have been removed from the middle. Both extracts begin and end at an arbitrary character cut made by this system, not at a sentence the writer wrote, so either may start or stop mid-sentence. Never read a cut edge as a flaw in the writing.]`,
     `[OPENING OF WORK]\n${text.slice(0, half)}`,
     `[CLOSING OF WORK]\n${text.slice(-half)}`,
   ].join('\n\n');
+}
+
+/**
+ * What a reading actually covered, for telling the WRITER.
+ *
+ * `excerptForReading` tells the MODEL that the text was cut, which stops it
+ * reading a cut edge as a flaw. That is a different job from this one: a writer
+ * looking at a reading of a long piece has no way of knowing how much of their
+ * work is behind it, and a reading that covers part of a piece while appearing
+ * to cover all of it is the confusion this exists to prevent.
+ *
+ * `wordsRead` counts BOTH extracts, because that is what was read. It is
+ * deliberately not "the first N words" — the middle is what goes, not the end,
+ * and any copy built on this must say so or it describes something that did not
+ * happen.
+ */
+export function readCoverage(
+  text: string,
+  windowChars: number
+): { whole: boolean; wordsRead: number; wordsTotal: number } {
+  const wordsTotal = countWords(text);
+  if (text.length <= windowChars) return { whole: true, wordsRead: wordsTotal, wordsTotal };
+  const half = halfWindow(windowChars);
+  return {
+    whole: false,
+    wordsRead: countWords(text.slice(0, half)) + countWords(text.slice(-half)),
+    wordsTotal,
+  };
 }
