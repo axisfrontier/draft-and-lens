@@ -220,6 +220,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       submissionType: cleanSubmissionType,
       traditionValue: null,
       traditionSource,
+      // Never reached Brain 1, so there is no match to record — not a miss.
+      bestInClassLens: null,
       totalWallClockMs: Date.now() - runStartedAtMs,
       timeToFirstVisibleContentMs: null,
       timeToFirstStageMs: null,
@@ -245,6 +247,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       submissionType: cleanSubmissionType,
       traditionValue: null,
       traditionSource,
+      // Never reached Brain 1, so there is no match to record — not a miss.
+      bestInClassLens: null,
       totalWallClockMs: Date.now() - runStartedAtMs,
       timeToFirstVisibleContentMs: null,
       timeToFirstStageMs: null,
@@ -363,6 +367,8 @@ export async function POST(req: NextRequest): Promise<Response> {
             submissionType: cleanSubmissionType,
             traditionValue: null,
             traditionSource,
+            // Never reached Brain 1, so there is no match to record — not a miss.
+            bestInClassLens: null,
             totalWallClockMs: now - runStartedAtMs,
             // The stored reading renders immediately on arrival, so first
             // visible content and completion are the same instant here.
@@ -787,6 +793,10 @@ export async function POST(req: NextRequest): Promise<Response> {
           submissionType: cleanSubmissionType,
           traditionValue: result.diagnostic.tradition || null,
           traditionSource,
+          // The only site with a real answer. `?? null` rather than `|| null`
+          // so a future falsy-but-valid id could not be silently turned into a
+          // miss — the whole point of the column is that null means something.
+          bestInClassLens: result.diagnostic.bestInClassLens ?? null,
           totalWallClockMs,
           timeToFirstVisibleContentMs:
             firstTextAtMs === null ? null : firstTextAtMs - runStartedAtMs,
@@ -808,6 +818,8 @@ export async function POST(req: NextRequest): Promise<Response> {
           submissionType: cleanSubmissionType,
           traditionValue: null,
           traditionSource,
+          // Never reached Brain 1, so there is no match to record — not a miss.
+          bestInClassLens: null,
           totalWallClockMs: Date.now() - runStartedAtMs,
           timeToFirstVisibleContentMs:
             firstTextAtMs === null ? null : firstTextAtMs - runStartedAtMs,

@@ -1,0 +1,68 @@
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Which best-in-class lens Brain 1 matched, per submission (merge, 2026-09-01).
+--
+-- WHY THIS EXISTS. Push Harder merged into every reading on 2026-09-01, so the
+-- best-in-class comparison now runs on every submission instead of on an opt-in
+-- few. Brain 1 either matches one of the thirty-five researched voices or
+-- returns null, and it is deliberately told to expect null often.
+--
+-- That single boolean is the multiplier on almost everything the merge touches:
+--
+--   • COST. The matched and unmatched directives differ by roughly 5x in input
+--     tokens (measured 2026-09-01: 1,199 vs 519 on sonnet-4-6, 1,733 vs 739 on
+--     opus-4-8). Without this column the blended cost per reading is a guess
+--     bounded by a factor of five.
+--   • THE DISCLOSURE RULING. Option B gives a null-match reading a different
+--     opening line from a matched one. How often that line fires is how often
+--     writers are told no tradition standard was applied, and nothing else
+--     records it.
+--   • WHETHER THIRTY-FIVE IS ENOUGH. A persistently high null rate is the only
+--     evidence that would justify researching more voices, and it cannot be
+--     recovered retrospectively — an unlogged null is gone.
+--
+-- IT IS THE LENS ID, NOT A BOOLEAN, and that is deliberate. "Did it match" is
+-- derivable from "which one matched" (`is null`), but not the reverse. A skew
+-- towards two or three lenses across many submissions would say the matcher is
+-- reaching for the familiar rather than the right one, which is precisely the
+-- failure PASS1_LENS_MATCH warns against ("a near-miss is not a match"). A
+-- boolean cannot show that.
+--
+-- No constraint against LENS_IDS. The roster is application-owned and changes
+-- with the prompt; a check constraint here would be a fourth copy of the lens
+-- list and the exact drift `src/prompts/diagnostic.ts` already refuses to
+-- create. `validateLens` in the diagnostician is the gate — nothing unvalidated
+-- reaches this column.
+--
+-- ⚠ APPLY THIS BEFORE DEPLOYING THE MERGE. `logSubmissionTelemetry` inserts a
+-- single row with every column at once, so against a table without this column
+-- the WHOLE insert fails, not just this field — telemetry would go silently
+-- dark for every submission rather than degrade. The insert is wrapped in a
+-- best-effort try/catch, so nothing would surface: no error, no reading
+-- affected, just no rows. Unlike the locked-tier migration above, there is no
+-- separate batch to lose in isolation.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+alter table public.submission_telemetry
+  add column if not exists best_in_class_lens text;
+
+-- Match rate is the question this column exists to answer, and it is always
+-- asked over a time range, so the existing created_at index carries it. No new
+-- index: the table is append-only telemetry with no per-lens lookup path.
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- AFTER APPLYING, verify it took — one row expected, type `text`, nullable:
+--
+--   select column_name, data_type, is_nullable
+--     from information_schema.columns
+--    where table_name = 'submission_telemetry'
+--      and column_name = 'best_in_class_lens';
+--
+-- The reading it exists for, once there is data (nulls are the point, so they
+-- must not be filtered out of the denominator):
+--
+--   select count(*) filter (where best_in_class_lens is not null)::float
+--            / nullif(count(*), 0) as match_rate,
+--          count(*) as readings
+--     from public.submission_telemetry
+--    where outcome = 'completed'
+--      and created_at > now() - interval '14 days';

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import type { CostEntry } from '../ai/cost-tracker';
+import type { LensId } from '../prompts/lenses/types';
 import { getServiceClient, isSupabaseConfigured } from './supabase-server';
 
 /**
@@ -54,6 +55,21 @@ export async function logSubmissionTelemetry(args: {
   submissionType: 'complete' | 'excerpt';
   traditionValue: string | null;
   traditionSource: TraditionSource;
+  /**
+   * Which of the thirty-five researched voices Brain 1 matched, or null when
+   * none fitted — the merge's single most load-bearing unknown (2026-09-01).
+   *
+   * NULL IS A REAL RESULT HERE, not an absence. Brain 1 is told to expect no
+   * match often, and how often it happens decides three things nothing else
+   * records: the blended cost per reading (the matched and unmatched directives
+   * differ ~5x in input tokens), how often a writer is told no tradition
+   * standard was applied (the Option B disclosure), and whether thirty-five
+   * voices is enough. Runs that never reached Brain 1 — blocked, errored, or
+   * short-circuited as unchanged — pass null too, which is why the match-rate
+   * query in the migration filters on `outcome = 'completed'` rather than
+   * treating every null as a miss.
+   */
+  bestInClassLens: LensId | null;
   /** Wall clock from request receipt to the final payload being sent. */
   totalWallClockMs: number;
   /**
@@ -83,6 +99,7 @@ export async function logSubmissionTelemetry(args: {
       submission_type: args.submissionType,
       tradition_value: args.traditionValue,
       tradition_source: args.traditionSource,
+      best_in_class_lens: args.bestInClassLens,
       total_wall_clock_ms: args.totalWallClockMs,
       time_to_first_visible_content_ms: args.timeToFirstVisibleContentMs,
       time_to_first_stage_ms: args.timeToFirstStageMs,
