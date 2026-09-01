@@ -19,7 +19,6 @@ import { buildTreatmentReportStructure } from './report/treatment-structure';
 import { REGISTER } from './register';
 import { AMBITION_AGAINST_EXECUTION } from './tradition-depth';
 import type { AnalysisMode, DiagnosticResult } from './types';
-import type { ReadingDepth } from '../lib/interrogate';
 
 /**
  * Brain 2 system prompt builders — tradition locked after Brain 1 (LearnedCorpus P1).
@@ -165,17 +164,16 @@ export function buildAnalystSystemPrompt(
   mode: AnalysisMode,
   genre: string,
   diagnostic: DiagnosticResult,
-  submissionType?: 'complete' | 'excerpt',
-  /** 'push' adds the §21b interrogation; ordinary reads are unchanged. */
-  depth: ReadingDepth = 'read'
+  submissionType?: 'complete' | 'excerpt'
 ): string {
   const base = buildSystemPrompt(mode, genre);
   const excerptBlock = submissionType === 'excerpt' ? EXCERPT_READING_MODE : '';
   // Last, so it is the final instruction the analyst reads — and on BOTH return
-  // paths: a push read whose diagnostic came back empty still asked to be
-  // pushed, and the ambition question does not depend on the tradition.
+  // paths, because the ambition question does not depend on the tradition. A
+  // reading whose diagnostic came back empty still gets interrogated; before
+  // the merge the reason was that it had still been ASKED for, and now it is
+  // simply what a reading is.
   const interrogateBlock = buildInterrogateDirective(
-    depth,
     (diagnostic.bestInClassLens as LensId | null) ?? null,
     submissionType
   );

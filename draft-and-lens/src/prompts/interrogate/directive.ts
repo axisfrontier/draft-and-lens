@@ -1,19 +1,59 @@
 import 'server-only';
 
-import type { ReadingDepth } from '../../lib/interrogate';
 import type { LensId } from '../lenses/types';
 import { BEST_IN_CLASS } from './best-in-class';
 
 /**
- * Push harder — the analyst half of Interrogate mode (Architecture §21b).
+ * The interrogated read — now EVERY reading (Architecture §21b, merged 2026-09-01).
  *
- * WHAT THE MODE ADDS, and nothing else: the question the ordinary reading
- * leaves alone — whether the ambition was the right one — and, where the work's
- * tradition matches a lens, the standard that tradition sets for itself.
+ * This was an opt-in mode until 2026-09-01, when Nenad ruled it merged into
+ * every reading and the READ IT / PUSH HARDER toggle removed. Nothing here is
+ * conditional on a request any more, because there is no longer a request to
+ * make: this is what a reading IS.
  *
- * THE APPROVED COPY IS THE SPEC. Three helper lines were approved before any of
- * this existed, and each promises a different reading. What is built here is
- * what each one says, and no more:
+ * ── PRESERVED VERBATIM FROM `INTERROGATE_ANALYSIS_LIVE`, NOW RETIRED ────────
+ *
+ * The flag that used to gate this is gone: when every reading is interrogated
+ * there is no false claim left for it to stop, and a permanent `false` is the
+ * orphaned-flag drift AUDIT_CHECKLIST.md exists to catch. Its reasoning is the
+ * clearest statement in the repo of the v6 law in practice, and is kept here
+ * word for word rather than paraphrased, because it still governs this file:
+ *
+ *   WHY THE CLAIMS ARE BEHIND A FLAG. Architecture v6, Law — Mentoring and
+ *   interrogation are never faked: "No feature may simulate or fabricate mentor
+ *   output … or interrogate output (a best-in-class standard) without the genuine
+ *   input behind it. Where a capability cannot run, it is *described*, never
+ *   performed."
+ *
+ *   A visible, selectable toggle DESCRIBES — a writer sees the capability exists.
+ *   Two strings here PERFORM, and both would be false today:
+ *     • the helper line promises what this submission will do;
+ *     • the report line asserts that the reading in front of them is one.
+ *   Both are therefore gated on INTERROGATE_ANALYSIS_LIVE, which stays false
+ *   until the analysis behind them is real.
+ *
+ * WHAT THAT REASONING NOW REQUIRES, since the toggle it relied on is gone. The
+ * toggle was the thing that DESCRIBED; without it, a reading that could not run
+ * the comparison would neither perform it nor describe it — it would simply be
+ * silent, and two readings differing in method would be indistinguishable to
+ * the writer. That is the second clause of the law breaking, not the first:
+ * nothing is fabricated (NO_STANDARD forbids improvising a standard), but
+ * nothing is described either. So the description moved into the reading
+ * itself — see `readingStandardLine` in src/lib/reading-standard.ts, which is
+ * typed to return a string and never null, so no code path can be silent.
+ * Nenad's ruling, 2026-09-01, Option B of five.
+ *
+ * ── WHAT THE READING DOES, and nothing else ────────────────────────────────
+ *
+ * The question a reading would otherwise leave alone — whether the ambition was
+ * the right one — and, where the work's tradition matches a lens, the standard
+ * that tradition sets for itself.
+ *
+ * THE APPROVED COPY IS STILL THE SPEC. Three helper lines were approved before
+ * any of this existed, and each promised a different reading. The helper lines
+ * themselves are gone with the toggle — they sat under pills nobody chooses any
+ * more — but what they promised is what is built here, and no more. They remain
+ * the specification even though they are no longer shown:
  *   • complete + matched — "whether the ambition was the right one … and show
  *     you what this tradition can do" → both halves.
  *   • excerpt — "what I won't do on an excerpt is set it beside the strongest
@@ -24,9 +64,11 @@ import { BEST_IN_CLASS } from './best-in-class';
  *     won't hold it against a specific standard — just against itself, at its
  *     fullest" → the ambition half, and the work's own ceiling instead of a
  *     tradition's. Approved 2026-08-26.
- * A promise the prompt does not keep is the failure INTERROGATE_ANALYSIS_LIVE
- * exists to prevent, so these three cases are separated here rather than left
- * to the model to infer from a lens id that may be null.
+ * A promise the prompt does not keep is the failure the retired flag existed to
+ * prevent, and the reason it is still prevented is that these three cases are
+ * separated HERE rather than left to the model to infer from a lens id that may
+ * be null. That separation is now the whole guarantee — there is no flag behind
+ * it any more.
  *
  * WHY IT ATTACHES TO THE SYSTEM PROMPT and adds no report section: Nenad's
  * ruling, 2026-08-26, following AMBITION_AGAINST_EXECUTION. The question is as
@@ -84,14 +126,14 @@ import { BEST_IN_CLASS } from './best-in-class';
  *     does it too.
  */
 
-/** The ambition question. Every push-harder read gets this, matched or not. */
-const AMBITION_INTERROGATED = `THE AMBITION ITSELF — MANDATORY, THIS READING ONLY:
+/** The ambition question. Every reading gets this, matched or not. */
+const AMBITION_INTERROGATED = `THE AMBITION ITSELF — MANDATORY:
 
-The writer asked to be pushed. The ordinary reading takes the ambition as given and asks how well it was executed. This one asks the prior question: was this ambition the right one for this material?
+Do not take the ambition as given. Asking how well it was executed is only half the job. The prior question is the one to ask here: was this ambition the right one for this material?
 
 Real answers run in every direction and you must stay open to all of them. The ambition is right and the execution has not caught up. It is smaller than the material deserves, and the work is settling. It is larger than this material can carry, and the strain shows. Or it is correctly matched, which is worth saying plainly when it is true.
 
-THIS IS NOT PERMISSION TO BE HARSH. It is permission to raise a question the ordinary reading holds back. Someone who asked to be pushed wants more exactness, not more severity — a harsher tone answers a request they did not make.
+THIS IS NOT PERMISSION TO BE HARSH. It is permission to raise a question a gentler reading would hold back. A writer wants more exactness, not more severity — and a harsher tone answers a request nobody made.
 
 EVIDENCE-GATED, like everything else: raise it only where you can quote the passage that shows it (⟦…⟧). Never speculate about intent beyond what the prose makes visible.
 
@@ -102,7 +144,7 @@ const NO_STANDARD = `NO BEST-IN-CLASS STANDARD FOR THIS WORK — DELIBERATE, NOT
 
 This work's tradition matched none of the thirty-five researched voices. Do NOT improvise one, and do NOT reach for the nearest tradition that half-fits — a standard from the wrong tradition is worse than none, because the writer cannot tell it is the wrong one.
 
-Hold the work against ITSELF at its fullest: what would this piece be if it did everything it is already trying to do, as well as it could be done? That is a real standard and an exacting one. Say nothing about lenses, matching, or what could not be found — the writer has already been told, in the terms they chose.`;
+Hold the work against ITSELF at its fullest: what would this piece be if it did everything it is already trying to do, as well as it could be done? That is a real standard and an exacting one. Say nothing about lenses, matching, or what could not be found — the writer has already been told, at the top of this reading.`;
 
 /**
  * What replaces the standard on an excerpt — a different reason from a missing
@@ -150,14 +192,16 @@ DO NOT DEFER TO IT IN THE PROSE — MANDATORY: never present the standard, or an
  * match is an ordinary outcome rather than a failure.
  */
 export function buildInterrogateDirective(
-  depth: ReadingDepth,
   lens: LensId | null,
   submissionType?: 'complete' | 'excerpt'
 ): string {
-  // The guard lives with the thing it guards. The caller checks too, but a
-  // second caller that forgets would silently interrogate every reading — the
-  // one outcome §21b forbids outright, since the mode is opt-in by design.
-  if (depth !== 'push') return '';
+  // The `depth !== 'push'` guard that used to open this function is gone with
+  // the toggle (2026-09-01). It existed because interrogating a reading nobody
+  // asked to be interrogated was the one outcome §21b forbade outright; the
+  // merge makes that the intended outcome, so a guard against it would now be a
+  // guard against the feature. Nothing replaces it — this function returns the
+  // directive for every reading, and the only branch left is WHICH standard.
+  //
   // Order matters. An excerpt is suppressed whether or not the lens matched —
   // the ruling is about the submission, not the match — and it must be told the
   // TRUE reason: an excerpt with a match that was sent NO_STANDARD would read

@@ -99,7 +99,7 @@ export function ReportView({
   manuscriptId,
   continuityFlags = [],
   differentiator,
-  interrogateLine,
+  standardLine,
   nudge,
   onDismissNudge,
   onReconcileFlag,
@@ -121,11 +121,14 @@ export function ReportView({
    *  (handover §6). Absent on every other reading — which is almost all of
    *  them — and the client never decides whether it should appear. */
   differentiator?: string;
-  /** Interrogate mode (§21b) — present only when the writer asked to be pushed
-   *  AND the interrogated read genuinely ran. lib/interrogate.ts holds the gate
-   *  and the reason: a reading that was not interrogated must never say it was
+  /** What this reading was held against — a matched tradition's standard, the
+   *  work's own fullest version where nothing fitted, or neither on an excerpt.
+   *  Server-decided from Brain 1's match; present on EVERY reading since the
+   *  merge (2026-09-01). lib/reading-standard.ts holds the reason it can never
+   *  be absent: the toggle used to describe what kind of reading this was, and
+   *  with the toggle gone this line is the only thing that does
    *  (Architecture v6, Law — Mentoring and interrogation are never faked). */
-  interrogateLine?: string;
+  standardLine?: string;
   /** A single contextual nudge, chosen server-side — at most one per reading
    *  and one per account, ever. The client never decides whether it appears,
    *  only lets the writer close it. */
@@ -438,12 +441,18 @@ export function ReportView({
             </p>
           )}
 
-          {/* Interrogate announcement (§21b). First of the quiet lines, because
-              it frames what kind of reading follows — the differentiator names
-              the method, this names the register it was read in. Same italic
-              serif treatment as every other quiet aside, deliberately: the
-              claim is carried by the reading, not by the styling. */}
-          {interrogateLine && (
+          {/* What this reading was measured against. First of the quiet lines,
+              because it frames what kind of reading follows — the differentiator
+              names the method, this names the standard it was read against. Same
+              italic serif treatment as every other quiet aside, deliberately:
+              the claim is carried by the reading, not by the styling.
+
+              The `&&` is a render guard, not a policy: the server sends this on
+              every reading and lib/reading-standard.ts is typed so it cannot
+              return empty. It stays because a saved or replayed reading from
+              before the merge has no such line, and rendering `undefined` into
+              a bordered block would leave an empty rule down the page. */}
+          {standardLine && (
             <p style={{
               marginTop: '1.25rem', marginBottom: '1rem', paddingLeft: '1.25rem',
               borderLeft: '1px solid var(--rule)',
@@ -451,7 +460,7 @@ export function ReportView({
               lineHeight: 1.75, color: 'var(--ink-soft)', fontStyle: 'italic',
               maxWidth: 660,
             }}>
-              {interrogateLine}
+              {standardLine}
             </p>
           )}
 

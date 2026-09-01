@@ -33,8 +33,9 @@ const FALLBACK: DiagnosticResult = {
  * near-miss ("chandler " with a space), an invented id, or the string "null".
  * Anything that is not exactly a member of LENS_IDS becomes null, because the
  * whole point of the null path is that a wrong standard is worse than none.
- * Nothing about a push read breaks when this is null — it is the ordinary
- * outcome.
+ * Nothing breaks when this is null — it is the ordinary outcome, and since the
+ * merge it is also the case the reading has to declare out loud rather than
+ * fall through quietly (see `readingStandardLine`).
  */
 function validateLens(value: unknown): LensId | null {
   return typeof value === 'string' && (LENS_IDS as readonly string[]).includes(value)
@@ -80,9 +81,7 @@ export function buildDiagnosticExcerpt(text: string): string {
 export async function runDiagnostician(
   text: string,
   modeLabel: string,
-  submissionType?: 'complete' | 'excerpt',
-  /** Push harder — ask for the §21c lens match too. Off for ordinary reads. */
-  matchLens = false
+  submissionType?: 'complete' | 'excerpt'
 ): Promise<DiagnosticResult> {
   const excerpt = buildDiagnosticExcerpt(text);
 
@@ -90,10 +89,13 @@ export async function runDiagnostician(
     model: MODELS.diagnostician,
     maxTokens: TOKEN_LIMITS.diagnostician,
     brain: 'diagnostician',
-    system: buildPass1System(submissionType, matchLens),
+    system: buildPass1System(submissionType),
     user: `This is a ${modeLabel}. Read carefully and return the diagnostic JSON.\n\n${excerpt}`,
   });
   if (!result) return FALLBACK;
-  // Validate rather than trust: the field is a closed enum downstream.
-  return { ...result, bestInClassLens: matchLens ? validateLens(result.bestInClassLens) : null };
+  // Validate rather than trust: the field is a closed enum downstream. The
+  // `matchLens ? … : null` that used to wrap this is gone with the merge —
+  // every reading asks for the match, so forcing null was the only way the
+  // field could have been wrong here.
+  return { ...result, bestInClassLens: validateLens(result.bestInClassLens) };
 }

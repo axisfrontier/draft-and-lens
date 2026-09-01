@@ -40,7 +40,7 @@ function insertedColumns(): string[] {
   expect(start, 'telemetry-log.ts no longer contains a `.insert({` call').toBeGreaterThan(-1);
   const body = source.slice(start, source.indexOf('});', start));
   // Keys at the top level of the literal: `  column_name: ...` or `  stages,`.
-  return [...body.matchAll(/^\s{6}([a-z_]+)[,:]/gm)].map((m) => m[1]);
+  return [...body.matchAll(/^\s{6}([a-z_]+)[,:]/gm)].map((m) => m[1]!);
 }
 
 describe('submission_telemetry columns', () => {

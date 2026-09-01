@@ -16,14 +16,6 @@ import type {
 } from '@/components/analysis/types';
 import { FULL_READING_MIN_WORDS, TESTER_WORD_CAP, countWords } from '@/lib/limits';
 import {
-  INTERROGATE_ANALYSIS_LIVE,
-  READING_DEPTH_DEFAULT,
-  READING_DEPTH_PILLS,
-  READING_DEPTH_SUBLABEL,
-  interrogateHelperLine,
-  type ReadingDepth,
-} from '@/lib/interrogate';
-import {
   MAX_UPLOAD_BYTES,
   UPLOAD_ACCEPT,
   UPLOAD_FORMAT_HINT,
@@ -74,7 +66,7 @@ type StreamEvent =
   | { type: 'pattern'; tendency: string; text: string; trendNote?: string }
   | { type: 'goal_progress'; notes: Array<{ goalId: string; goal: string; note: string }> }
   | { type: 'goal_prompt' }
-  | { type: 'interrogate'; line: string }
+  | { type: 'standard'; line: string }
   | { type: 'error'; message: string };
 
 type RevisionStatus = 'new' | 'revised' | 'unchanged' | 'refreshed';
@@ -122,14 +114,14 @@ export default function AppHomePage() {
    * below — not on arrival back at the panel, which would leave it set for as
    * long as a report is on screen.
    */
-  const [depth, setDepth] = useState<ReadingDepth>(READING_DEPTH_DEFAULT);
   /** What THIS reading was asked for — snapshotted at submission, so resetting
    *  the control cannot retroactively change what the report says it is. */
   /** The §21b line the SERVER decided this reading may carry. Never computed
    *  here: the client knows what was asked for, not what was found. */
-  const [interrogateLine, setInterrogateLine] = useState<string | null>(null);
+  /** What this reading was held against. Server-decided; arrives before the
+   *  first token and is shown on every reading (see lib/reading-standard.ts). */
+  const [standardLine, setStandardLine] = useState<string | null>(null);
   /** Whether the writer has live goals, for the helper's second sentence. */
-  const [hasGoals, setHasGoals] = useState(false);
   const [text, setText] = useState('');
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState('');
@@ -490,11 +482,11 @@ export default function AppHomePage() {
     }
 
     setRunning(true);
-    // Ruling 1 (2026-08-23): the toggle resets on every submission and never
-    // persists. Snapshot first — the report line must describe what THIS
-    // reading was asked for, not what the control happens to say afterwards.
-    setInterrogateLine(null);
-    setDepth(READING_DEPTH_DEFAULT);
+    // Cleared per submission so a previous reading's line can never sit above
+    // a new one. The 2026-08-23 ruling that the toggle resets every submission
+    // is moot — there is no toggle — but this half of it still matters, because
+    // the line describes THIS reading and nothing else.
+    setStandardLine(null);
     setError('');
     setStreamed('');
     setReport('');
@@ -524,9 +516,6 @@ export default function AppHomePage() {
           mode,
           text: effectiveText,
           submissionType,
-          // How they asked to be read (§21b). The server decides what the
-          // reading claims about itself; this only reports what was chosen.
-          depth,
           ...(forceRefresh ? { forceRefresh: true } : {}),
           ...(confirmedOwn ? { confirmedOwn: true } : {}),
           ...(chosenManuscript ? { manuscriptId: chosenManuscript } : {}),
@@ -609,8 +598,8 @@ export default function AppHomePage() {
             setPattern({ tendency: evt.tendency, text: evt.text, trendNote: evt.trendNote });
           } else if (evt.type === 'goal_progress') {
             setGoalNotes(evt.notes);
-          } else if (evt.type === 'interrogate') {
-            setInterrogateLine(evt.line);
+          } else if (evt.type === 'standard') {
+            setStandardLine(evt.line);
           } else if (evt.type === 'goal_prompt') {
             setGoalPrompt(true);
           } else if (evt.type === 'error') setError(evt.message);
@@ -695,27 +684,6 @@ export default function AppHomePage() {
     letterSpacing: '.14em', textTransform: 'uppercase',
     color: active ? 'var(--paper)' : 'var(--paper-dark)', fontWeight: 500,
   });
-
-  /**
-   * Does this writer have live goals? Only the helper's second sentence needs
-   * it, and that sentence is gated, so the request is gated too: zero cost
-   * today, and correct the moment INTERROGATE_ANALYSIS_LIVE is flipped rather
-   * than a latent wrong-helper bug waiting on the flip.
-   */
-  useEffect(() => {
-    if (!INTERROGATE_ANALYSIS_LIVE || isSignedIn !== true) return;
-    let live = true;
-    fetch('/api/goals')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { goals?: unknown[] } | null) => {
-        if (live && d?.goals) setHasGoals(d.goals.length > 0);
-      })
-      .catch(() => {});
-    return () => { live = false; };
-  }, [isSignedIn]);
-
-  /** Null in the ordinary case, so the panel stays quiet unless asked. */
-  const helperLine = interrogateHelperLine(depth, submissionType, hasGoals);
 
   const showUpload = report === '' && !running;
 
@@ -1025,49 +993,6 @@ export default function AppHomePage() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* How should I read it? — Interrogate mode's control (§21b).
-                  A SUB-LABEL ROW, NOT A NUMBERED STEP, and that is the whole
-                  argument for where it sits: §21b requires opt-in and "never
-                  the unprompted default", and a step 4 would give it equal
-                  standing with "what is it?" — turning an invitation into a
-                  question the writer has to answer. It sits directly under
-                  "Complete piece or excerpt?" because the two interact: on an
-                  excerpt this mode runs with best-in-class suppressed, and
-                  adjacency is what makes that legible.
-
-                  The analysis behind it is NOT wired — see lib/interrogate.ts
-                  for why the helper line stays silent until it is. */}
-              <div style={{ borderRadius: 14, padding: '.15rem 1rem .5rem', margin: '0 -1rem' }}>
-                <div style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '.64rem',
-                  letterSpacing: '.14em', textTransform: 'uppercase',
-                  color: hasWork ? 'var(--paper)' : 'var(--paper-dark)',
-                  marginBottom: '.5rem',
-                }}>{READING_DEPTH_SUBLABEL}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '.4rem' }}>
-                  {READING_DEPTH_PILLS.map((d) => (
-                    <button
-                      key={d.value}
-                      type="button"
-                      onClick={() => setDepth(d.value)}
-                      disabled={running || !hasWork}
-                      style={pill(depth === d.value, hasWork)}
-                    >
-                      {d.label}
-                    </button>
-                  ))}
-                </div>
-                {helperLine && (
-                  <p style={{
-                    fontFamily: 'var(--font-serif)', fontSize: '.78rem',
-                    lineHeight: 1.7, fontStyle: 'italic',
-                    color: 'var(--rule)', margin: '.5rem 0 0', maxWidth: 520,
-                  }}>
-                    {helperLine}
-                  </p>
-                )}
               </div>
 
               {/* Upload error */}
@@ -1539,7 +1464,7 @@ export default function AppHomePage() {
           manuscriptId={groupedManuscriptId ?? undefined}
           continuityFlags={continuityFlags}
           differentiator={differentiator || undefined}
-          interrogateLine={interrogateLine ?? undefined}
+          standardLine={standardLine ?? undefined}
           goalNotes={goalNotes}
           goalPrompt={goalPrompt}
           nudge={nudge || undefined}

@@ -22,7 +22,7 @@ import {
   traditionTreatsAsFailure,
 } from '../../../lib/writer-patterns';
 import { claimMilestone } from '../../../lib/user-milestones';
-import { interrogateReportLine, type ReadingDepth } from '../../../lib/interrogate';
+import { readingStandardLine } from '../../../lib/reading-standard';
 import { listGoalsForReading } from '../../../lib/writer-goals';
 import { logSubmissionCost } from '../../../lib/cost-log';
 import { listKnownEntities, retireFactsForWork, storeFacts } from '../../../lib/continuity';
@@ -127,11 +127,6 @@ export async function POST(req: NextRequest): Promise<Response> {
   // Excerpt vs complete piece — defaults to 'complete', never trust the client blindly.
   const cleanSubmissionType: 'complete' | 'excerpt' =
     submissionType === 'excerpt' ? 'excerpt' : 'complete';
-
-  // How the writer asked to be read (§21b). Same discipline as the type above:
-  // anything that is not exactly 'push' is an ordinary reading. The SERVER
-  // decides what the reading then claims about itself — never the client.
-  const cleanDepth: ReadingDepth = body.depth === 'push' ? 'push' : 'read';
 
   const clean = sanitise(typeof text === 'string' ? text : '');
   if (!clean) return badRequest('No text submitted.');
@@ -405,8 +400,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             bible: bookBible?.bible ?? undefined,
             skipBible: bookBible?.skip === true,
             submissionType: cleanSubmissionType,
-            depth: cleanDepth,
-            revisionNote,
+              revisionNote,
             priorRevisionNotes,
             // Held alongside the tradition, never as a rubric — the tradition
             // is locked by Brain 1 and decides the standard (P1). See
@@ -428,16 +422,21 @@ export async function POST(req: NextRequest): Promise<Response> {
                 register: diagnostic.register,
                 title: diagnostic.title,
               });
-              // What this reading may claim about itself (§21b). Decided here,
-              // from what Brain 1 actually found, because the client knows what
-              // was asked for and not what was matched. Null on every ordinary
-              // reading and whenever the analysis is not live.
-              const line = interrogateReportLine(
-                cleanDepth,
-                Boolean(diagnostic.bestInClassLens),
-                cleanSubmissionType
-              );
-              if (line) send({ type: 'interrogate', line });
+              // What this reading was held against. Decided HERE, from what
+              // Brain 1 actually found, because only the server knows what was
+              // matched. Sent on every reading without exception — the merge
+              // removed the toggle that used to do this describing, and a
+              // reading that cannot say what it measured against is the second
+              // clause of the v6 law breaking (see lib/reading-standard.ts).
+              // Unconditional on purpose: there is no `if` here to drift into
+              // a silent path.
+              send({
+                type: 'standard',
+                line: readingStandardLine(
+                  Boolean(diagnostic.bestInClassLens),
+                  cleanSubmissionType
+                ),
+              });
             },
             onAnalystText: (delta) => {
               if (firstTextAtMs === null) firstTextAtMs = Date.now();

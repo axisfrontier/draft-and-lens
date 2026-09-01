@@ -23,7 +23,11 @@ const PASS1_EXCERPT_AWARENESS = "\n\nSUBMISSION TYPE AWARENESS\n\nThis submissio
 const LENS_ROSTER = LENS_IDS.map((id) => `${id} (${LENS_META[id].name})`).join(', ');
 
 /**
- * Push harder only — ask Brain 1 which lens's tradition this work belongs to.
+ * Ask Brain 1 which lens's tradition this work belongs to.
+ *
+ * Was push-harder only until the merge (2026-09-01); now every reading asks.
+ * The copy no longer says the writer requested it, because they did not — the
+ * two sentences that claimed a request are gone rather than reworded around.
  *
  * WHY BRAIN 1 AND NOT A TABLE. `tradition` is free text from an open vocabulary
  * ("chamber drama", "magical realism"), and the best-in-class research is keyed
@@ -38,23 +42,26 @@ const LENS_ROSTER = LENS_IDS.map((id) => `${id} (${LENS_META[id].name})`).join('
  * which is worse than sending none — the writer cannot tell it is the wrong one.
  * The null path is built and honest, so the model is told to use it.
  *
- * NOT ADDED TO THE ORDINARY READING. Appended only for push-harder reads, so a
- * normal submission's system prompt is byte-identical to what it was.
+ * ADDED TO EVERY READING since the merge. It used to be appended only for
+ * push-harder reads so an ordinary submission's prompt stayed byte-identical;
+ * there is no longer an ordinary submission to keep identical. Measured cost of
+ * making it universal: Brain 1's system prompt goes 789 -> 1,316 tokens, and it
+ * is inside `cachedSystemBlock`, so ~$0.0002 on a cache hit. It also removes a
+ * cache SPLIT — the on/off variants were two prefixes competing for one slot.
  */
-const PASS1_LENS_MATCH = `\n\nBEST-IN-CLASS LENS MATCH — ONE EXTRA FIELD, THIS READING ONLY:\n\nThis writer has asked to be pushed harder, which means the reading may set the work beside the standard its own tradition sets for itself. Those standards exist for thirty-five specific voices, and you must say which of them — if any — this work's tradition actually belongs to.\n\nThe roster: ${LENS_ROSTER}.\n\nReturn the id, exactly as spelled above, in \`bestInClassLens\`. This is a SEPARATE judgement from the \`tradition\` label: name the voice whose tradition this work is working in, not the voice it superficially resembles in subject matter.\n\nRETURN null IF NOTHING GENUINELY FITS, and expect to return null often. Thirty-five voices do not cover all of literature, and a near-miss is not a match — a work of quiet domestic realism is not "Carver" because it is quiet, and a novel with a crime in it is not "Chandler". A wrong match sends the reading a standard from the wrong tradition, which is worse than sending none at all. Do not stretch. Do not pick the closest of a bad set. null is a correct and expected answer.`;
+const PASS1_LENS_MATCH = `\n\nBEST-IN-CLASS LENS MATCH — ONE EXTRA FIELD:\n\nThe reading may set this work beside the standard its own tradition sets for itself. Those standards exist for thirty-five specific voices, and you must say which of them — if any — this work's tradition actually belongs to.\n\nThe roster: ${LENS_ROSTER}.\n\nReturn the id, exactly as spelled above, in \`bestInClassLens\`. This is a SEPARATE judgement from the \`tradition\` label: name the voice whose tradition this work is working in, not the voice it superficially resembles in subject matter.\n\nRETURN null IF NOTHING GENUINELY FITS, and expect to return null often. Thirty-five voices do not cover all of literature, and a near-miss is not a match — a work of quiet domestic realism is not "Carver" because it is quiet, and a novel with a crime in it is not "Chandler". A wrong match sends the reading a standard from the wrong tradition, which is worse than sending none at all. Do not stretch. Do not pick the closest of a bad set. null is a correct and expected answer.`;
 
-const PASS1_JSON_SHAPE = "\n\nReturn ONLY valid JSON — no preamble, no markdown, no backticks — in exactly this shape:\n{\"tradition\":\"...\",\"register\":\"...\",\"ambition\":\"...\",\"craftQuestions\":[\"...\",\"...\"],\"strengths\":[\"...\",\"...\"],\"primaryConcern\":\"...\",\"title\":\"...\",\"summary\":\"...\",\"formNotes\":\"...\"}";
-
-/** The same shape with the push-harder field appended — id string or null. */
-const PASS1_JSON_SHAPE_WITH_LENS = PASS1_JSON_SHAPE.slice(0, -1) + ',"bestInClassLens":null}';
+/**
+ * ONE SHAPE, not two. Until the merge there were two — with and without
+ * `bestInClassLens` — selected by the `matchLens` flag. Every reading now asks
+ * for the field, so the shorter shape became unreachable and was deleted rather
+ * than left as a branch nobody takes. A dead alternative in a prompt builder is
+ * worse than dead code elsewhere: it reads as a supported mode.
+ */
+const PASS1_JSON_SHAPE = "\n\nReturn ONLY valid JSON — no preamble, no markdown, no backticks — in exactly this shape:\n{\"tradition\":\"...\",\"register\":\"...\",\"ambition\":\"...\",\"craftQuestions\":[\"...\",\"...\"],\"strengths\":[\"...\",\"...\"],\"primaryConcern\":\"...\",\"title\":\"...\",\"summary\":\"...\",\"formNotes\":\"...\",\"bestInClassLens\":null}";
 
 /** Brain 1 — tradition identification before any craft rule (LearnedCorpus P1). */
-export function buildPass1System(
-  submissionType?: 'complete' | 'excerpt',
-  matchLens = false
-): string {
+export function buildPass1System(submissionType?: 'complete' | 'excerpt'): string {
   const awareness = submissionType === 'excerpt' ? PASS1_EXCERPT_AWARENESS : '';
-  const lensMatch = matchLens ? PASS1_LENS_MATCH : '';
-  const shape = matchLens ? PASS1_JSON_SHAPE_WITH_LENS : PASS1_JSON_SHAPE;
-  return PASS1_BASE + PASS1_GENRE_MARKERS + awareness + lensMatch + shape;
+  return PASS1_BASE + PASS1_GENRE_MARKERS + awareness + PASS1_LENS_MATCH + PASS1_JSON_SHAPE;
 }
