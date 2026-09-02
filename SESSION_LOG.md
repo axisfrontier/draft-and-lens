@@ -3742,3 +3742,34 @@ contradictions of the 2026-08-17 kind.
    never been seen rendered, because seeing it costs an API call.
 4. **The output-token A/B is still unrun and unapproved.** It is the larger half
    of the merge's cost and remains unmeasured. Do not spend on it without asking.
+
+### ⏸ STOPPED HERE — 2026-09-01/02, awaiting Nenad's review. Do not push.
+
+Work halted cleanly at his instruction. **Seven commits sit unpushed on `main`
+and nothing is deployed.** Nothing is half-changed: every commit is atomic, the
+tree is clean apart from the untracked handover file, and the last verified
+state is `tsc` clean, 356/356 green, `✓ Compiled successfully`, IP grep exit 1.
+
+**A resuming session must not push, deploy, or fire the hook** until he has
+answered the four items below. He is reviewing them 2026-09-02.
+
+1. **The two unapproved strings** — the matched line (one word changed from
+   approved `HELPER_COMPLETE`) and the excerpt line (approved `HELPER_EXCERPT`,
+   verbatim, relocated). Details in the section above.
+2. **The deploy order** — the telemetry migration must reach the live database
+   BEFORE this code, or telemetry goes silently dark.
+3. **The three flagged audit findings** — `reconciled_reason` write-only,
+   `stripe/tiers.ts` with zero consumers, the stale legal TODO in `client.ts`.
+4. **`/how-it-works` copy** — nothing to remove, something to add. His to write.
+
+**Still unrun and unapproved:** the output-token A/B, and any live reading at
+all — the disclosure line has never been seen rendered, because seeing it costs
+an API call. Do not spend on either without asking him.
+
+**Unpushed, oldest first:** `64b10a8` lens partial-read notice · `7ed9402`
+deploy-hook doc · `31613f4` the rulings · `b7fecf6` telemetry field · `02c8710`
+the merge · `4b17edb` audit fixes · `9fd3e1c` audit log and deploy order.
+
+Note that `64b10a8` predates this session's work and was already awaiting deploy
+before the merge began; it is not part of the merge and could ship
+independently, but it has not been separated out because nothing is shipping.
