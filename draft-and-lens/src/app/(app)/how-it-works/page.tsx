@@ -12,11 +12,32 @@ import { closeOrGoBack } from '@/lib/leave-page';
  * deciding whether to come back needed both halves and had no reason to think
  * the second link was anything other than a variation on the first.
  *
- * THE COPY IS UNCHANGED. Both tabs carry their page's text verbatim; this is a
- * structural change and nothing here has been rewritten. The one thing that did
- * not survive is each page's own eyebrow ("How I read", "How I remember") —
- * those were page identity, and the tab labels are that now. Every sentence of
- * body copy, and both headings, are as they were.
+ * THE MERGE CHANGED NO COPY. Both tabs carry their page's text verbatim; that
+ * was a structural change and nothing was rewritten for it. The one thing that
+ * did not survive is each page's own eyebrow ("How I read", "How I remember") —
+ * those were page identity, and the tab labels are that now.
+ *
+ * ADDED 2026-09-05, approved by Nenad: three sections on the "A reading" tab —
+ * "I question the ambition itself", "I tell you what I read it against" and
+ * "When nothing fits". They are the page's account of the 2026-09-01 merge,
+ * which folded the interrogated read into every reading; before them, the one
+ * page that explains the product said nothing about the thing most likely to
+ * surprise a writer. PURELY ADDITIVE — not one pre-existing sentence changed.
+ *
+ * They sit after the short-story section because that is where the tradition
+ * decision is established and the best-in-class comparison is its next step.
+ * Their headings are declarative among conditional ones ("If you send me…") on
+ * purpose: these describe what EVERY reading does, not what one kind of
+ * submission gets.
+ *
+ * "read it against", never "hold it against" — that idiom is banned across the
+ * app by the 2026-08-23 ruling, with one pinned exemption for the no-match line
+ * (`tests/lib/reading-standard.test.ts`). This copy takes no shelter under it.
+ * "I question the ambition itself" is the approved no-match line's own opening,
+ * verbatim, because a writer meets those exact words atop a real reading. The
+ * excerpt case is disclosed here even though the page had never mentioned
+ * excerpts, because the reading now tells excerpt-submitters the comparison was
+ * withheld and this page must not read as though it always happens.
  *
  * TAB STATE LIVES IN THE URL, and is written with replaceState rather than
  * pushState. Close must still return the writer to the reading they came from,
@@ -147,6 +168,40 @@ function HowItWorks(): React.ReactElement {
             settle that first, and then I read your work against its own standard rather than a general
             one. The same paragraph, read as minimalism and read as gothic, gets two different readings
             from me, and both of them are honest.
+          </p>
+
+          <h2 style={h2}>I question the ambition itself</h2>
+          <p style={p}>
+            Most readings ask how well you did the thing you set out to do. I ask the question
+            underneath that one: whether it was the right thing to be doing with this material. A
+            piece can be made with real care and still be reaching for something smaller than what
+            it had in its hands, and nothing at the line level will fix that, because the line level
+            isn&apos;t where it went wrong. This is the question a reading normally leaves alone,
+            partly because it&apos;s the one most likely to be unwelcome. I&apos;d rather raise it
+            and be wrong than leave you polishing something that didn&apos;t need polishing.
+          </p>
+
+          <h2 style={h2}>I tell you what I read it against</h2>
+          <p style={p}>
+            Settling the tradition is only half of it. Once I know what kind of writing this is, I
+            go to the work that shows what that tradition can do at full stretch, and I read yours
+            in its light — not to mark you against it, but so the distance between where you are and
+            what the form is capable of is something you can see for yourself rather than something
+            I assert. Every reading names that standard, at the top, before I&apos;ve said a word
+            about your pages. You should be able to disagree with my choice of it, and you
+            can&apos;t do that if I don&apos;t tell you what it was.
+          </p>
+
+          <h2 style={h2}>When nothing fits</h2>
+          <p style={p}>
+            Sometimes nothing does. Thirty-five lenses is a lot of ways to read and it is still not
+            all of them — work can sit between traditions, or in one I don&apos;t hold a lens for.
+            When that happens I say so at the top of the reading, and I read the work against itself
+            at its fullest instead. What I won&apos;t do is quietly pick the nearest thing and let
+            you believe it was a match. I keep the comparison back on an excerpt too, for a
+            different reason: a chapter set beside a finished book isn&apos;t a fair reading, so
+            I&apos;d rather tell you the standard is missing than reach for one that doesn&apos;t
+            fit what you sent.
           </p>
 
           <h2 style={h2}>If you send me a script</h2>

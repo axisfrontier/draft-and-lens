@@ -3939,3 +3939,26 @@ Worth recording for whoever meets item 1c later: it cuts across the checklist's
 own zero-budget path, which defers solicitor review to paid launch. That
 deferral is no longer automatic — this is a specific question that was raised
 for advice in July and is still waiting on it.
+
+### Item 4 — APPROVED AND PUBLISHED 2026-09-05
+
+Nenad approved the three sections as written, no amendments. Inserted into the
+"A reading" tab of `/how-it-works` between "If you send me a short story…" and
+"If you send me a script". **Purely additive — not one pre-existing sentence
+changed.** The reasoning is preserved in the file's own header so it travels
+with the copy rather than living only here.
+
+**One consistency fix went in the same commit**, per the standing rule about
+inconsistency introduced by an edit: the file header opened "THE COPY IS
+UNCHANGED", a claim about the merge of `/how-i-read` and `/how-i-remember` that
+this addition falsified. It now says the MERGE changed no copy, and records what
+was added on 2026-09-05 and why. The new paragraphs were also rewrapped to the
+file's ~100-column convention rather than left as single long lines.
+
+Verified: `tsc` clean · **356/356 tests green** · `✓ Compiled successfully`,
+17/17 static pages · IP bundle grep **exit 1**. Live render still to be checked
+in a browser after deploy, per the standing rule.
+
+**This closes all four items the 2026-09-01 stop marker was waiting on.** The
+remaining sequence is the migration, Nenad's confirmation that it ran, then push
+and deploy.
