@@ -106,6 +106,53 @@ event before a word of the reading. The copy names the opening and the ending,
 not "the first N words", because the middle is what gets dropped. Do not
 "simplify" it back into a front-truncation sentence.
 
+## Where the merge stands — updated 2026-09-05, read before touching any of it
+
+The seven-commit hold from 2026-09-01 is being worked off in the order Nenad
+set. **Still nothing pushed, still nothing deployed.**
+
+**Resolved by ruling on 2026-09-05:**
+
+- **The two flagged strings are APPROVED AS-IS.** The matched line's one-word
+  change ("the reading normally leaves alone" -> "**a** reading normally leaves
+  alone") and the excerpt line's relocation to the top of the reading. Both are
+  correct consequences of the merge rather than rewrites. `src/lib/reading-standard.ts`
+  no longer carries a pending marker. **The only unapproved writer-facing copy
+  left in the repo is the 35 lens self-recognition lines**, live since before
+  the merge and still open.
+- **`reconciled_reason` is KEPT and annotated**, the treatment `src/stripe/tiers.ts`
+  already carries. It is write-only ON PURPOSE — a future dead-code sweep should
+  read the annotation at `src/lib/continuity-flags.ts` rather than rediscover the
+  finding.
+
+**Awaiting Nenad, and blocking the deploy:**
+
+- **The legal verification (item 3) is done and reported. The no-training claim
+  is ACCURATE — verified 2026-09-05 against Anthropic's live Commercial Terms
+  and data-retention docs. Nothing user-facing is false and nothing needs
+  retracting.** What it turned up instead: `src/ai/client.ts`'s "Last reviewed:
+  2026-06-22" is five weeks behind this repo's own
+  `DraftAndLens_Anthropic_Terms_Record.md` (26 July 2026), and the retention
+  disclosure that record drafted **for the solicitor** — that flagged content may
+  be retained by Anthropic for up to two years — never reached `/privacy`, which
+  is still stamped 29 June 2026. That is an omission, not an error, and whether
+  to disclose it is his call plus the solicitor's. **No user-facing copy was
+  touched, and the code comment was left alone rather than half-corrected,
+  because its wording is entangled with that answer.**
+- **`/how-it-works` copy is DRAFTED, not published** — three additive `<h2>`
+  sections on the "A reading" tab. Details and the reasoning behind each choice
+  are in `SESSION_LOG.md` under 2026-09-05.
+
+**The deploy order is unchanged and non-negotiable:** the telemetry migration
+reaches the live database FIRST, Nenad confirms it ran, and only then does code
+ship. `logSubmissionTelemetry` sends every column in one insert inside a
+best-effort try/catch, so against a table without the column telemetry goes
+**silently dark**.
+
+**The output-token A/B and any live reading remain UNRUN and UNAPPROVED.** They
+cost real money and need his separate explicit go-ahead. Do not fold either into
+a deploy verification.
+
 ## Two live states a session must know before touching either (2026-08-24)
 
 ### 1. Interrogate mode — MERGED INTO EVERY READING, 2026-09-01. The flag is retired.

@@ -3773,3 +3773,142 @@ the merge · `4b17edb` audit fixes · `9fd3e1c` audit log and deploy order.
 Note that `64b10a8` predates this session's work and was already awaiting deploy
 before the merge began; it is not part of the merge and could ship
 independently, but it has not been separated out because nothing is shipping.
+
+## 2026-09-05 — Claude Code session. Backlog resolution: approvals, the legal verification, `/how-it-works`
+
+Nenad resolved the four items the 2026-09-01 stop marker was waiting on, and
+set the order for the rest. This entry is written as the work proceeds, not
+reconstructed at the end.
+
+### Items 1 and 2 — RULED AND DONE
+
+1. **Both unapproved strings APPROVED AS-IS, 2026-09-05.** The matched line's
+   one-word change ("the reading normally leaves alone" → "**a** reading
+   normally leaves alone") and the excerpt line's relocation to the top of the
+   reading. His reasoning: both are correct consequences of the merge, not
+   rewrites. Recorded in `src/lib/reading-standard.ts` and
+   `tests/lib/reading-standard.test.ts` (`a86289c`) — the ⚠ markers are gone and
+   the strings are now ordinary approved copy. **The repo no longer carries any
+   unapproved string except the 35 lens self-recognition lines**, which remain
+   live and unapproved and are a separate open item.
+2. **`reconciled_reason` KEPT and annotated** (`43fafa0`), the same treatment
+   `src/stripe/tiers.ts` carries, so a future dead-code sweep meets the reasoning
+   rather than rediscovering the finding. The annotation states plainly that
+   nothing reads the column, why it is written anyway (the writer's own words
+   about their own manuscript, unrecoverable if never stored), and that
+   `FACTS_TABLE` is inside the account-delete cascade so there is no GDPR
+   exposure. **Two of the three audit findings are now closed by ruling.**
+
+### Item 3 — THE LEGAL TODO, VERIFIED 2026-09-05 AGAINST LIVE SOURCES
+
+`src/ai/client.ts:14`. Verified, **not** reworded — no user-facing copy was
+touched, per instruction.
+
+**THE HEADLINE: the no-training claim is ACCURATE. Nothing user-facing is
+false.** What is wrong is a date, and what is missing is a disclosure.
+
+**The exact TODO text, as it stands:**
+
+> TODO (data-protection verification, before launch): verify this no-training /
+> brief-retention wording against Anthropic's CURRENT Commercial Terms +
+> data-usage page. The public privacy claim must match their live policy, not
+> this summary.
+> Last reviewed: 2026-06-22
+
+**What it guards, verbatim from the same comment block:** that user text reaches
+only the Anthropic Messages API, "which does NOT use API inputs or outputs to
+train models", and the writer's own Supabase rows; and that the promise "we
+never train AI on your work" is "true by construction".
+
+**Verified against live sources, 2026-09-05:**
+
+| Claim | Source | Verdict |
+|---|---|---|
+| Anthropic does not train on API content | Commercial Terms §B (Customer Content): "**Anthropic may not train models on Customer Content from Services.**" Unqualified — no trust-and-safety or legal-requirement exception attaches to the training prohibition. | **ACCURATE** |
+| Same, from the docs side | API and data retention: "**Retained data is never used for model training without your express permission.**" | **ACCURATE** |
+| No mandatory 30-day retention for D&L's models | Covered Models are **Claude Fable 5.1, Claude Mythos 5.1, Claude Fable 5, Claude Mythos 5**. D&L runs `claude-sonnet-4-6` and `claude-opus-4-8` (`src/ai/config.ts`) — neither designated. | **ACCURATE, and re-verified against a list that has CHANGED since July** — the 5.1 designations postdate the terms record. |
+| Default retention | "Conversation content (your prompts and Claude's outputs) is **not retained by default**; the exception is Covered Models". The commercial retention article adds that where inputs and outputs are stored, they are auto-deleted "within 30 days of receipt or generation". | **ACCURATE** |
+
+**THREE THINGS ARE WRONG OR STALE. None is a false public claim.**
+
+1. **"Last reviewed: 2026-06-22" is wrong — a later review exists in this repo
+   and the comment was never updated.** `DraftAndLens_Anthropic_Terms_Record.md`
+   records a verification on **26 July 2026**, prepared for solicitor review.
+   This settles the question the 2026-09-01 audit left open ("a review may have
+   happened without the comment being updated"): **it did.** The comment
+   understates the repo's own position by five weeks.
+2. **The comment's phrase "brief-retention wording" is stale against that same
+   record.** The 26 July record explicitly corrected an earlier policy draft
+   that "wrongly implied" a brief-retention-then-deletion window, replacing it
+   with "not retained by default". The code comment still carries the framing
+   the record corrected away.
+3. **⚠ THE REAL FINDING — a disclosure the record drafted and the live site
+   never received.** Anthropic's terms state: "**if a chat or session is flagged,
+   Anthropic may retain inputs and outputs for up to 2 years**" (and trust-and-
+   safety classification scores for up to 7 years). The 26 July record flagged
+   this **specifically for the solicitor**, on the reasoning that **Draft & Lens
+   deliberately permits dark and transgressive literary content near the
+   acceptable-use boundary**, so a false-positive flag on serious literary work
+   is a real if rare possibility. The record drafted corrected privacy wording
+   disclosing it. **That wording never reached the live privacy page.**
+   `/privacy` is stamped "Last updated: 29 June 2026" — it predates the record
+   entirely and says nothing about Anthropic-side retention at all.
+
+**Why this is an OMISSION and not an inaccuracy — checked line by line.** The
+homepage line ("Your work is yours. We never train AI on it — it's sent only to
+generate your reading") is true. `/privacy`'s "We do **not** use your submitted
+work to train AI models" is true. Its "Anthropic's commercial terms state they
+do not use API data to train their models" is true and now verified verbatim.
+Its "It goes **nowhere else** — no analytics service, no third party, ever
+receives your manuscript" is scoped to processors disclosed two paragraphs
+below, and is not false. **Nothing needs retracting.** What is absent is any
+statement of how long the provider may hold the text in the flagged case.
+
+**HELD FOR NENAD. No user-facing copy changed, no comment reworded.** The
+decisions are his: whether to publish the record's drafted retention wording,
+whether that goes to the solicitor first, and whether the flag-retention
+exposure is disclosed at all. The code comment's date and its "brief-retention"
+phrasing are entangled with that answer, so they were left alone too rather than
+half-corrected.
+
+### Item 4 — `/how-it-works` COPY DRAFTED, NOT PUBLISHED (2026-09-05)
+
+Draft staged at `scratchpad/how-it-works-draft.md`, shown to Nenad for sign-off.
+**The page is untouched. Nothing is inserted until he approves.**
+
+**Three new `<h2>` sections on the "A reading" tab**, inserted after "If you send
+me a short story, and it's the first thing I've seen" and before "If you send me
+a script". **Purely additive — not one existing sentence changes**, per the
+additive-edits-only rule.
+
+- *I question the ambition itself*
+- *I tell you what I read it against*
+- *When nothing fits*
+
+**Placement reasoning.** The claim is unconditional while the surrounding
+headings are conditional ("If you send me…"), so the declarative headings mark
+it as applying to everything. It sits immediately after the short-story section
+because that section is where the tradition decision is established, and the
+best-in-class comparison is the next step of that same thought — placing it
+earlier would reference a concept the page has not yet introduced.
+
+**Deliberate choices worth knowing before editing it:**
+
+- **"read it against", never "hold it against".** The idiom is banned across the
+  app by the 2026-08-23 ruling and the editor-voice sweep, with exactly one
+  exemption — the no-match line, where it is negated and points at a STANDARD.
+  `tests/lib/reading-standard.test.ts:101` pins that exemption to that one
+  string. New page copy takes no shelter under it; it uses the page's own
+  existing idiom ("I read the way an editor reads — against a tradition").
+- **"I question the ambition itself" echoes the approved no-match line
+  verbatim.** A writer meets that exact phrase at the top of a real reading, so
+  the page explaining it uses the same words rather than a synonym.
+- **The excerpt case is disclosed here** even though the page has never
+  mentioned excerpts, because the reading itself now tells an excerpt-submitter
+  the comparison was withheld, and the page must not read as though it always
+  happens.
+- **"Thirty-five lenses" is kept.** Same reason Nenad kept it in the no-match
+  line on 2026-09-01: with no toggle, the explanation has nowhere else to live.
+- **No product-speak, no third-person product name, no machinery talk**, and the
+  ambition section is developmental rather than directive — it says why the
+  question is asked and concedes it may be unwelcome and wrong.
