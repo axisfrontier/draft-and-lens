@@ -71,7 +71,10 @@ import 'server-only';
  * contrast with. The indefinite article makes it a claim about editorial
  * practice at large, which is what the product actually differentiates against.
  *
- * ⚠ THE ONE-WORD CHANGE IS NOT YET APPROVED. Flagged to Nenad 2026-09-01.
+ * APPROVED 2026-09-05. Nenad signed off the one-word change as-is, on the
+ * reasoning above: it is a correct consequence of the merge, not a rewrite.
+ * This string is now fully approved copy — treat any further edit to it the way
+ * you would treat an edit to `NO_MATCH`.
  */
 const MATCHED =
   "I'll take the question a reading normally leaves alone — whether the ambition was the right one — and show you what this tradition can do.";
@@ -104,6 +107,10 @@ const NO_MATCH =
  * relocated from under the pills to the top of the reading. Its tense already
  * works unchanged ("I'll … What I won't do"), which is the tell that it was
  * always describing the terms of a reading rather than a control.
+ *
+ * THE RELOCATION IS APPROVED, 2026-09-05. The string was approved for a surface
+ * that no longer exists, so the move was Nenad's call to make and he made it:
+ * the copy stands here unchanged.
  *
  * IT IS A THIRD CASE, NOT A VARIANT OF NO-MATCH, and conflating them would be a
  * lie in the writer's favour and against their interest. On an excerpt the

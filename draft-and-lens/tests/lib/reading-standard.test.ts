@@ -91,8 +91,8 @@ describe('approved copy, pinned', () => {
     // alone" -> "a reading normally leaves alone". The definite article pointed
     // at Draft & Lens's own ordinary reading, which the merge abolished.
     //
-    // ⚠ THAT ONE WORD IS NOT YET APPROVED — flagged to Nenad 2026-09-01. If he
-    // rejects it, this assertion and the string move together.
+    // THAT ONE WORD IS APPROVED, 2026-09-05. The assertion is now pinned to
+    // approved copy, exactly like the no-match line above it.
     expect(readingStandardLine(true, 'complete')).toBe(
       "I'll take the question a reading normally leaves alone — whether the ambition was the right one — and show you what this tradition can do."
     );
