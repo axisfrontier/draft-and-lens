@@ -50,8 +50,13 @@ The most expensive category, because docs are trusted and code is checked.
 - [ ] **Version numbers agree** between a document's filename, its own header, and anything that references it.
 - [ ] **Rules stated in prose vs rules enforced in prompts.** Where a corpus or design doc states a principle, confirm the prompt actually contains it — and the reverse, that prompt rules with real editorial weight are written down somewhere durable.
 - [ ] **Status claims.** Anything marked done in a checklist or log — spot-check two at random against the repo.
+- [ ] **"Awaiting approval" / "proposed, not yet deployed" language, checked against whether it actually shipped.**
+      `grep -n -i "awaiting\|not yet approved\|proposed\|NOT deployed\|NOT been changed" DL_ONLY_ReadFirst.md SESSION_LOG.md`
+      For each hit, confirm the thing it describes is still genuinely pending. This is the most misleading direction stale docs can drift in: it tells a session a closed decision is still open, rather than just being wrong about a number.
 
 > **Worked examples (2026-08-17):** `CLAUDE.md` gave the sidebar link count as 25 while the ledger design and a standing ruling said 26 — one of them wrong, neither trustworthy until counted. `CLAUDE.md` referenced `DraftAndLens_LearnedCorpus_v2.7.md`, which does not exist; the file on disk is `_v2.9.md` and its own header says `Version 2.11`. And the corpus's "teaching the move" rule was scoped to notes naming a *problem*, while the product had implemented the strengths half months earlier — the doc stated half a rule.
+
+> **Worked example (2026-09-05):** `DL_ONLY_ReadFirst.md` said the 21 lens self-recognition rewrites were "proposed... Nenad approves before any of it is written or deployed" — true on 2026-08-24, false from the next day, when they were reviewed, approved, and deployed (`4bf4f1e`). The box sat stale for eleven days and was repeated as current fact by a session that hadn't checked the source file's own header, which was already correct. Standing rule added to `CLAUDE.md` to close this at deploy time rather than relying on this checklist to catch it after the fact.
 
 ## 5 — Test hygiene (2 min)
 

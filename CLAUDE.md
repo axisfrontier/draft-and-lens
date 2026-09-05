@@ -88,6 +88,9 @@ Claude Code has no memory across sessions except what's actually written into th
 ### Write decisions down at the moment they're made
 Any decision made in a session that will matter to a future session — a scoping call, a design choice, "build X not Y," a deferred item — gets written into `SESSION_LOG.md` (or this file's Pending Decisions section) the moment it's made, not reconstructed from memory afterward. This applies equally to decisions made directly in a Claude Code session and decisions relayed from a claude.ai chat — both need to land in the repo the same way.
 
+### Close approval-status language in the same commit as the deploy (standing rule, 2026-09-05)
+The inverse of the rule above. When something previously recorded as "awaiting Nenad's approval" / "proposed, not yet deployed" is actually approved and shipped, the language describing it as pending in `DL_ONLY_ReadFirst.md` and `SESSION_LOG.md` gets corrected **in the same commit as the deploy** — not as a separate cleanup step later, which is how it gets forgotten. A stale "still awaiting approval" note left standing after something has already shipped is worse than silence: it tells the next session a closed decision is still open. `AUDIT_CHECKLIST.md` §4 now checks for this specifically as a backstop, but the backstop existing is not a reason to skip doing it at deploy time.
+
 ## Lessons learned — permanent rules (never repeat these mistakes)
 
 ### Use the Chrome extension first
