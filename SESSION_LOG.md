@@ -4203,13 +4203,9 @@ never its own. Naming per se is not the failure — deferring is.
 - It does NOT tell us whether `carver` is unique or whether other broad,
   low-specificity standards (`hemingway`, `chekhov`) attract the same way.
 
-**Nothing was changed. No guard, no directive, no Brain 1 prompt, no code.**
-Three repairs are on the table and they are mutually exclusive enough that
-picking one is Nenad's ruling, not a detail: fix Brain 1's matching, add a
-verification pass that compares `tradition` against `bestInClassLens` (nothing
-does today — `validateLens` checks enum membership only), or make the standard
-block name its lens so the analyst can see the contradiction instead of
-reconciling it silently.
+**RULED 2026-09-05, BUILT AND DEPLOYED THE SAME DAY — see the entry below.**
+Three repairs were on the table; Nenad chose the verification pass. This
+paragraph is kept for the reasoning that led there, not as an open question.
 
 ### Housekeeping — `DraftAndLens_Handover_2026-08-25.md` DELETED 2026-09-05
 
@@ -4230,3 +4226,84 @@ listed the double-deploy as "not investigated" (now flagged in `CLAUDE.md` as
 deploy step 4, under review).
 
 **The working tree is now clean for the first time this session.**
+
+## 2026-09-05 — Claude Code session. Both bugs from the sweep, fixed and deployed
+
+Nenad's rulings: Trevor bug → option 2 (verification pass). Chekhov bug →
+option A (countable guard, same fix pattern as the 2026-08-28 quoting leak).
+Both built, tested against the REAL recorded failure cases (not synthetic
+ones), and deployed same session. Legal file discrepancy resolved first
+(below) since it was a prerequisite gate on this work, not because it's
+related in substance.
+
+### Legal file discrepancy — RULED, FIXED
+
+`DraftAndLens_Legal_Document_Drafts_Updated.md` is canonical (Nenad's ruling).
+`DraftAndLens_GoLive_Compliance_Checklist.md`'s two references (the
+zero-budget callout, item 1) were pointing at the non-updated draft, which is
+missing the corrected Anthropic retention wording and the flag-retention
+disclosure item 1c is about. Both references corrected. The non-updated file
+is now the superseded one — do not adapt from it.
+
+### Trevor bug — `src/prompts/lenses/tradition-guard.ts`, new file
+
+`verifyLensMatch(tradition, lens)` — a contradiction detector, not a
+correctness verifier. Checks region (a curated `LENS_REGION` table, 33 of 35
+lenses set, `nabokov`/`highsmith` deliberately left unset as genuinely
+cross-national) and form (read straight off `LENS_META[lens].category` —
+no duplicate table needed for that dimension) against Brain 1's free-text
+`tradition` string. Fires ONLY on positive contradiction — absence of a
+region word is agreement, not doubt, because a false reject costs the writer
+a standard they may have earned. Gated into `diagnostician.ts` immediately
+after `validateLens`; a rejected match routes to `null`, same as no match at
+all, so every existing null-path branch needed zero changes.
+
+**Tested against the real cases, zero API spend** (pure-function tests against
+tradition strings already on record): both actual Trevor-bug strings
+("British literary minimalism", "contemporary British literary realism", both
+matched to `carver`) now correctly reject. The three cross-lens sweep controls
+(`oconnor`/Southern Gothic, `chandler`/hardboiled noir, `leguin`/speculative
+anthropology — chosen because a substitution would have been obvious) all
+correctly hold. 13 new tests, `tests/prompts/lens-tradition-guard.test.ts`.
+
+**Deliberately narrow, on record so it isn't "fixed" further without cause:**
+region and form only. No genre-incompatibility list — building one from two
+data points would be the exact over-fit the design principle warns against.
+If a genre-shaped failure turns up, extend it against real evidence then, not
+now. Commit message carries the full reasoning; not repeated here.
+
+### Chekhov bug — `src/prompts/interrogate/directive.ts`
+
+New guard, `NO NOTE MAY OPEN ON SOMEONE ELSE'S AUTHORITY`, added immediately
+after `DO NOT DEFER TO IT IN THE PROSE` — same fix pattern as the 2026-08-28
+quoting leak: that guard was interpretive where its neighbour was already
+countable, and the asymmetry is exactly where it drifted. Wrong/right pair
+grounded in the actual failure (the Chekhov/Gorky opening), with an explicit
+line that this applies even when the cited writer IS the matched lens — the
+failure is opening on someone else's authority, not which name gets used.
+
+**Verified against the actual failure case — one real Opus-tier analyst call,
+~$0.30, spent on Nenad's explicit instruction.** Re-ran the exact story that
+produced the original failure. Same tradition (Southern Gothic), same match
+(`oconnor`). Result: `O'Connor` named 0 times (consistent with before —
+naming the matched lens was never the requirement), `Chekhov` named once, but
+now mid-paragraph in `TRADITION ALIGNMENT` as "Chekhovian withholding of
+climax," arriving AFTER the work's own detail is already established — the
+permitted shape, not the failure shape. `WHAT IS WORKING` — the section that
+opened on Chekhov before — now opens on the work itself. One directive test
+added, pinned to the real wording, following the file's existing convention;
+the "carries all three guards" test is now "all four."
+
+### Verification, both fixes together
+
+`tsc` clean · **370/370 tests green** (was 356 at session start; +13 tradition
+guard, +1 directive) · `✓ Compiled successfully` · IP bundle grep **exit 1**
+(confirms none of the new region markers or the illustrative Chekhov/Gorky
+text leaked to the client bundle). Two commits, pushed: the verification pass,
+then the directive guard.
+
+**Not done, and not implied by either fix:** no live match-rate data exists
+yet on whether `carver` is a unique over-attractor or whether other broad
+standards (`hemingway`, `chekhov`) drift the same way — that answer comes from
+`submission_telemetry.best_in_class_lens` over real traffic, now that it's
+being logged. Nothing to action until there's enough of it to read.
