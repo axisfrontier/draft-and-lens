@@ -7,7 +7,7 @@
 ## STAGE 1 — Before any real user touches it
 
 > **💷 ZERO-BUDGET PATH (for a free beta with a handful of testers).** You do NOT need a paid solicitor to launch a free beta. Minimum realistic spend ≈ **£40–£80 total**, almost all of it the ICO fee:
-> - **Privacy Policy + Terms + AUP:** adapt your existing drafts (`DraftAndLens_Legal_Document_Drafts.md`) using a free/low-cost reputable UK template generator (£0–£30). You're adapting, not commissioning — the drafts do the heavy lifting.
+> - **Privacy Policy + Terms + AUP:** adapt your existing drafts (`DraftAndLens_Legal_Document_Drafts_Updated.md`) using a free/low-cost reputable UK template generator (£0–£30). You're adapting, not commissioning — the drafts do the heavy lifting.
 > - **ICO data-protection fee:** £40–£52/yr for a sole trader. The one genuinely required spend. (ico.org.uk)
 > - **DPAs:** £0 — free documents you accept from Supabase, Anthropic, Clerk, Vercel.
 > - **Solicitor review:** SKIP FOR NOW. It's the "before you take real money or scale" step, not launch-day. Well-adapted templates + the ICO fee = a defensible posture for a free beta. Add the review when there's revenue to pay for it.
@@ -15,7 +15,8 @@
 > So the gate for free testers is: adapt the drafts · pay the ICO fee · accept the DPAs · publish the docs. The expensive step waits.
 
 
-- [ ] **1. Documents adapted from the drafts + published.** Adapt Privacy Policy, Terms of Service, Acceptable Use Policy from `DraftAndLens_Legal_Document_Drafts.md` (free/low-cost template generator). *Solicitor review is deferred to the paid-launch stage (see zero-budget path above) — not required for a free beta.*
+- [ ] **1. Documents adapted from the drafts + published.** Adapt Privacy Policy, Terms of Service, Acceptable Use Policy from `DraftAndLens_Legal_Document_Drafts_Updated.md` (free/low-cost template generator). *Solicitor review is deferred to the paid-launch stage (see zero-budget path above) — not required for a free beta.*
+  **CORRECTED 2026-09-05 — was pointing at the non-updated draft.** `_Updated.md` is canonical (Nenad's ruling): it fills in real values instead of `[CONTACT EMAIL]` placeholders, adds the Google sign-in disclosure, and — the reason this matters for item 1c below — already carries the corrected Anthropic retention wording (not the "briefly retained" framing the 26 July terms record found wrong) plus the flagged-content two-year disclosure. The non-updated `DraftAndLens_Legal_Document_Drafts.md` is the superseded draft; do not adapt from it.
 - [ ] **1b. No-training promise placed where users SEE it (not just in the policy).** "We never train AI on your work" must appear at sign-up AND near the upload box — it's the strongest trust signal and a real edge. Policy text alone is not enough; it must be visible at the moment a writer decides to trust D&L with a draft. (Build requirement — see the Code prompt.)
 - [ ] **1c. ⚠ PRE-LAUNCH BLOCKER — flag-retention disclosure on `/privacy`. OPEN, DEFERRED ON PURPOSE, awaiting solicitor advice.** *Ruled by Nenad 2026-09-05. This is a deliberate deferral, not an oversight — do not close it silently and do not re-raise it as a fresh audit finding.*
   - **The gap.** Anthropic may retain inputs and outputs for **up to 2 years** where content is flagged by their automated trust-and-safety systems (classification scores up to 7 years). `/privacy` says nothing about provider-side retention in any form. It is an omission, not an inaccuracy: everything the page currently states was re-verified as true on 2026-09-05.
