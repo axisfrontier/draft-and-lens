@@ -3962,3 +3962,45 @@ in a browser after deploy, per the standing rule.
 **This closes all four items the 2026-09-01 stop marker was waiting on.** The
 remaining sequence is the migration, Nenad's confirmation that it ran, then push
 and deploy.
+
+### DEPLOYED 2026-09-05 — the merge is live, and so is everything held since 09-01
+
+Migration applied and confirmed by Nenad first, in the ruled order: the
+verification query returned exactly one row, `best_in_class_lens | text | YES`.
+Only then was code pushed.
+
+**Pushed:** `dad61ef..3fd10e3`, **13 commits** (not 14 — an earlier count in
+session was wrong). `git log origin/main..HEAD` empty afterwards.
+
+**Verified live in a browser, past the beta gate:**
+
+- **`/how-it-works`** — all three new sections present, in the right place
+  (between the short-story section and the script section), right order,
+  apostrophes rendering, warm paper background and design system intact.
+- **`/` upload page** — the "How should I read it?" sub-label row is GONE.
+  Steps 1–4 intact, no orphaned gap where the toggle was, excerpt pills sit
+  correctly against step 3. The merge is live.
+- **`/analysis/<id>`** — now **404**. This is the server-side proof that
+  `4b17edb` deployed: that route was a live Stage 0 scaffold rendering
+  "Analysis {id} — Stage 4." in raw developer text until the audit deleted it.
+
+**⚠ A MISTAKE WORTH RECORDING, because it produced a real duplicate build.**
+The deploy poll used `curl` WITHOUT `-L`. `draftandlens.com` 308s to `www`,
+which 307s to `/beta-gate`, so every poll was grepping a 15-byte redirect body
+and could NEVER have matched — deployed or not. On that false negative the
+deploy hook was fired manually, starting a second production build of a commit
+that may already have been live from the git integration.
+
+**This does NOT settle the standing question about deploy step 4**, and must not
+be read as evidence either way: because the check was broken from the first
+poll, there is no observation of when the git-integration build actually landed.
+The step is still under review, exactly as `CLAUDE.md` says.
+
+**The lesson for any future live check: the site is behind a beta gate, so
+`curl` cannot verify a deploy.** It follows to `/beta-gate` for every route.
+Use the Chrome extension, which carries the cookie — which is what the standing
+rule already says to do, and what should have been used first.
+
+**Still unrun and unapproved, deliberately:** the output-token A/B, and any live
+reading. The disclosure line has STILL never been seen rendered — it costs an
+API call, and Nenad's go-ahead is separate and has not been given.
