@@ -17,6 +17,13 @@
 
 - [ ] **1. Documents adapted from the drafts + published.** Adapt Privacy Policy, Terms of Service, Acceptable Use Policy from `DraftAndLens_Legal_Document_Drafts.md` (free/low-cost template generator). *Solicitor review is deferred to the paid-launch stage (see zero-budget path above) — not required for a free beta.*
 - [ ] **1b. No-training promise placed where users SEE it (not just in the policy).** "We never train AI on your work" must appear at sign-up AND near the upload box — it's the strongest trust signal and a real edge. Policy text alone is not enough; it must be visible at the moment a writer decides to trust D&L with a draft. (Build requirement — see the Code prompt.)
+- [ ] **1c. ⚠ PRE-LAUNCH BLOCKER — flag-retention disclosure on `/privacy`. OPEN, DEFERRED ON PURPOSE, awaiting solicitor advice.** *Ruled by Nenad 2026-09-05. This is a deliberate deferral, not an oversight — do not close it silently and do not re-raise it as a fresh audit finding.*
+  - **The gap.** Anthropic may retain inputs and outputs for **up to 2 years** where content is flagged by their automated trust-and-safety systems (classification scores up to 7 years). `/privacy` says nothing about provider-side retention in any form. It is an omission, not an inaccuracy: everything the page currently states was re-verified as true on 2026-09-05.
+  - **Why it matters here specifically.** This product deliberately permits dark and transgressive literary work near the acceptable-use boundary, so a false-positive flag on serious writing is a real if rare possibility. The exposure is larger for D&L than for a general-purpose app.
+  - **The wording already exists.** Drafted 2026-07-26 in `DraftAndLens_Anthropic_Terms_Record.md`, which flagged it for the solicitor at the time and never got an answer. It was never published; `/privacy` is still stamped 29 June 2026 and predates the research.
+  - **Who does what.** Nenad is taking the drafted wording to a solicitor himself — **not a Code task, do not action it**. `/privacy` is not to be reworded or restamped until that advice lands.
+  - **Note this crosses the zero-budget path above**, which defers solicitor review to paid launch. This item is the reason that deferral is no longer automatic: it is a specific question that was raised for advice and is still waiting on it.
+  - Cross-referenced from `src/ai/client.ts` and `DL_ONLY_ReadFirst.md`.
 - [ ] **2. Documents published where users see them.** Privacy Policy + Terms linked at signup; AUP referenced in the moderation refusal message; AI-disclosure notice visible on the reading.
 - [ ] **3. DPAs accepted + copies kept** with: Supabase, Anthropic, Clerk, Vercel (and Stripe before billing).
 - [ ] **4. Policy decisions made concrete + written down:**

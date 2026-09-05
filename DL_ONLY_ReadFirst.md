@@ -127,18 +127,20 @@ set. **Still nothing pushed, still nothing deployed.**
 
 **Awaiting Nenad, and blocking the deploy:**
 
-- **The legal verification (item 3) is done and reported. The no-training claim
-  is ACCURATE — verified 2026-09-05 against Anthropic's live Commercial Terms
-  and data-retention docs. Nothing user-facing is false and nothing needs
-  retracting.** What it turned up instead: `src/ai/client.ts`'s "Last reviewed:
-  2026-06-22" is five weeks behind this repo's own
-  `DraftAndLens_Anthropic_Terms_Record.md` (26 July 2026), and the retention
-  disclosure that record drafted **for the solicitor** — that flagged content may
-  be retained by Anthropic for up to two years — never reached `/privacy`, which
-  is still stamped 29 June 2026. That is an omission, not an error, and whether
-  to disclose it is his call plus the solicitor's. **No user-facing copy was
-  touched, and the code comment was left alone rather than half-corrected,
-  because its wording is entangled with that answer.**
+- **The legal verification (item 3) is DONE and RULED. The no-training claim is
+  ACCURATE — verified 2026-09-05 against Anthropic's live Commercial Terms §B
+  and the live API data-retention docs. Nothing user-facing is false and nothing
+  needs retracting.** The code comment in `src/ai/client.ts` has been corrected:
+  accurate review date, the abandoned "brief-retention" framing removed, the
+  real retention position stated.
+- **⚠ ONE LEGAL ITEM IS OPEN AND IS A DELIBERATE DEFERRAL — do not re-raise it
+  as a fresh audit finding.** Anthropic may retain flagged content for up to two
+  years, and `/privacy` does not disclose it. An omission, not an error. Wording
+  was drafted 2026-07-26 and **Nenad is taking it to a solicitor himself — this
+  is explicitly NOT a Code task.** `/privacy` **must not be reworded or
+  restamped** until that advice lands. Tracked as a pre-launch blocker at item
+  **1c** of `DraftAndLens_GoLive_Compliance_Checklist.md`, which is the
+  authority; cross-referenced from `src/ai/client.ts`.
 - **`/how-it-works` copy is DRAFTED, not published** — three additive `<h2>`
   sections on the "A reading" tab. Details and the reasoning behind each choice
   are in `SESSION_LOG.md` under 2026-09-05.

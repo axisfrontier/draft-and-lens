@@ -3912,3 +3912,30 @@ earlier would reference a concept the page has not yet introduced.
 - **No product-speak, no third-person product name, no machinery talk**, and the
   ambition section is developmental rather than directive — it says why the
   question is asked and concedes it may be unwelcome and wrong.
+
+### Item 3 — RULED 2026-09-05: options 2 and 3 combined
+
+Nenad's ruling on the legal verification, taken after reading the full result:
+
+- **Correct the code comment now.** Done. `src/ai/client.ts` carries the accurate
+  review date (2026-09-05, previous 2026-07-26), states the real retention
+  position, and no longer references the "brief-retention" framing the July
+  record abandoned. It also records the 2026-09-05 verification against
+  Commercial Terms §B and the live retention docs.
+- **Do NOT touch or restamp `/privacy`.** Untouched. Not one character of
+  user-facing copy moved.
+- **Log the flag-retention gap as an open pre-launch blocker**, explicitly a
+  deliberate deferral rather than an oversight, somewhere it stays visible
+  instead of resurfacing later as a fresh audit finding. Done: **item 1c of
+  `DraftAndLens_GoLive_Compliance_Checklist.md`**, which is now the authority on
+  it, cross-referenced from `src/ai/client.ts` and `DL_ONLY_ReadFirst.md`. All
+  three say the same thing: deliberate, deferred, awaiting solicitor advice, not
+  to be closed silently.
+- **Nenad takes the drafted July wording to the solicitor himself.** Explicitly
+  NOT a Code task. A future session must not action it, draft an alternative, or
+  publish the July wording on its own initiative.
+
+Worth recording for whoever meets item 1c later: it cuts across the checklist's
+own zero-budget path, which defers solicitor review to paid launch. That
+deferral is no longer automatic — this is a specific question that was raised
+for advice in July and is still waiting on it.
