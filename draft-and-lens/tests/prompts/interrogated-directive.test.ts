@@ -136,6 +136,19 @@ describe('the interrogated directive', () => {
     expect(d).toMatch(/transfer the comparison to a writer outside this tradition/);
   });
 
+  it('forbids opening a note on someone else\'s authority, in a form the model can check — the Chekhov bug, 2026-09-05', () => {
+    // The first real reading under the merged directive matched oconnor
+    // correctly and never named O'Connor once — it opened WHAT IS WORKING by
+    // citing what Chekhov told Gorky and measuring the writer against that.
+    // A correct match, so the substitution guard above never had a chance to
+    // fire; this is DO NOT DEFER's own failure, made countable the same way
+    // the quoting rule was on 2026-08-28.
+    const d = buildInterrogateDirective('oconnor', 'complete');
+    expect(d).toContain('NO NOTE MAY OPEN ON SOMEONE ELSE\'S AUTHORITY');
+    expect(d).toContain('Chekhov told Gorky');
+    expect(d).toContain('EVEN WHEN the craft point is true and even when the cited writer is the matched lens');
+  });
+
   it('forbids the reading narrating itself, on every reading', () => {
     // Was seen under push pressure only, which is why it lives in the ambition
     // block all three cases share. Every reading is now a push read, so this
@@ -150,15 +163,18 @@ describe('the interrogated directive', () => {
     }
   });
 
-  it('carries all three guards on every reading, not on a subset', () => {
+  it('carries all four guards on every reading, not on a subset', () => {
     // Replaces 'leaves the ordinary reading untouched by all three guards'.
     // That test asserted the guards were confined to the push path; the merge
     // makes the opposite the requirement, and the guards are the reason the
-    // merge is safe to make. A matched complete work carries all three.
+    // merge is safe to make. A fourth (NO NOTE MAY OPEN ON SOMEONE ELSE'S
+    // AUTHORITY) joined 2026-09-05 after the Chekhov bug. A matched complete
+    // work carries all four.
     const d = buildInterrogateDirective('carver', 'complete');
     expect(d).toContain('more than three consecutive words');
     expect(d).toContain('the ONLY standard this reading may hold the work against');
     expect(d).toContain('DO NOT NARRATE THE READING');
+    expect(d).toContain('NO NOTE MAY OPEN ON SOMEONE ELSE\'S AUTHORITY');
   });
 });
 
