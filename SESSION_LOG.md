@@ -4210,3 +4210,23 @@ verification pass that compares `tradition` against `bestInClassLens` (nothing
 does today — `validateLens` checks enum membership only), or make the standard
 block name its lens so the analyst can see the contradiction instead of
 reconciling it silently.
+
+### Housekeeping — `DraftAndLens_Handover_2026-08-25.md` DELETED 2026-09-05
+
+Untracked since 27 Aug and surfaced at the start of this session under the repo
+hygiene rule. Nenad ruled: delete, content superseded.
+
+**Checked before deleting rather than taken on trust**, because an untracked file
+has no git history to recover from. Two items were not obviously superseded and
+both were confirmed to survive elsewhere: Noel's umber/amber "generic AI"
+critique is in `DraftAndLens_UIExploration_Backlog.md` (lines 8 and 13), and the
+LM Lee Chan / will.i.am approach plan — the one thing in it not covered by
+`DL_ONLY_ReadFirst.md`, `CLAUDE.md` or this log — is also in
+`DraftAndLens_Handover_2026-08-17.md`, which IS tracked.
+
+The rest was stale in ways worth noting only so nobody hunts for it: it still
+said `INTERROGATE_ANALYSIS_LIVE` must stay false (the flag is retired), and
+listed the double-deploy as "not investigated" (now flagged in `CLAUDE.md` as
+deploy step 4, under review).
+
+**The working tree is now clean for the first time this session.**
