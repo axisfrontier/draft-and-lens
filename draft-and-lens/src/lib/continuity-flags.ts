@@ -464,6 +464,26 @@ export async function reconcileFlag(
       })[0] ?? null;
 
     if (target) {
+      // ⚠ `reconciled_reason` IS WRITE-ONLY, and deliberately kept that way —
+      // 2026-09-01 audit finding, RULED BY NENAD 2026-09-05: keep it, annotate
+      // it, do not delete it. Same treatment as `src/stripe/tiers.ts`.
+      //
+      // Nothing selects this column anywhere in `src/` or `tests/`; only
+      // `reconciled_at` is read back, by `gatePair` and
+      // `findStateLockViolations`. So it is storage without a reader, which is
+      // exactly the shape a future audit will flag as dead — hence this note.
+      //
+      // Why it stays. It is the WRITER'S OWN WORDS about their own manuscript
+      // ("she's in chapter 3 because it's a flashback"), captured at the one
+      // moment they are thinking about that contradiction. Surfacing it later —
+      // in the ledger, or to the analyst as context on a dismissed pair — is a
+      // real product possibility, and the words cannot be recovered after the
+      // fact if they were never stored. Dropping the write to satisfy a
+      // dead-code sweep would silently close that door.
+      //
+      // No GDPR exposure: `FACTS_TABLE` is inside the account-delete cascade,
+      // so this text goes when the account goes. Capped at 500 chars at the
+      // write, not at the read, because there is no read.
       await supabase
         .from('continuity_facts')
         .update({
