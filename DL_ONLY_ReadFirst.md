@@ -219,13 +219,40 @@ read why it was shut.
 box at the top of this section. This paragraph is kept for the reasoning, not as
 a live instruction.
 
-### 2. Lens self-recognition lines — rewrites proposed, NOT approved, NOT deployed
+### 2. Lens self-recognition lines — SETTLED 2026-08-25, all 35 accounted for
 
-All 35 lines are live and unapproved. A review on 2026-08-24 found the problem is structural rather than per-line: **17 of the 35 close on the identical phrase "Show me yours."**, so a writer trying several lenses in one session meets the same sign-off from several supposedly distinct minds — which contradicts the claim `/about` makes for them.
+**Corrected 2026-09-05 — this box was stale for eleven days and told a session
+the opposite of the true state.** It said all 35 lines were "live and
+unapproved" and 21 rewrites were "proposed... Nenad approves before any of it
+is written or deployed." That was accurate on 2026-08-24 and false from the
+next day on: the 21 were reviewed, approved, and **deployed 2026-08-25**
+(`4bf4f1e`, pushed, hook fired, `tsc` clean, 250/250 tests). Confirmed with
+Nenad 2026-09-05 that all 35 are now settled, one way or another, and nothing
+here is awaiting his decision.
 
-**21 rewrites are proposed in `SESSION_LOG.md`** (the 17, plus four flagged lines whose closing was the problem). Acknowledgement halves untouched; only the closings change.
+The status, precisely — same three-way split the source file itself carries:
 
-**Nothing has been changed in the codebase. Nenad approves before any of it is written or deployed.**
+- **21 closings, approved and live.** 19 exactly as proposed; `fey` and
+  `kaufman` shipped with his amendments (each dropped a word echoed from its
+  own acknowledgement half). Acknowledgement halves of these 21 untouched.
+- **Two of those 21 — `king` and `roth` — had their acknowledgement halves
+  flagged as weak** ("warts and all"; "I have lived in it long enough").
+  Alternatives were shown. **He saw them and chose to keep the originals.**
+  This is a closed decision, not an open one — do not "fix" them later.
+- **14 lines were never in scope for rewrite at all** (didn't use the "Show
+  me yours" template, weren't separately flagged): `bukowski`, `nabokov`,
+  `coppola`, `wenders`, `spielberg`, `coens`, `jeunet`, `wachowski`, `sorkin`,
+  `puzo`, `chandler`, `leguin`, `morrison`, `blume`. Still technically
+  "unapproved copy" in the sense that nobody has separately rubber-stamped
+  them — but that is a bookkeeping distinction, not a live proposal. Nobody
+  has flagged a problem with any of them.
+
+**Authority on exact status:** the header of
+`src/prompts/lenses/self-recognition.ts` itself, which states this precisely
+and is kept current. Full record, including the original/proposed/deployed
+text for all 21 and the two rejected-in-favour-of-originals alternatives, is
+in `SESSION_LOG.md` under the PROPOSAL (2026-08-24) and DEPLOYED (2026-08-25)
+entries.
 
 ## Periodic audit — it has a clock now (2026-08-21)
 
