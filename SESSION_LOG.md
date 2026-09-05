@@ -4004,3 +4004,112 @@ rule already says to do, and what should have been used first.
 **Still unrun and unapproved, deliberately:** the output-token A/B, and any live
 reading. The disclosure line has STILL never been seen rendered — it costs an
 API call, and Nenad's go-ahead is separate and has not been given.
+
+## 2026-09-05 — BOTH SPEND TESTS RUN, with Nenad's explicit approval
+
+He approved the spend twice: once in principle, once on a costed estimate at the
+Opus tier. Estimate given beforehand was **$0.85 typical / $2.30 worst**; actual
+was **~$0.95**. Nothing was run before that confirmation.
+
+### TEST 1 — the output-token A/B. **RUN. The merge is cost-neutral.**
+
+**Two premises in the brief were wrong and were corrected before spending.**
+(a) There were no "tonight's directive/register changes" — this session touched
+no prompt; the changes were 2026-09-01 (`da29855`, `02c8710`). (b) There is no
+"before" path in the code to flag: `buildInterrogateDirective` is called
+UNCONDITIONALLY at `analyst.ts:176`, so the ordinary reading no longer exists.
+The before-leg was therefore run from a **git worktree at `f4443f0`** (the commit
+before the register reform), whose builder still took `depth: ReadingDepth =
+'read'`.
+
+**Method.** One story, written for the test (3,166 words, original, deliberately
+in a tradition the lens set covers). **Brain 1 run ONCE and its diagnostic reused
+by both legs**, so the analyst prompt is the only variable — re-running Brain 1
+under both codebases would have confounded the lens-roster change with the
+register change. `config.ts` verified byte-identical across the two commits, so
+both legs ran `claude-opus-4-8`, `maxTokens 16000`, effort `medium`, adaptive
+thinking. Brain 1 matched **`carver`**, so this is the MATCHED path — the
+expensive branch.
+
+| | old (`f4443f0`) | new (HEAD) | delta |
+|---|---|---|---|
+| Visible words | 3,503 | 2,370 | **−1,133 (−32.3%)** |
+| Visible prose (tokens, `count_tokens`) | 6,771 | 4,474 | −2,297 (−34%) |
+| **Thinking (billed as output)** | **~67** | **~1,871** | **+1,804** |
+| Billed output tokens | 6,838 | 6,345 | −493 (−7%) |
+| Input tokens | 18,862 | 21,759 | +2,897 |
+| Sections | 14 | 11 | −3 (evidence gating) |
+| "you" | 18 | 33 | +15 |
+| **Cost** | **$0.2653** | **$0.2674** | **+$0.0022** |
+
+Neither leg truncated (`stop_reason: end_turn` both), so the 16,000 cap is not
+in play and the numbers are real ceilings, not clipped ones.
+
+**THE HEADLINE, and it is not what the estimate assumed: the merge costs
+$0.0022 per reading — about £1.70 per thousand readings. Input rose 2,897
+tokens as predicted, and output FELL enough to pay for almost all of it.**
+
+**THE FINDING THAT MATTERS MORE than the money.** The reading got a third
+shorter in prose, but billed output barely moved, because **thinking went from
+essentially nothing (~67 tokens) to ~1,871**. The register reform did not make
+the model do less work; it made it do more thinking and less writing. That is
+almost certainly the right trade for a writer, and it is invisible in a
+word-count-only measurement — the earlier figures on record (3,577 → 2,439
+words) would have suggested a large saving that does not exist in the bill.
+**Do not quote the word delta as a cost saving.**
+
+### TEST 2 — a real reading, end to end on production. **RUN AND SEEN.**
+
+Same story, submitted through the live site by file upload, signed in, STORY /
+COMPLETE PIECE / on its own. Full pipeline. The analysis phase rendered fully
+styled throughout (warm paper, stage pills, sidebar) — the standing regression
+check passes.
+
+**THE DISCLOSURE LINE RENDERED, and it had never been seen before this run.**
+Verbatim on screen, in italic, at the very top of the reading above the tradition
+label and title:
+
+> I'll take the question a reading normally leaves alone — whether the ambition
+> was the right one — and show you what this tradition can do.
+
+That is the MATCHED line **including the one-word change Nenad approved today**
+("**a** reading"). Option B's guarantee is confirmed working end to end on
+production: the server decided from `diagnostic.bestInClassLens`, and the writer
+was told.
+
+### ⚠ ONE REAL FINDING FROM THAT READING — for Nenad, not fixed
+
+**The matched lens was `carver`. The verdict named TREVOR.** Verbatim:
+
+> This is accomplished work in a demanding tradition — the spare British marital
+> realism of late Trevor, where objects carry what people can't and silence is
+> load-bearing.
+
+Carver is never named anywhere in the reading. The directive's
+`STAY INSIDE THE MATCHED TRADITION` rule permits mentioning "other writers as
+lineage" but forbids exactly this shape: *"the tradition this story is working
+in — [other author], specifically"*, on the reasoning that the substitution "is
+invisible to the writer and silently swaps a vetted standard for an unvetted
+one". Naming the tradition BY a writer outside the matched set is at minimum on
+the line, and arguably over it.
+
+**Not overclaimed: this is ONE reading.** It is not evidence of a systematic
+failure, and the guard may be working correctly on most inputs. It is the first
+real reading ever run under the merged directive, and it is exactly the class of
+drift the 2026-08-28 guards exist to catch, so it should not go unrecorded.
+**Nothing was changed. This is a prompt question and a judgement call.**
+
+**Not a finding:** `Ishiguro` also appears in the reading, but in the MARKET
+section (a publisher comparison from the market brain), which the analyst
+directive does not govern.
+
+### Cleanup and verification
+
+Worktree removed, `node_modules` symlink removed, all harness scripts deleted,
+`git worktree list` shows only the main tree, working tree clean apart from the
+long-standing untracked handover file. No repo file was modified by either test.
+
+**Still to confirm, and it needs Nenad's database access:** that this reading
+wrote `best_in_class_lens = 'carver'` into `submission_telemetry`. The migration
+is applied and the code is live, but nothing has verified an actual write. Query
+in the report.
