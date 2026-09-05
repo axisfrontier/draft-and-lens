@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { buildPass1System } from '../../prompts/diagnostic';
+import { verifyLensMatch } from '../../prompts/lenses/tradition-guard';
 import { LENS_IDS, type LensId } from '../../prompts/lenses/types';
 import type { DiagnosticResult } from '../../prompts/types';
 import { MODELS, TOKEN_LIMITS } from '../config';
@@ -41,6 +42,28 @@ function validateLens(value: unknown): LensId | null {
   return typeof value === 'string' && (LENS_IDS as readonly string[]).includes(value)
     ? (value as LensId)
     : null;
+}
+
+/**
+ * The 2026-09-05 verification pass, ruled after the Trevor bug: Brain 1
+ * matched `carver` to a tradition it labelled British, twice, on two
+ * different stories, and the analyst reconciled the contradiction by naming
+ * an unresearched writer instead. A wrong match reaching the analyst is
+ * exactly the failure `validateLens` above cannot see — it only checks that
+ * the STRING is one of the thirty-five, never that it agrees with the
+ * `tradition` label returned in the same response. `verifyLensMatch` (see
+ * `src/prompts/lenses/tradition-guard.ts` for the full reasoning and its
+ * deliberate limits) is a mechanical contradiction check, not a correctness
+ * verifier — it cannot tell whether `carver` or `hemingway` fits better, only
+ * whether the match actively contradicts what Brain 1 itself said the
+ * tradition was. A contradicted match routes to null, same as no match at
+ * all: `readingStandardLine` and the interrogate directive already treat null
+ * as the honest, ordinary outcome, so this needed no new state — a
+ * contradicted match is not a trustworthy match.
+ */
+function verifiedLens(tradition: string, lens: LensId | null): LensId | null {
+  if (!lens) return null;
+  return verifyLensMatch(tradition, lens) ? lens : null;
 }
 
 /**
@@ -97,5 +120,6 @@ export async function runDiagnostician(
   // `matchLens ? … : null` that used to wrap this is gone with the merge —
   // every reading asks for the match, so forcing null was the only way the
   // field could have been wrong here.
-  return { ...result, bestInClassLens: validateLens(result.bestInClassLens) };
+  const lens = verifiedLens(result.tradition, validateLens(result.bestInClassLens));
+  return { ...result, bestInClassLens: lens };
 }
