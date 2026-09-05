@@ -4113,3 +4113,100 @@ long-standing untracked handover file. No repo file was modified by either test.
 wrote `best_in_class_lens = 'carver'` into `submission_telemetry`. The migration
 is applied and the code is live, but nothing has verified an actual write. Query
 in the report.
+
+## 2026-09-05 — CROSS-LENS SWEEP. The Trevor bug is UPSTREAM, not in the guard.
+
+Run at Nenad's instruction: more matched readings across lenses other than
+Carver, chosen so a cross-tradition substitution would be unmissable.
+**Data gathering only — nothing fixed, per his explicit instruction.**
+
+**Method.** Three new original stories, each written for the test and each padded
+past 3,000 words so the analyst runs on `claude-opus-4-8` — the same tier as both
+known failures. Brain 1 then analyst, one call each, via the same harness as the
+A/B. An automatic check scanned each reading for ~60 writer surnames and reported
+which were named and whether the matched lens itself was among them. Analyst cost
+$0.8572 for the three.
+
+### THE RESULT
+
+| # | Story | Brain 1 `tradition` | `bestInClassLens` | Match correct? | Named in the reading |
+|---|---|---|---|---|---|
+| 1 | (2026-08-27, on record) | British literary minimalism | `carver` | **✗ CROSS-TRADITION** | **Trevor, Hadley, Bennett** — explicit substitution |
+| 2 | (2026-09-05, production) | contemporary British literary realism | `carver` | **✗ CROSS-TRADITION** | **Trevor** — compressed substitution |
+| 3 | Southern Gothic | Southern Gothic literary fiction | `oconnor` | **✓ correct** | **Chekhov** (see below). O'Connor named ZERO times |
+| 4 | Hard-boiled | hardboiled noir detective fiction | `chandler` | **✓ correct** | Chandler only. No outside writer |
+| 5 | Anthropological SF | speculative literary anthropology fiction | `leguin` | **✓ correct** | Le Guin only. No outside writer |
+
+### FINDING 1 — the substitution tracks Brain 1's MISMATCH, not the directive
+
+**Both substitution cases had a cross-tradition match. None of the three
+same-tradition matches substituted at all.** That is 2/2 versus 0/3, and it is
+the cleanest signal in the data.
+
+When Brain 1's own `tradition` label and its `bestInClassLens` belong to the same
+tradition, the analyst stays inside it and names the matched master descriptively
+— "hardboiled noir in the Chandler line", "Le Guin's lineage", "thinking in his
+register". That is exactly what `STAY INSIDE THE MATCHED TRADITION` permits
+("you may mention other writers as lineage"). **The guard works when its premise
+holds.**
+
+It only fails when the analyst is handed a contradiction: told the tradition is
+British and handed an American standard. Then it reconciles toward the tradition
+it was *named*, because the standard block is anonymous ("BEST-IN-CLASS FOR
+**THIS TRADITION**") and the diagnostic block is labelled and marked "established
+fact — do not re-identify, do not override".
+
+**So the analyst-side guard is not the defect. Rewording it would be treating a
+symptom.** The defect is a Brain 1 false-positive match, and it is the near-miss
+`PASS1_LENS_MATCH` names in its own text: *"a work of quiet domestic realism is
+not 'Carver' because it is quiet"*.
+
+### FINDING 2 — `carver` looks like a specific over-attractor
+
+It is the only lens observed matched to a tradition it does not belong to, twice,
+on two different British domestic-realist stories, by two separate Brain 1 runs
+five weeks apart. The other three lenses matched their own traditions exactly.
+**Two data points is not proof, but the pairing is identical both times and the
+three controls are clean.**
+
+### FINDING 3 — A SECOND, DIFFERENT NAMING FAILURE, found by this sweep
+
+The Southern Gothic reading matched `oconnor` correctly and **never names
+O'Connor once**. It opens `WHAT IS WORKING` with:
+
+> Chekhov told Gorky to strike out the "seems" and the softening qualifiers and
+> trust the picture. You already write that way…
+
+That is not the substitution guard. It is the OTHER guard in the same block:
+
+> DO NOT DEFER TO IT IN THE PROSE — MANDATORY: never present the standard, or any
+> writer named in it, as an authority the reading is answering to. **Opening a
+> note by citing what a named master said and measuring the writer against it is
+> the failure**, even when that master is inside the researched set.
+
+Chekhov is inside the thirty-five, so the "even when" clause applies exactly.
+This one is a straight breach with a correct upstream match, which means **it is
+NOT explained by Finding 1** and is a genuinely separate problem.
+
+Note the asymmetry worth Nenad's attention: the two clean readings name their own
+matched master and are fine; the breaching reading names a *different* master and
+never its own. Naming per se is not the failure — deferring is.
+
+### What this does and does not settle
+
+- It DOES settle that rewording `STAY INSIDE THE MATCHED TRADITION` would not
+  have prevented either Trevor case. The guard held on 3/3 correct matches.
+- It does NOT establish how often Brain 1 mismatches overall. Five readings, one
+  lens implicated. A proper answer needs the match rate from
+  `submission_telemetry.best_in_class_lens` over real traffic — which is now
+  being logged, and is the first thing that column is good for.
+- It does NOT tell us whether `carver` is unique or whether other broad,
+  low-specificity standards (`hemingway`, `chekhov`) attract the same way.
+
+**Nothing was changed. No guard, no directive, no Brain 1 prompt, no code.**
+Three repairs are on the table and they are mutually exclusive enough that
+picking one is Nenad's ruling, not a detail: fix Brain 1's matching, add a
+verification pass that compares `tradition` against `bestInClassLens` (nothing
+does today — `validateLens` checks enum membership only), or make the standard
+block name its lens so the analyst can see the contradiction instead of
+reconciling it silently.
