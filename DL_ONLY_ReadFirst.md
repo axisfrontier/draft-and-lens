@@ -108,8 +108,21 @@ not "the first N words", because the middle is what gets dropped. Do not
 
 ## Where the merge stands — updated 2026-09-05, read before touching any of it
 
-The seven-commit hold from 2026-09-01 is being worked off in the order Nenad
-set. **Still nothing pushed, still nothing deployed.**
+**THE HOLD IS OVER. Everything shipped 2026-09-05** — 13 commits pushed
+(`dad61ef..3fd10e3`) and verified live in a browser: `/how-it-works` carries the
+three new sections, the upload page's "How should I read it?" toggle row is gone
+with no orphaned gap, and `/analysis/<id>` 404s where a raw developer scaffold
+used to render. The telemetry migration was applied and confirmed by Nenad
+BEFORE any code went out, in the ruled order.
+
+**Verifying a deploy with `curl` DOES NOT WORK on this site and never did.** It
+is behind a beta gate: `draftandlens.com` 308s to `www`, which 307s to
+`/beta-gate` for every route, so an unauthenticated `curl` greps a 15-byte
+redirect body and always reports "not deployed". That false negative caused a
+duplicate production build on 2026-09-05. **Use the Chrome extension, which
+carries the cookie** — the standing rule already said so.
+
+**The 2026-09-01 hold, for the record:**
 
 **Resolved by ruling on 2026-09-05:**
 
